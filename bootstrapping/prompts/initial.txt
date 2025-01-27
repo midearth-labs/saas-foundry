@@ -1,0 +1,15 @@
+
+I'd like to create the actual project for saas-foundry using Node and typescript. I would love to build as a git based  monorepo to contain example sub-packages, pls note this is just a suggestion, advice or ask clarifications based on your understanding of the project.
+1. api-model (An API model definition e.g. as OpenAPI or Smithy)
+2. api-server (A server implementation based on expressJS)
+3. jobs (A backend implementation of 
+4. shared-backend (Shared backend utilities)
+5. shared-frontend (Shared front end utilities)
+6. kits (UI kits)
+7. user-frontend (user facing UI features)
+8. admin-frontend (admin facing UI features)
+9. cli (some quality of life commands for bootstrapping or configuring SAAS dependencies)
+10. saasfoundry-website-frontend (A website to showcase the saasfoundry framework, this website dogfoods saasfoundry)
+11. saasfoundry-api-server (A website to showcase the saasfoundry framework, this website dogfoods saasfoundry)
+
+Suggest tools to use to manage the repo with focus on performance, I did some research and heard of turborepo. Also note, this project will be built with heavy reliance on Cursor+Claude AI assistance.
