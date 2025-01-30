@@ -14,7 +14,7 @@
     "@remix-run/node": "^2.15.2",
     "@remix-run/react": "^2.15.2",
     "@remix-run/server-runtime": "^2.15.2",
-    "@repo/ui": "workspace:*",
+    "@saas-foundry/ui": "workspace:*",
     "@vercel/analytics": "^1.4.1",
     "@vercel/remix": "2.15.2",
     "isbot": "^5.1.21",

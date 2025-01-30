@@ -10,13 +10,13 @@
     "lint": "eslint src/ --max-warnings 0"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
+    "@saas-foundry/ui": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@saas-foundry/eslint-config": "workspace:*",
+    "@saas-foundry/typescript-config": "workspace:*",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",

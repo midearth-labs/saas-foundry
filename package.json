@@ -1,5 +1,5 @@
 {
-  "name": "kitchen-sink",
+  "name": "@saas-foundry/saas-foundry",
   "private": true,
   "scripts": {
     "build": "turbo run build",

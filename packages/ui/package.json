@@ -1,5 +1,5 @@
 {
-  "name": "@repo/ui",
+  "name": "@saas-foundry/ui",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -27,13 +27,13 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "@repo/jest-presets/browser"
+    "preset": "@saas-foundry/jest-presets/browser"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@saas-foundry/eslint-config": "workspace:*",
+    "@saas-foundry/jest-presets": "workspace:*",
+    "@saas-foundry/typescript-config": "workspace:*",
     "@types/node": "^22.10.10",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

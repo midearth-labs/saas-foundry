@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
+  "extends": "@saas-foundry/typescript-config/react-library.json",
   "compilerOptions": {
     "lib": ["dom", "ES2015"],
     "sourceMap": true,

@@ -17,7 +17,7 @@ importers:
 
   apps/admin:
     dependencies:
-      '@repo/ui':
+      '@saas-foundry/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -27,10 +27,10 @@ importers:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
     devDependencies:
-      '@repo/eslint-config':
+      '@saas-foundry/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config-eslint
-      '@repo/typescript-config':
+      '@saas-foundry/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
       '@types/react':
@@ -51,7 +51,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@repo/logger':
+      '@saas-foundry/logger':
         specifier: workspace:*
         version: link:../../packages/logger
       body-parser:
@@ -70,13 +70,13 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
-      '@repo/eslint-config':
+      '@saas-foundry/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config-eslint
-      '@repo/jest-presets':
+      '@saas-foundry/jest-presets':
         specifier: workspace:*
         version: link:../../packages/jest-presets
-      '@repo/typescript-config':
+      '@saas-foundry/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
       '@types/body-parser':
@@ -121,7 +121,7 @@ importers:
       '@remix-run/server-runtime':
         specifier: ^2.15.2
         version: 2.15.2(typescript@5.7.3)
-      '@repo/ui':
+      '@saas-foundry/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@vercel/analytics':
@@ -173,10 +173,10 @@ importers:
 
   apps/storefront:
     dependencies:
-      '@repo/logger':
+      '@saas-foundry/logger':
         specifier: workspace:*
         version: link:../../packages/logger
-      '@repo/ui':
+      '@saas-foundry/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       next:
@@ -192,10 +192,10 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.1.6
         version: 15.1.6
-      '@repo/eslint-config':
+      '@saas-foundry/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config-eslint
-      '@repo/typescript-config':
+      '@saas-foundry/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
       '@types/node':
@@ -267,13 +267,13 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
-      '@repo/eslint-config':
+      '@saas-foundry/eslint-config':
         specifier: workspace:*
         version: link:../config-eslint
-      '@repo/jest-presets':
+      '@saas-foundry/jest-presets':
         specifier: workspace:*
         version: link:../jest-presets
-      '@repo/typescript-config':
+      '@saas-foundry/typescript-config':
         specifier: workspace:*
         version: link:../config-typescript
       '@types/node':
@@ -297,13 +297,13 @@ importers:
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
-      '@repo/eslint-config':
+      '@saas-foundry/eslint-config':
         specifier: workspace:*
         version: link:../config-eslint
-      '@repo/jest-presets':
+      '@saas-foundry/jest-presets':
         specifier: workspace:*
         version: link:../jest-presets
-      '@repo/typescript-config':
+      '@saas-foundry/typescript-config':
         specifier: workspace:*
         version: link:../config-typescript
       '@types/node':

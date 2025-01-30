@@ -1,5 +1,5 @@
 {
-  "name": "@repo/logger",
+  "name": "@saas-foundry/logger",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -16,13 +16,13 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "@repo/jest-presets/node"
+    "preset": "@saas-foundry/jest-presets/node"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@saas-foundry/eslint-config": "workspace:*",
+    "@saas-foundry/jest-presets": "workspace:*",
+    "@saas-foundry/typescript-config": "workspace:*",
     "@types/node": "^22.10.10",
     "eslint": "^9.19.0",
     "jest": "^29.7.0",

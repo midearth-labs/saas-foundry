@@ -1,6 +1,6 @@
-import { log } from "@repo/logger";
-import { Link } from "@repo/ui/link";
-import { CounterButton } from "@repo/ui/counter-button";
+import { log } from "@saas-foundry/logger";
+import { Link } from "@saas-foundry/ui/link";
+import { CounterButton } from "@saas-foundry/ui/counter-button";
 
 export const metadata = {
   title: "Store | Kitchen Sink",
