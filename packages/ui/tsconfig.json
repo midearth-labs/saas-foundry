@@ -1,10 +1,15 @@
 {
-  "extends": "@saas-foundry/typescript-config/react-library.json",
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
-    "lib": ["dom", "ES2015"],
-    "sourceMap": true,
-    "types": ["jest", "node"]
-  },
-  "include": ["."],
-  "exclude": ["dist", "build", "node_modules"]
+    "baseUrl": ".",
+    "paths": {
+      "@/shadcn": ["./src/shadcn/*"],
+      "@/shadcn/*": ["./src/shadcn/*"],
+      "@/headless/*": ["./src/headless/*"],
+    }
+  }
 }
