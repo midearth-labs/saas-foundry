@@ -1,8 +1,8 @@
-import { useCustomized } from "../utilities/use-customized";
+import { useCustomized } from "../utilities/use-customized.tsx";
 
-import { Card, CardContent } from "@/shadcn/components/ui/card";
-import { Input } from "@/shadcn/components/ui/input";
-import { Button } from "@/shadcn/components/ui/button";
+import { Card, CardContent } from "@/shadcn/components/ui/card.tsx";
+import { Input } from "@/shadcn/components/ui/input.tsx";
+import { Button } from "@/shadcn/components/ui/button.tsx";
 import { BlogPostsState } from '@/headless/blog';
 
 export function DefaultBlogList({

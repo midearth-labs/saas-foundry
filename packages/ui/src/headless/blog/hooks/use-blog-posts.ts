@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { DataSourceConfig, PaginationState, PaginationInfo, BlogPost } from '../types';
+import { DataSourceConfig, PaginationState, PaginationInfo, BlogPost } from '../types.ts';
   
   export function useBlogPosts(config: DataSourceConfig) {
     const [pagination, setPagination] = useState<PaginationState>({

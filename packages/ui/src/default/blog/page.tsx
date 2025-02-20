@@ -1,5 +1,5 @@
 import { useBlogPosts, createStaticDataSource } from '@/headless/blog';
-import { CustomizableBlogList } from '.';
+import { CustomizableBlogList } from './index.tsx';
 
 const staticDataSource = createStaticDataSource([
   { id: '1', title: 'First Post', content: 'Content... Lorem Ipsum Stuff', slug: 'first-post', blurb: 'Blurb...', author: { name: 'John Doe', avatar: 'https://via.placeholder.com/150' }, publishedAt: new Date() },

@@ -1,5 +1,5 @@
 import './App.css'
-import { BlogPage } from './default/blog/page'
+import { BlogPage } from './default/blog/page.tsx'
 
 function App() {
   return (

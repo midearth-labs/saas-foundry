@@ -1,4 +1,4 @@
-import { BlogPost, DataSourceConfig, FilterState, PaginationInfo } from "../types";
+import { BlogPost, DataSourceConfig, FilterState, PaginationInfo } from "../types.ts";
 
 
 export const createStaticDataSource = (staticPosts: BlogPost[]): DataSourceConfig => {
