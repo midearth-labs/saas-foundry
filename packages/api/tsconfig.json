@@ -1,0 +1,16 @@
+{
+  "extends": "@saas-foundry/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "noErrorTruncation": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "ES2020", "ES2021", "ES2022"],
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

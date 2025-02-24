@@ -1,0 +1,36 @@
+{
+  "name": "@saas-foundry/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.1.1",
+    "@tailwindcss/vite": "^4.0.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss": "^4.0.6",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.10",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.19.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.1.0",
+    "@saas-foundry/eslint-config": "workspace:*",
+    "@saas-foundry/jest-presets": "workspace:*",
+    "@saas-foundry/typescript-config": "workspace:*"
+  }
+}

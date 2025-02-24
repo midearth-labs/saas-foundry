@@ -1,0 +1,39 @@
+{
+    "name": "@saas-foundry/api",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "dev-client": "tsx watch src/client.ts",
+        "build": "tsup",
+        "start": "node dist/index.js",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src/ --max-warnings 0"
+    },
+    "dependencies": {
+        "@fastify/cors": "^10.0.2",
+        "@trpc/client": "11.0.0-rc.802",
+        "@trpc/server": "11.0.0-rc.802",
+        "argon2": "^0.41.1",
+        "drizzle-orm": "^0.39.3",
+        "fastify": "^5.2.1",
+        "pg": "^8.13.3",
+        "pino": "^9.6.0",
+        "pino-pretty": "^13.0.0",
+        "zod": "^3.24.2"
+    },
+    "devDependencies": {
+        "@saas-foundry/eslint-config": "workspace:*",
+        "@saas-foundry/typescript-config": "workspace:*",
+        "@types/node": "^22.13.4",
+        "@types/pg": "^8.11.11",
+        "drizzle-kit": "^0.30.4",
+        "eslint": "^9.20.1",
+        "ts-node": "^10.9.2",
+        "tsup": "^8.3.6",
+        "tsx": "^4.19.3",
+        "typescript": "^5.7.3",
+        "zod-to-json-schema": "^3.24.2"
+    }
+}
