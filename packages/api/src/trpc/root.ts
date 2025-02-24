@@ -9,5 +9,3 @@ const routerConfiguration: AppServiceRouter = {
 }
 
 export const appRouter = router(routerConfiguration);
-
-export type AppRouter = typeof appRouter;
