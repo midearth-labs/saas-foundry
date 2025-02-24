@@ -10,7 +10,7 @@ export type Routes<SchemaType> = {
   [key: string]: Operation<SchemaType> | Routes<SchemaType>;
 }
 
-export type ConvertOperationToProcedure<TOperation extends Operation<any>> = 
+export type ConvertOperationToProcedure<TOperation extends Operation<unknown>> = 
   TOperation['type'] extends 'query'
     ? QueryProcedure<{input: TOperation['input'], output: TOperation['output']}>
     : TOperation['type'] extends 'mutation'
@@ -19,19 +19,19 @@ export type ConvertOperationToProcedure<TOperation extends Operation<any>> =
         ? SubscriptionProcedure<{input: TOperation['input'], output: TOperation['output']}>
         : never;
 
-export type ConvertRoutesToCreateRouterOptions<TRoutes extends Routes<any>> = {
+export type ConvertRoutesToCreateRouterOptions<TRoutes extends Routes<unknown>> = {
   [K in keyof TRoutes]: TRoutes[K] extends infer $Value 
-    ? $Value extends Operation<any>
+    ? $Value extends Operation<unknown>
       ? ConvertOperationToProcedure<$Value>
-      : $Value extends Routes<any>
+      : $Value extends Routes<unknown>
         ? ConvertRoutesToCreateRouterOptions<$Value>
         : never
     : never;
 }
 
-export type ConvertRoutesToClientRouter<TRoutes extends Routes<any>> = Router<{
-  ctx: {};
-  meta: {};
+export type ConvertRoutesToClientRouter<TRoutes extends Routes<unknown>> = Router<{
+  ctx: object;
+  meta: object;
   errorShape: DefaultErrorShape;
   transformer: false;
 }, DecorateCreateRouterOptions<ConvertRoutesToCreateRouterOptions<TRoutes>>>

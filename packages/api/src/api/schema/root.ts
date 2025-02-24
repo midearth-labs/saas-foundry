@@ -4,7 +4,7 @@ import { InferredClientRoutes, InferredServiceRoutes } from '../types/schema.zod
 import { TodoRoutesConfiguration } from './todo.schema';
 import { RandomRoutesConfiguration } from './random.schema';
 
-const AppRoutesConfiguration = {
+export const AppRoutesConfiguration = {
   todo: TodoRoutesConfiguration,
   ...RandomRoutesConfiguration,
 } satisfies Routes<ZodFirstPartySchemaTypes>;

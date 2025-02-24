@@ -3,19 +3,6 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { appRouter } from './trpc/root';
 import { createContext } from './trpc/context';
 
-async function displayBanner() {
-    const 
-        bannerCmd = `npx ascii-themes generate`,
-        txtParam = `--text "Midearth Labs"`,
-        fontParam = `--font "ANSI Shadow"`,
-        themeParam = `--themeName Monokai Dimmed`,
-        hLayoutParam = `--horizontalLayout default`,
-        vLayoutParam = `--verticalLayout default`
-    const bannerMsg = `${bannerCmd} ${txtParam} ${fontParam} ${themeParam} ${hLayoutParam} ${vLayoutParam}`;
-    const { execSync } = require('child_process');
-    console.log(await execSync(bannerMsg).toString());
-}
-
 export async function startServer() {
 
     // Initialize Fastify server instance with Pino logger
@@ -72,7 +59,7 @@ export async function startServer() {
 }
 
 startServer()
-    .then(server => {
+    .then(() => {
     console.log('Server started directly');
     })
     .catch(err => {
