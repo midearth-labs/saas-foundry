@@ -1,4 +1,4 @@
-import { initTRPC } from '@trpc/server';
+import { initTRPC, inferProcedureBuilderResolverOptions } from '@trpc/server';
 import { Context } from './context';
 
 const trpc = initTRPC.context<Context>().meta<object>().create();

@@ -69,9 +69,12 @@ importers:
       '@fastify/cors':
         specifier: ^10.0.2
         version: 10.0.2
+      '@trpc/client':
+        specifier: 11.0.0-rc.802
+        version: 11.0.0-rc.802(@trpc/server@11.0.0-rc.802)(typescript@5.7.3)
       '@trpc/server':
-        specifier: ^10.45.2
-        version: 10.45.2
+        specifier: 11.0.0-rc.802
+        version: 11.0.0-rc.802(typescript@5.7.3)
       drizzle-orm:
         specifier: ^0.39.3
         version: 0.39.3(@types/pg@8.11.11)(pg@8.13.3)
@@ -2327,8 +2330,22 @@ packages:
     engines: {node: '>= 10'}
     dev: true
 
-  /@trpc/server@10.45.2:
-    resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
+  /@trpc/client@11.0.0-rc.802(@trpc/server@11.0.0-rc.802)(typescript@5.7.3):
+    resolution: {integrity: sha512-oToR54iL/sxmu2RwVxh/dJfY6CrZ8IeSEpsu5KjtlwQHM7/w5awSTF4+odjhgB0QnVFgM0vOjw8MNbExKCKSFw==}
+    peerDependencies:
+      '@trpc/server': 11.0.0-rc.802+1eccc1171
+      typescript: '>=5.7.2'
+    dependencies:
+      '@trpc/server': 11.0.0-rc.802(typescript@5.7.3)
+      typescript: 5.7.3
+    dev: false
+
+  /@trpc/server@11.0.0-rc.802(typescript@5.7.3):
+    resolution: {integrity: sha512-CkV2qTnmSOy84Qtev3B4WA6oLft7q2pg8X/IewssaD4LQevBrmTdTPDfvGeT1wdCa/NAT4ZIMt7AgbbWfAs/9Q==}
+    peerDependencies:
+      typescript: '>=5.7.2'
+    dependencies:
+      typescript: 5.7.3
     dev: false
 
   /@tsconfig/node10@1.0.11:

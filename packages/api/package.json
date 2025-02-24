@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch src/index.ts",
+        "dev-client": "tsx watch src/client.ts",
         "build": "tsup",
         "start": "node dist/index.js",
         "check-types": "tsc --noEmit",
@@ -12,7 +13,8 @@
     },
     "dependencies": {
         "@fastify/cors": "^10.0.2",
-        "@trpc/server": "^10.45.2",
+        "@trpc/client": "11.0.0-rc.802",
+        "@trpc/server": "11.0.0-rc.802",
         "drizzle-orm": "^0.39.3",
         "fastify": "^5.2.1",
         "pg": "^8.13.3",

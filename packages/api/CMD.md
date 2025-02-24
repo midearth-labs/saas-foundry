@@ -3,7 +3,7 @@
 Add initial (almost empty) package.json from turborepo instructions
 
 ```bash
-pnpm add @trpc/server@latest drizzle-orm@latest pg@latest pino@latest zod@latest @fastify/cors@latest fastify@latest
+pnpm add @trpc/server@next @trpc/client@next drizzle-orm@latest pg@latest pino@latest zod@latest @fastify/cors@latest fastify@latest
 ```
 
 

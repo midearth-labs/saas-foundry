@@ -1,7 +1,7 @@
 import { publicProcedure } from '../trpc';
 import { TodoServiceRouter, TodoRoutesConfiguration } from '../../api/schema/todo.schema';
 
-export const todoRouter = {
+export const todoRouter: TodoServiceRouter = {
   list: publicProcedure
     .input(TodoRoutesConfiguration['list']['input'])
     .query(({ ctx }) => {
@@ -32,4 +32,4 @@ export const todoRouter = {
       console.log('delete', input, ctx.tenantId);
       return;
     })
-} satisfies TodoServiceRouter;
+};
