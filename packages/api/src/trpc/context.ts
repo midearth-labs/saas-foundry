@@ -67,7 +67,7 @@ export const createContext = async ({ req, res }: CreateFastifyContextOptions) =
     },
     out: { },
     extendedRequestId,
-    logger: req.log,
+    logger: req.log.child({ extendedRequestId }),
     repositories,
   } satisfies BaseContext;
 };
