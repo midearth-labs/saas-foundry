@@ -24,12 +24,12 @@ type Repository<User, Team, Admin, Public> = {
 
 type ProviderContext = {
   repositories: {
-    todos: Repository<object, object, object, object>;
+    waitlist: Repository<object, object, object, object>;
   };
 }
 
 const repositories: ProviderContext['repositories'] = {
-  todos: {
+  waitlist: {
     user: (userId: string) => ({userId}),
     team: (teamId: string) => ({teamId}),
     admin: (adminId: string) => ({adminId}),

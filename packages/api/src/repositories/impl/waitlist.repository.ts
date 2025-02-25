@@ -24,9 +24,10 @@ export class DrizzleWaitListDefinitionRepository implements WaitListDefinitionRe
 
   async create(data: wl.CreateWaitListDefinitionDto): Promise<wl.WaitListDefinitionIdDto> {
     // TODO: Auto-populate:
-    // - id: Use UUID generator
+    // - id: Use UUID generator, maybe uuidv4?
     // - createdAt: new Date()
     // - updatedAt: new Date()
+    // Return the generated id
     throw new Error('Method not implemented: create');
   }
 }
@@ -37,10 +38,11 @@ export class DrizzleWaitListDefinitionRepository implements WaitListDefinitionRe
 export class DrizzleWaitListEntryRepository implements WaitListEntryRepository {
   async create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto> {
     // TODO: Auto-populate:
-    // - id: Use UUID generator 
+    // - id: Use UUID generator , maybe uuidv4?
     // - status: PENDING
     // - createdAt: new Date()
     // - updatedAt: new Date()
+    // Return the generated id
     throw new Error('Method not implemented: create');
   }
 }

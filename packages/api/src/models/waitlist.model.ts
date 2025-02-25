@@ -1,7 +1,7 @@
 import { TimestampsDto, StringIdDto } from "./common";
 
-const WAITLIST_STATUS = ['ACTIVE', 'INACTIVE', 'ARCHIVED'] as const;
-export type WaitListStatus = typeof WAITLIST_STATUS[number];
+export enum WAITLIST_STATUSES { ACTIVE = "ACTIVE", INACTIVE = "INACTIVE", ARCHIVED = "ARCHIVED" };
+export type WaitListStatus = keyof typeof WAITLIST_STATUSES;
 
 /**
  * Data transfer objects for waitlist definition operations
