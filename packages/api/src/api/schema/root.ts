@@ -1,14 +1,9 @@
-import { Routes } from '../types/schema.configuration';
-import { ZodFirstPartySchemaTypes } from 'zod';
-import { InferredClientRoutes, InferredServiceRoutes } from '../types/schema.zod.configuration';
-import { TodoRoutesConfiguration } from './todo.schema';
-import { RandomRoutesConfiguration } from './random.schema';
+import { InferredClientRoutes, InferredServiceRoutes, ZodRoutes } from '../types/schema.zod.configuration';
+import { WaitlistRoutesConfiguration } from './waitlist';
 
 export const AppRoutesConfiguration = {
-  todo: TodoRoutesConfiguration,
-  ...RandomRoutesConfiguration,
-} satisfies Routes<ZodFirstPartySchemaTypes>;
+  waitlist: WaitlistRoutesConfiguration,
+} satisfies ZodRoutes;
 
 export type AppClientRouter = InferredClientRoutes<typeof AppRoutesConfiguration>
-
 export type AppServiceRouter = InferredServiceRoutes<typeof AppRoutesConfiguration>

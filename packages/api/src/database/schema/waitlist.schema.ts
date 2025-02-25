@@ -1,31 +1,29 @@
-import { pgTable, pgEnum, jsonb, varchar, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, varchar } from 'drizzle-orm/pg-core';
+import { timestamps, genericUUID, primaryKeyUUID, requiredEmail } from './common';
 
-export const waitListStatusEnum = pgEnum('waitlist_status', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
-export const waitListEntryStatusEnum = pgEnum('waitlist_entry_status', ['PENDING', 'APPROVED', 'REJECTED']);
+export const definitionStatusEnum = pgEnum('waitlist_status', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
+export const entryStatusEnum = pgEnum('waitlist_entry_status', ['PENDING', 'APPROVED', 'REJECTED']);
 
 // WaitList Definition table
 export const waitlistDefinitions = pgTable('waitlist_definitions', {
-    id: varchar('id').primaryKey().notNull(),
-    name: varchar('name').notNull(),
-    description: text('description').notNull(),
-    waitlistType: varchar('waitlist_type').notNull(),
-    status: waitListStatusEnum('status').notNull(),
-    fields: jsonb('fields').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull()
+    id: primaryKeyUUID(),
+    name: varchar('name', { length: 256 }).notNull(),
+    description: varchar('description', { length: 256 }).notNull(),
+    // waitlistType: varchar('waitlist_type').notNull(),
+    status: definitionStatusEnum('status').notNull(),
+    // fields: jsonb('fields').notNull(),
+    ...timestamps
 });
 
 // WaitList Entry table
 export const waitlistEntries = pgTable('waitlist_entries', {
-  id: varchar('id').primaryKey().notNull(),
-  definitionId: varchar('definition_id')
-    .notNull()
-    .references(() => waitlistDefinitions.id),
-  email: varchar('email').notNull(),
-  by: varchar('by'),
-  status: waitListEntryStatusEnum('status').default('PENDING').notNull(),
-  metadata: jsonb('metadata').notNull(),
-  fieldValues: jsonb('field_values').notNull()
+  id: primaryKeyUUID(),
+  definitionId: genericUUID('definition_id').references(() => waitlistDefinitions.id),
+  email: requiredEmail("email"),
+  status: entryStatusEnum('status').notNull(),
+  // metadata: jsonb('metadata').notNull(),
+  // fieldValues: jsonb('field_values').notNull()
+    ...timestamps
 });
 
 export type WaitListDefinition = typeof waitlistDefinitions.$inferSelect;

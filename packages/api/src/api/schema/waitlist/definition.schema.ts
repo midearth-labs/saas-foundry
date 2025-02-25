@@ -1,36 +1,48 @@
 import { z } from 'zod';
-import { waitlistFieldTypeSchema } from './common.schema';
+import { definitionId } from './common.schema';
+import { InferredServiceRoutes, ZodOperation, ZodRoutes } from '../../types/schema.zod.configuration';
+import { UUIDInputSchema, UUIDOutputSchema, VoidInputSchema } from '../common';
 
-const waitlistDefinitionTypeSchema = z
-.enum(['feature-resourcesharing-waitlist', 'prelaunch-waitlist'])
-.default('prelaunch-waitlist');
-
-const waitlistDefinitionStatusSchema = z
+const waitlistDefinitionStatus = z
 .enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
 
-const createDefinitionInputSchema = z.object({
-    name: z.string(),  // A sort of title
-    description: z.string().min(20),
-    waitlistType: waitlistDefinitionTypeSchema,
-    status: waitlistDefinitionStatusSchema,
-    fields: z.array(waitlistFieldTypeSchema), // Defaults to ['TEXT']
-});
+const definitionIDInputSchema = UUIDInputSchema;
 
-const createDefinitionOutputSchema = z.object({
-    message: z.string().default("Waitlist definition created"),
-    id: z.string().cuid(),
-    name: z.string()
-});
+const create = {
+    input: z.object({
+        name: z.string(),  // A sort of title
+        description: z.string().min(0),
+        status: waitlistDefinitionStatus,
+        // fields: z.array(waitlistFieldTypeSchema), // Defaults to ['TEXT']
+    }),
+    output: UUIDOutputSchema,
+    type: 'mutation',
+} satisfies ZodOperation;
 
-const getDefinitionInputSchema = z.object({
-    id: z.string().cuid()
-});
+const get = {
+    input: definitionIDInputSchema,
+    output: z.object({
+        id: definitionId, // DB primary key
+        ...create.input.shape,
+        createdAt: z.date(),
+        updatedAt: z.date(),  // Last used
+    }),
+    type: 'query',
+} satisfies ZodOperation;
 
-const getDefinitionOutputSchema = z.object({
-    id: z.string().cuid().min(16), // DB primary key
-    ...createDefinitionInputSchema.shape,
-    createdAt: z.date(),
-    updatedAt: z.date(),  // Last used
-});
+/**
+ * Create a ListOperationSchema, that its Input & Output Schema extends something that has pagination controls 
+ */
+const list = {
+    input: VoidInputSchema,
+    output: z.array(get.output),
+    type: 'query',
+} satisfies ZodOperation;
 
-const getAllDefinitionsOutputSchema = z.array(getDefinitionOutputSchema);
+export const DefinitionRoutesConfiguration = {
+    create,
+    get,
+    list,
+} satisfies ZodRoutes;
+
+export type DefinitionServiceRouter = InferredServiceRoutes<typeof DefinitionRoutesConfiguration>

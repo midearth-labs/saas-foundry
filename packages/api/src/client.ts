@@ -14,10 +14,10 @@ const client2 = createTRPCClient<AppClientRouter>({
 
 async function main() {
   // Example usage
-  const todos2 = await client2.todo.create.mutate({ title: 'Testty', description: 'Test 2' });
-  const output2 = await client2.getById2.query(129);
+  const output1 = await client2.waitlist.definition.create.mutate({ name: 'Test', description: 'Test', status: 'ACTIVE' });
+  const output2 = await client2.waitlist.entry.create.mutate({ definitionId: output1.id, email: 'test@test.com' });
 
-  console.log(todos2);
+  console.log(output1);
   console.log(output2);
 }
 
