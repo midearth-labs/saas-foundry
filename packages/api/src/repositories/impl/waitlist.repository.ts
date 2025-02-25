@@ -4,22 +4,31 @@ import * as wl from '../../models/waitlist.model';
 
 import { waitlistDefinitions, waitlistEntries } from '../../database/schema/waitlist.schema';
 import { db } from '../../database/connection';
+import { uuid } from 'drizzle-orm/pg-core';
 
-/**
- * TODO: Awwal to implement the WaitListDefinitionRepository interface
- * Use the examples from the TodoExample in the previous commit
- */
+
 export class DrizzleWaitListDefinitionRepository implements WaitListDefinitionRepository {
   async findAll(): Promise<wl.WaitListDefinitionDto[]> {
-    throw new Error('Method not implemented: findAll');
+    return await db.select().from(waitlistDefinitions);
   }
 
   async findById(data: wl.WaitListDefinitionIdDto): Promise<wl.WaitListDefinitionDto | null> {
-    throw new Error('Method not implemented: findById');
+    const definition = await db.select().from(waitlistDefinitions)
+      .where(eq(
+        waitlistDefinitions.id, data.id
+      ));
+    
+    return definition[0] ?? null;
   }
 
   async findByIdAndStatus(data: wl.WaitListDefinitionIdDto, status: wl.WaitListStatus): Promise<wl.WaitListDefinitionDto | null> {
-    throw new Error('Method not implemented: findByIdAndStatus');
+    const definition = await db.select().from(waitlistDefinitions)
+      .where(and(
+        eq(waitlistDefinitions.id, data.id),
+        eq(waitlistDefinitions.status, status)
+      ))
+      .limit(1);
+    return definition[0] ?? null;
   }
 
   async create(data: wl.CreateWaitListDefinitionDto): Promise<wl.WaitListDefinitionIdDto> {
@@ -28,13 +37,18 @@ export class DrizzleWaitListDefinitionRepository implements WaitListDefinitionRe
     // - createdAt: new Date()
     // - updatedAt: new Date()
     // Return the generated id
-    throw new Error('Method not implemented: create');
+    const idDto: wl.WaitListDefinitionIdDto = { id: uuid().toString() }; // Drizzle + postgres uuid
+    await db.insert(waitlistDefinitions).values({
+      id: idDto.id,
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+
+    return idDto;
   }
 }
 
-/**
- * TODO: Awwal to implement the WaitListEntryRepository interface
- */
 export class DrizzleWaitListEntryRepository implements WaitListEntryRepository {
   async create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto> {
     // TODO: Auto-populate:
@@ -43,6 +57,15 @@ export class DrizzleWaitListEntryRepository implements WaitListEntryRepository {
     // - createdAt: new Date()
     // - updatedAt: new Date()
     // Return the generated id
-    throw new Error('Method not implemented: create');
+    const idDto: wl.WaitListEntryIdDto = { id: uuid().toString() }
+    await db.insert(waitlistEntries).values({
+      id: idDto.id,
+      ...data,
+      status: 'PENDING',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    return idDto;
   }
 }
