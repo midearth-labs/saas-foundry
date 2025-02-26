@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { Email, UUIDOutputSchema } from '../common';
-import { InferredServiceRoutes, ZodRoutes, ZodOperation } from '../../types/schema.zod.configuration';
+import { ZodRoutes, ZodOperation, ConvertRoutesToType } from '../../types/schema.zod.configuration';
 import { definitionId } from './common.schema';
+import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configuration';
 
 const create = {
     input: z.object({
@@ -16,4 +17,5 @@ export const EntryRoutesConfiguration = {
     create,
 } satisfies ZodRoutes;
 
-export type EntryServiceRouter = InferredServiceRoutes<typeof EntryRoutesConfiguration>
+export type EntryServiceShape = ConvertRoutesToType<typeof EntryRoutesConfiguration>
+export type EntryServiceRouter = ConvertRoutesToCreateRouterOptions<EntryServiceShape>

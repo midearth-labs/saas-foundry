@@ -1,17 +1,17 @@
 import * as wl from '../../models/waitlist.model';
 
 /**
- * Repository interface for managing waitlist definitions
+ * Repository type for managing waitlist definitions
  */
 export type WaitListDefinitionRepository = {
   findAll(): Promise<wl.WaitListDefinitionDto[]>;
   findById(data: wl.WaitListDefinitionIdDto): Promise<wl.WaitListDefinitionDto | null>;
-  findByIdAndStatus(data: wl.WaitListDefinitionIdDto, status: wl.WaitListStatus): Promise<wl.WaitListDefinitionDto | null>;
+  isDefinitionRegistrationOpen(data: wl.WaitListDefinitionIdDto): Promise<boolean>;
   create(data: wl.CreateWaitListDefinitionDto): Promise<wl.WaitListDefinitionIdDto>;
 }
 
 /**
- * Repository interface for managing waitlist entries
+ * Repository type for managing waitlist entries
  */
 export type WaitListEntryRepository = {
   create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto>;

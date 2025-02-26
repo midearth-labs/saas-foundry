@@ -1,9 +1,9 @@
 
-export interface StringIdDto {
+export type StringIdDto = {
     id: string;
 }
   
-export interface TimestampsDto {
+export type TimestampsDto = {
     createdAt: Date;
     updatedAt: Date;
 }

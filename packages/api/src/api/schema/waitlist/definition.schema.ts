@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { definitionId } from './common.schema';
-import { InferredServiceRoutes, ZodOperation, ZodRoutes } from '../../types/schema.zod.configuration';
+import { ConvertRoutesToType, ZodOperation, ZodRoutes } from '../../types/schema.zod.configuration';
 import { UUIDInputSchema, UUIDOutputSchema, VoidInputSchema } from '../common';
+import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configuration';
 
 const waitlistDefinitionStatus = z
 .enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
@@ -45,4 +46,5 @@ export const DefinitionRoutesConfiguration = {
     list,
 } satisfies ZodRoutes;
 
-export type DefinitionServiceRouter = InferredServiceRoutes<typeof DefinitionRoutesConfiguration>
+export type DefinitionServiceShape = ConvertRoutesToType<typeof DefinitionRoutesConfiguration>
+export type DefinitionServiceRouter = ConvertRoutesToCreateRouterOptions<DefinitionServiceShape>

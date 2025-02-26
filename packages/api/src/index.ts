@@ -1,7 +1,7 @@
 import fastify from 'fastify';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import { appRouter } from './trpc/root';
-import { createContext } from './trpc/context';
+import { getAppRouter } from './trpc/root';
+import { getContextCreator } from './trpc/context';
 
 export async function startServer() {
 
@@ -31,12 +31,12 @@ export async function startServer() {
             credentials: true,
         })
 
-        // And now for the true prize & moneyshot: tRPC binding
+        // tRPC binding
         await server.register(fastifyTRPCPlugin, {
             prefix: '/api/trpc',    // perhaps /trpc/v1, just like /api/v1/
             trpcOptions: {
-                router: appRouter,
-                createContext,  // <- TRPC CONTEXT IS BOUND WITH FASTIFY SERVER HERE
+                router: getAppRouter(),
+                createContext: getContextCreator(),  // <- TRPC CONTEXT IS BOUND WITH FASTIFY SERVER HERE
             },
         });
 
