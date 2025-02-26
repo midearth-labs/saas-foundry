@@ -2,8 +2,7 @@ import { eq, and } from 'drizzle-orm';
 import { WaitListDefinitionRepository, WaitListEntryRepository } from '../interfaces/waitlist.repository';
 import * as wl from '../../models/waitlist.model';
 
-import { waitlistDefinitions, waitlistEntries } from '../../database/schema/waitlist.schema';
-import { uuid } from 'drizzle-orm/pg-core';
+import { waitlistDefinitions, waitlistEntries } from '../../db/schema/waitlist.schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 export const createDrizzleWaitListDefinitionRepository = (db: NodePgDatabase<any>): WaitListDefinitionRepository => {
@@ -32,7 +31,8 @@ export const createDrizzleWaitListDefinitionRepository = (db: NodePgDatabase<any
     },
 
     async create(data: wl.CreateWaitListDefinitionDto): Promise<wl.WaitListDefinitionIdDto> {
-      const idDto: wl.WaitListDefinitionIdDto = { id: uuid().toString() }; // Drizzle + postgres uuid
+      const idDto: wl.WaitListDefinitionIdDto = { id: crypto.randomUUID() }; // Drizzle + postgres uuid
+      console.log('idDto', idDto);
       await db.insert(waitlistDefinitions).values({
         ...data,
         id: idDto.id,
@@ -49,7 +49,7 @@ export const createDrizzleWaitListEntryRepository = (db: NodePgDatabase<any>): W
 
   return {
     async create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto> {
-      const idDto: wl.WaitListEntryIdDto = { id: uuid().toString() }
+      const idDto: wl.WaitListEntryIdDto = { id: crypto.randomUUID() }
       await db.insert(waitlistEntries).values({
         id: idDto.id,
         ...data,

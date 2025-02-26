@@ -2,6 +2,7 @@ import { publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
 // Convert this to a middleware for reuse
+// Maybe use type for ctx T that extends the base context
 const authenticatedProcedure = publicProcedure.use(async ({ ctx, next }) => {
     const tenantId = ctx.in.getTenantId();
     if (!tenantId) {
