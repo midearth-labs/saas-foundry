@@ -1,0 +1,52 @@
+# Repositories Configuration
+
+## File Structure
+repositories/
+├── interfaces/   # Repository interfaces
+└── impl/        # Repository implementations
+
+## Naming Conventions
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Implementation:
+    - Implementation name: `BlogRepository`
+    - Implementation file name: `blog.repository.ts`
+- Interface: 
+    - Interface name: `BlogRepository`
+    - Interface file name: `blog.repository.ts`
+- Methods: camelCase
+
+## Implementation Rules
+```ts
+// Example repository interface
+// > repositories/interfaces/blog.repository.ts
+import * as b from '../../models/blog.model';
+
+/**
+ * Repository type for managing blog posts
+ */
+export type BlogRepository = {
+  findAll(): Promise<b.BlogDto[]>;
+  findById(data: b.BlogIdDto): Promise<b.BlogDto | null>;
+  isBlogPublished(data: b.BlogIdDto): Promise<boolean>;
+  createBlog(data: b.CreateBlogDto): Promise<b.BlogIdDto>;
+}
+
+// Example repository implementation
+export const createDrizzleBlogRepository = (db: NodePgDatabase<any>): BlogRepository => {
+
+  return {
+    async createBlog(data: b.CreateBlogDto): Promise<b.BlogIdDto> {
+      const idDto: b.BlogDto = { id: crypto.randomUUID() }
+      await db.insert(blog).values({
+        id: idDto.id,
+        ...data,
+        // other data
+      });
+
+      return idDto;
+    }
+  },
+
+  // Other contract interface methods
+}
+```
