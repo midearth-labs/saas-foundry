@@ -1,0 +1,36 @@
+# API Package Configuration
+
+## Directory Structure
+api/
+├── schema/       # Zod schemas and validations
+├── types/        # TypeScript type definitions
+├── services/     # Business logic layer
+├── repositories/ # Data access layer
+└── trpc/         # tRPC routers and procedures
+
+## Service Layer Rules
+- All services must implement an interface
+- Services should be injectable
+- Business logic only
+- No direct database access
+- Must use repository layer
+- Must have unit tests
+
+## Repository Layer Rules
+- One repository per entity
+- Must implement repository interface
+- Handle all database operations
+- No business logic
+- Use Prisma/Drizzle clients
+
+## Schema Rules
+- All input/output must be Zod validated
+- Reuse common schemas
+- Export validation helpers
+- Keep schemas close to usage
+
+## Type Rules
+- Prefix interfaces with 'I'
+- Suffix types with 'Type'
+- Use enums for fixed values
+- Export all types 
