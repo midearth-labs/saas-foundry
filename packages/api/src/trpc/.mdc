@@ -1,0 +1,98 @@
+# tRPC Configuration
+
+## Directory Structure
+trpc/
+├── routers/           # Feature-based routers
+└── base-procedures/   # Shared procedures
+
+## Router Rules
+- One router per feature
+- Use input validation
+- Proper error handling
+- Middleware usage
+- Protected routes
+
+## Development Workflow
+- For every new feature implemented, the following must be adhered to
+(here, we are using a sample `blog` API/feature to illustrate the expected workflow)
+- Update (or create if one does not exist) the `trpc/repositories.ts` file
+and declare the relevant repository. Let's say you want to specify the blog repository:
+
+```ts
+// trpc/repositories.ts
+import * as waitlist from '../repositories/interfaces/waitlist.repository';
+import * as blog from '../repositories/interfaces/blog.repository'
+
+export type Repositories = {
+    waitlist: {
+      definition: waitlist.WaitListDefinitionRepository;
+      entry: waitlist.WaitListEntryRepository;
+    },
+    blog: {  // What must be updated
+        blogArticle: blog.BlogRepository;
+    }
+};
+```
+
+- Also update the base context repository in `trpc/repositories.impl.ts`  as was done above (example):
+```ts
+// trpc/repositories.impl.ts
+import * as waitlist from '../repositories/impl/waitlist.repository';
+import * as blog from '../repositories/impl/blog.repository';
+import { Repositories } from './repositories';
+import { createDBConnection } from "../db";
+
+// @TODO: Consider lazy loading these repositories and using memoization
+export const createRepositories = (): Repositories => {
+  const db = createDBConnection();
+  return {
+    waitlist: {
+      definition: waitlist.createDrizzleWaitListDefinitionRepository(db),
+      entry: waitlist.createDrizzleWaitListEntryRepository(db),
+    },
+    blog: { // What must be updated
+      blogArticle: blog.createDrizzleWaitListDefinitionRepository(db),
+    }
+  }
+} 
+```
+
+- Declare the specific routes (example):
+```ts
+import { blogAdminProcedure, blogPublicProcedure } from '../base-procedures/blog';
+import { BlogServiceRouter, BlogRoutesConfiguration } from '../../api/schema/blog';
+import { blogService } from '../../services/impl/blog.service';
+
+const blogRouter: BlogServiceRouter = {
+  list: blogAdminProcedure
+    .input(BlogRoutesConfiguration.list.input)
+    .query(blogService.list),
+
+  get: blogAdminProcedure
+    .input(BlogRoutesConfiguration.get.input)
+    .query(blogDefinitionService.get),
+
+  create: blogAdminProcedure
+    .input(BlogRoutesConfiguration.create.input)
+    .mutation(blogService.create),
+};
+
+export const blogRouterConfiguration: BlogServiceRouter  = {
+    blogArticle: blogRouter,
+}
+```
+
+- Declare the high level root routers in `trpc/root.ts` by updating the required features
+```ts
+import { router } from './trpc';
+import { waitlistRouterConfiguration } from './routers/waitlist.router';
+import { AppServiceRouter } from '../api/schema/root';
+
+export const getAppRouter = () => {
+  const routerConfiguration: AppServiceRouter = {
+    waitlist: waitlistRouterConfiguration,
+  }
+  
+  return router(routerConfiguration);
+}
+```
