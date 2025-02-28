@@ -2,39 +2,120 @@
 
 There are currently two main approaches to declaring and configuring MDCs:
 
-1. High-level approach: .cursorrules folder with all .mdc files
+1. High-level approach: ROOT-LEVEL [`.cursor/rules`](../../.cursor/rules) folder with all .mdc files
 2. Low-level approach: .mdc files are declared in the relevant folders where specific instructions are required
 
 ## ⚠ UPDATE
-**This YouTuber explains a better approach to MDCs (including use-cases involving monorepos) in this video: https://www.youtube.com/watch?v=A9BiNPf34Z4 **
+**This YouTuber explains a better approach to MDCs (including use-cases involving monorepos) in this video: https://www.youtube.com/watch?v=A9BiNPf34Z4**
 
-This version currently implemented the low-level approach with current results being subpar (the generated blog example is currently not included due to the quality of the results). The high-level approach is scheduled to be implemented in quick succession in the next commit.
+##
 
-However, to test-drive the low-level approach, the following prompt format can be used in accordance with the current mdc files:
+## Prompting Format for Cursor after declaring MDCs
 
-```
+``` 
 This is a monorepo project but we are **ONLY** working on the api package located in root/packages/api. Hence, nothing outside should be modified without explicit request for approval and my confirmation. In the api packages, the tech stack is TypeScript, Zod, tRPC, Fastify, Drizzle, Postgres, pino. Please take note: whenever a command or prompt is issued by asking you to create something in the directory "api/<some_dir>", please **be informed that this means the api subpackage located in root/packages/api because this is a monorepo and we are ONLY and PRECISELY involved with that package alone**.
+    
+I want to implement a new `hotel-guests` feature in the API package (packages/api/). 
+Following the controller-service-repository pattern, I'll need guidance on creating all necessary components. I need you to preciesly abide (100% NECESSARY) by the following MDC rules:
+- API Package Model Specifications (api-package-db-model-rules.mdc)
+- API Package Database Schema Specifications (api-package-db-schema-rules.mdc)
+- API Package Base Level Specifications (api-package-general-rules.mdc)
+- API Package Repository Pattern Specifications (api-package-repository-rules.mdc)
+- API Package Schema Specifications (api-package-service-rules.mdc)
+- API Package tRPC Configuration Specifications (api-package-trpc-rules.mdc)
+- API Package Type Configurations Specifications (api-package-type-config-rules.mdc)
 
-/create Add a blog feature to the API (root/packages/api; aliased as @saas-foundry/api in he high level turbo.json/package.json) on top of already existing APIs, with the following requirements:
-- Blog posts should have title, content, author, status (draft/published), and timestamps
-- Support CRUD operations
-- Include proper validation
-- Follow the service-repository pattern
-- Implement proper error handling
-
-/create First, let's create the blog schema and types in api/schema/blog.schema.ts.
-
-/create Create the blog repository interface in api/repositories/interfaces/blog.repository.ts
-
-/create Implement the blog repository in api/repositories/impl/blog.repository.ts
-
-/create Implement the blog service in api/services/impl/blog.service.ts
-
-/create Create the blog router in api/trpc/routers/blog.router.ts
-
-/edit Update api/trpc/root.ts to include the blog router
-
-Feel free to first propose other things you feel is necessary by the time you inspect my already existing code base.
-
-
+Take your time to carefully evaluate the imports to ensure you are correcly addressing references, so that you don't hallucinate and reference non-existent entities.
 ```
+
+### Results can be seen in commit [`70d84f`](https://github.com/midearth-labs/saas-foundry/commit/70d84f6c4d9ee1fa91c300050a134c5d307f00c6)
+
+## Cursor's Response When Asked for Explanation of Generated Code
+
+I'll explain all the components created for the hotel-guests feature, following the controller-service-repository pattern:
+1. Models (DTOs) - [hotel-guest.model.ts](../../packages\api\src\models\hotel-guest.model.ts)
+    ```
+    - HOTEL_GUEST_STATUS enum: Defines possible guest states (CHECKED_IN, CHECKED_OUT, etc.)
+    - CreateHotelGuestDto: Base DTO for creating guests with required and optional fields
+    - HotelGuestIdDto: Extends StringIdDto for ID handling
+    - HotelGuestDto: Complete DTO combining ID, base fields, and timestamps
+    ```
+2. Database Schema - [hotel-guest.schema.ts](../../packages\api\src\db\schema\hotel-guest.schema.ts)
+    ```
+    - hotelGuestStatusEnum: Postgres enum for guest statuses
+    - hotelGuestTable: Drizzle table definition with:
+    - Primary key (UUID)
+    - Required fields (firstName, lastName, email, phone, status)
+    - Optional fields (roomNumber, checkInDate, checkOutDate, specialRequests)
+    - Timestamps (createdAt, updatedAt)
+    ```
+3. Repository Layer
+    a. Interface - [hotel-guest.repository.ts](../../packages\api\src\repositories\interfaces\hotel-guest.repository.ts)
+    ```
+    - Defines CRUD operations contract:
+    - create(): Creates new guest
+    - findById(): Retrieves guest by ID
+    - findAll(): Lists all guests
+    - update(): Updates guest data
+    - delete(): Removes guest
+    ```
+    b. Implementation - [hotel-guest.repository.impl.ts](../../packages\api\src\repositories\impl\hotel-guest.repository.ts)
+    ```
+    - Implements repository interface using Drizzle
+    - Handles date conversions between DB and DTO formats
+    - Uses mapToDto helper for consistent data transformation
+    ```
+4. Service Layer
+    a. Interface - [hotel-guest.service.ts](../../packages/api/src/services/interfaces/hotel-guest.service.ts)
+    ```
+    - Defines HotelGuestContext type with repository dependency
+    - Declares service methods matching schema shapes
+    ```
+    b. Implementation - [hotel-guest.service.ts](../../packages/api/src/services/impl/hotel-guest.service.ts)
+    ```
+    - Implements business logic
+    - Handles error cases (e.g., NOT_FOUND)
+    - Delegates data operations to repository
+    ```
+5. Schema Validation - [hotel-guest.schema.ts](../../packages\api\src\db\schema\hotel-guest.schema.ts)
+    ```
+    - Zod schemas for input/output validation
+    - Defines routes configuration:
+    - create: Creates new guest
+    - get: Retrieves single guest
+    - list: Gets all guests
+    - update: Modifies guest data
+    - delete: Removes guest
+    - Exports service shape types
+    ```
+6. tRPC Router - [hotel-guest.router.ts](../../packages\api\src\trpc\routers\hotel-guest.router.ts)
+    ```
+    - Sets up base procedure with repository context
+    - Defines API endpoints:
+    - create (mutation)
+    - get (query)
+    - list (query)
+    - update (mutation)
+    - delete (mutation)
+    - Links schemas, service, and procedures
+    ```
+7. Repository Registration
+    a. Type Definition - [repositories.ts](../../packages\api\src\trpc\repositories.ts)
+    ```
+    - Extends Repositories interface with hotelGuest
+    - Maintains type safety for repository access
+    ```
+    b. Implementation - [repositories.impl.ts](../../packages\api\src\trpc\repositories.impl.ts)
+    ```
+    - Registers hotelGuest repository in createRepositories
+    - Integrates with existing repository setup
+    ```
+
+The implementation follows these key principles:
+- Type safety throughout the stack
+- Clear separation of concerns
+- Consistent error handling
+- Data validation at boundaries
+- Repository pattern for data access
+- Service layer for business logic
+- Clean API design with tRPC
