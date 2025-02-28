@@ -1,0 +1,88 @@
+---
+description: API Package Base Level Specifications
+globs: packages/api/ , packages/api/*, packages/api/**, packages/api/**/**, packages/api/**/**/**, packages/api/**/**/**/**/**
+---
+# API Package Base Level Rules
+These are API package-level base instructions. Changes being made into this monorepo
+package MUST be as **self-contained and isolated from the root package as much as possible.
+- Always create API schemas separately in `packages/api/src/api/schema` directory
+- Always create API type configurations separately in `packages/api/src/api/types` directory
+- Always create repositories (for data store interaction) separately in `packages/api/repositories`
+- Always create services (for actual business logic) separately in `packages/api/services`
+- Always create router (controller) components separately in `packages/api/trpc/` directory
+- Always create database schemas in `packages/api/src/db/schema/` directory
+- Always create models (data transfer objects) in `packages/api/src/models` directory
+
+# Tech Stack Rules
+- TypeScript
+- tRPC intertwined/registered with Fastify
+- Drizzle for ORM
+- Postgres as db, however, given the advent of the repository pattern, concurrent code
+must be written to allow db engine to be hot-swappable when possible
+- Zod for schema validation
+- Pino for logging
+
+## Workspace Rules
+- You may infer from, or refer to the root level [turbo.json](mdc:turbo.json) and [package.json](mdc:package.json) files, **BUT**,
+ emphasis is on treating this package in isolation, hence, focus on the API-package-local [package.json](mdc:packages/api/package.json)
+ for your main changes, and propose any change that are meant for outside the package or root-wise.
+- Lay very strong emphasis on separation of logic, e.g., aim for 
+localized interceptors, entity models/data transfer objects, dedicated services,
+declaratively abstracted procedures and routers.
+- Follow the Spring-esque controller-service-repository pattern as much as possible.
+
+## Directory Structure
+packages/api/
+          ├── schema/       # Zod schemas and validations
+          ├── types/        # TypeScript type definitions
+          ├── services/     # Business logic layer
+          ├── repositories/ # Data access layer
+          └── trpc/         # tRPC routers and procedures
+
+## Service Layer Rules
+- Actual services to be implemented in `packages/api/src/services/` directory
+- ***MUST ABIDE BY ALL RULES IN [api-package-service-rules.mdc](mdc:.cursor/rules/api-package-service-rules.mdc) ***
+- All services must implement an interface
+- Services should be injectable
+- Business logic only
+- No direct database access
+- Must use repository layer
+- Must have unit tests
+
+## Repository Layer Rules
+- Actual repositories to be implemented in `impl` and/or `interface` sub-directories under `packages/api/src/repositories/` directory
+- ***MUST ABIDE BY ALL RULES IN [api-package-repository-rules.mdc](mdc:.cursor/rules/api-package-repository-rules.mdc) AND/OR [api-package-db-model-rules.mdc](mdc:.cursor/rules/api-package-db-model-rules.mdc)***
+- One repository per entity
+- Must implement repository interface
+- Handle all database operations
+- No business logic
+- Use Drizzle clients with Postgres as the default
+
+## Controller Layer/Router (tRPC Server Components) Rules
+- Actual components to be implemented in `packages/api/src/trpc/`
+- ***MUST ABIDE BY ALL RULES IN [api-package-trpc-rules.mdc](mdc:.cursor/rules/api-package-trpc-rules.mdc) ***
+- One router per feature
+- Use input validation
+- Proper error handling
+- Middleware usage
+- Protected routes
+
+## Schema Rules
+- Actual schemas to be implemented/declared in `packages/api/src/api/schema/` directory
+- ***MUST ABIDE BY ALL RULES IN [api-package-schema-rules.mdc](mdc:.cursor/rules/api-package-schema-rules.mdc) AND/OR [api-package-db-schema-rules.mdc](mdc:.cursor/rules/api-package-db-schema-rules.mdc) ***
+- All input/output must be Zod validated
+- Reuse common schemas
+- Export validation helpers
+- Keep schemas close to usage
+
+## Type Rules
+- Actual type configurations to be implemented/declarared in `packages/api/src/api/types` directory
+- ***MUST ABIDE BY ALL RULES IN [api-package-type-config-rules.mdc](mdc:.cursor/rules/api-package-type-config-rules.mdc) ***
+- Suffix actual types with `Type`
+- Use enums for fixed values
+- Export all types 
+
+
+
+
+

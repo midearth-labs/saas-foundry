@@ -1,0 +1,127 @@
+---
+description: API Package tRPC Configuration Specifications
+globs: packages/api/src/trpc/, packages/api/src/trpc/**, packages/api/src/trpc/**/*
+---
+
+# tRPC Configurations
+These represent rules and conventions that MUST be abided when creating 
+tRPC components of the API package.
+- tRPC configurations should align with schema, type, and model definitions
+- Always propose and ask for confirmation when introducing new procedures or contexts
+
+## File Structure
+packages/api/src/trpc/
+                ├── base-procedures/  # Base procedure definitions
+                ├── routers/         # Feature-specific routers
+                ├── context.ts       # Context type definitions
+                ├── repositories.ts   # Repository type definitions
+                ├── repositories.impl.ts # Repository implementations
+                ├── trpc.ts          # Base tRPC initialization
+                └── root.ts          # Root router configuration
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Base Procedures:
+    - File name: `blog.ts`
+    - Procedure names: `blogBaseProcedure`, `blogAdminProcedure`, `blogPublicProcedure`
+- Routers:
+    - File name: `blog.router.ts`
+    - Router names: `blogRouterConfiguration`
+- Context types: Suffix with `Context`
+- Repository types: Suffix with `Repository`
+
+## Implementation Rules
+The following components are crucial in tRPC files:
+
+### Base Procedures
+- Create feature-specific base procedures
+- Implement middleware for context enhancement
+- Extract repositories from context
+- Add proper logging context
+- Code sample:
+```typescript
+const blogBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
+    const { repositories, ...rest } = ctx;
+    const blogContext = {
+        postRepository: repositories.blog.post,
+        commentRepository: repositories.blog.comment,
+    }
+    
+    return next({ 
+        ctx: { 
+            ...rest, 
+            blogContext, 
+            logger: ctx.logger.child({ "feature": "blog" }) 
+        } 
+    });
+});
+```
+
+### Router Configuration
+- Implement router per feature
+- Use appropriate base procedures
+- Match schema configurations
+- Follow service interfaces
+- Code sample:
+```typescript
+const blogRouter: BlogServiceRouter = {
+    create: blogPublicProcedure
+        .input(BlogRoutesConfiguration.create.input)
+        .mutation(blogService.create),
+    
+    get: blogPublicProcedure
+        .input(BlogRoutesConfiguration.get.input)
+        .query(blogService.get),
+};
+```
+
+### Context Management
+- Define clear input/output contexts
+- Type-safe repository access
+- Proper logging setup
+- Header management
+- Code sample:
+```typescript
+export type BlogContext = {
+    in: InContext;
+    out: OutContext;
+    repositories: BlogRepositories;
+    logger: BaseLogger;
+}
+```
+
+### Repository Integration
+- Define repository types
+- Implement factory functions
+- Maintain dependency injection
+- Code sample:
+```typescript
+export type BlogRepositories = {
+    blog: {
+        post: BlogPostRepository;
+        comment: BlogCommentRepository;
+    }
+};
+```
+
+## Root Configuration Rules
+- Maintain type safety with schema definitions
+- Register all feature routers
+- Follow consistent configuration pattern
+- Code sample:
+```typescript
+export const getAppRouter = () => {
+    const routerConfiguration: AppServiceRouter = {
+        blog: blogRouterConfiguration,
+    }
+    
+    return router(routerConfiguration);
+}
+```
+
+## Security Rules
+- Implement authentication middleware
+- Use proper procedure types (public/protected)
+- Handle errors consistently
+- Validate tenant context
+- Log security-relevant information

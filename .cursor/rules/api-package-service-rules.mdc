@@ -1,0 +1,70 @@
+---
+description: API Package Service Pattern Specifications
+globs: packages/api/services/ , packages/api/services/*, packages/api/services/**, packages/api/services/**/**, packages/api/services/**/**/**
+---
+# Services Configuration
+These represent rules and conventions the MUST be abided when creating the service components
+of the API package in accordance with the typical controller-_service_-repository pattern.
+
+## File Structure
+packages/api/services/
+                ├── interfaces/   # Service interfaces
+                └── impl/         # Service implementations
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Implementation:
+    - Implementation name: `BlogService`
+    - Implementation file name: `blog.service.ts`
+- Interface: 
+    - Interface name: `BlogService`
+    - Interface file name: `blog.service.ts`
+- Methods: camelCase
+
+## Implementation Rules
+- When implmenting services, refer to existing source files such as [waitlist.service.ts](mdc:packages/api/src/services/impl/waitlist.service.ts) 
+(implementation) and [waitlist.service.ts](mdc:packages/api/src/services/interfaces/waitlist.service.ts) (corresponding interface) as thier code structure
+MUST be followed closely for subsequent functionalities.
+
+- These are examples of service pattern code components for a hypothetical `blog` feature
+(notice the reference on Data Transfer Objects):
+```ts
+// Example of service interface
+// > packages/api/services/interfaces/blog.service.ts
+export type BlogService = {
+  create(opts: { ctx: BlogAdminContext, input: BlogServiceShape['create']['input'] }): Promise<DBlogServiceShape['create']['output']>;
+  list(opts: { ctx: BlogAdminContext, input: BlogServiceShape['list']['input'] }): Promise<BlogServiceShape['list']['output']>;
+  get(opts: { ctx: BlogAdminContext, input: BlogServiceShape['get']['input'] }): Promise<BlogServiceShape['get']['output']>;
+}
+
+// Example of service implementation
+// > packages/api/services/impl/blog.service.ts
+export const blogService: BlogService = {
+  async create({ input, ctx: { blogContext: { blogRepository } } }) {
+    return await blogRepository.create(input);
+  },
+  async list({ ctx: { blogContext: { blogRepository } } }) {
+    return await blogRepository.findAll();
+  },
+  async get({ input, ctx: { blogContext: { blogRepository } } }) {
+    const blog = await blogRepository.findById(input);
+    if (!blog) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'blog article not found'
+      });
+    }
+    return blog;
+  }
+};
+
+```
+
+## Error Handling
+- Use custom error classes
+- Always type errors
+- Log errors appropriately (use Pino when necessary)
+- Return Result types
+
+
+

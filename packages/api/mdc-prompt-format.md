@@ -5,6 +5,9 @@ There are currently two main approaches to declaring and configuring MDCs:
 1. High-level approach: .cursorrules folder with all .mdc files
 2. Low-level approach: .mdc files are declared in the relevant folders where specific instructions are required
 
+## ⚠ UPDATE
+**This YouTuber explains a better approach to MDCs (including use-cases involving monorepos) in this video: https://www.youtube.com/watch?v=A9BiNPf34Z4 **
+
 This version currently implemented the low-level approach with current results being subpar (the generated blog example is currently not included due to the quality of the results). The high-level approach is scheduled to be implemented in quick succession in the next commit.
 
 However, to test-drive the low-level approach, the following prompt format can be used in accordance with the current mdc files:

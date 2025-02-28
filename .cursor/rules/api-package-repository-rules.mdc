@@ -1,0 +1,68 @@
+---
+description: API Package Repository Pattern Specifications
+globs: packages/api/repositories, packages/api/repositories/*, packages/api/repositories/**, packages/api/repositories/**/**, packages/api/repositories/**/**/**
+---
+# Repositories Configuration
+These represent rules and conventions the MUST be abided when creating the repository components
+of the API package in accordance with the typical controller-service-_repository_ pattern.
+
+## File Structure
+packages/api/repositories/
+                    ├── interfaces/   # Repository interfaces
+                    └── impl/         # Repository implementations
+
+## Naming Convention Rules
+- Assuming the example of a `blog` API or feature, then the following conventions must be satisfied:
+- Implementation:
+    - Implementation name style: `BlogRepository`
+    - Implementation file name style: `blog.repository.ts`
+- Interface: 
+    - Interface name style: `BlogRepository`
+    - Interface file name style: `blog.repository.ts`
+- Methods: camelCase
+
+## Implementation Rules
+- When implmenting repositories, refer to existing source files such as [waitlist.repository.ts](mdc:packages/api/src/repositories/impl/waitlist.repository.ts) 
+(implementation) and [waitlist.repository.ts](mdc:packages/api/src/repositories/interfaces/waitlist.repository.ts) (corresponding interface) as thier code structure
+MUST be followed closely for subsequent functionalities.
+
+- These are examples of repository pattern code components for a hypothetical `blog` feature
+(notice the reference on Data Transfer Objects):
+```ts
+// Example repository interface
+// > packages/api/repositories/interfaces/blog.repository.ts
+import * as b from '../../models/blog.model';
+/**
+ * Repository type for managing blog posts
+ */
+export type BlogRepository = {
+  findAll(): Promise<b.BlogDto[]>;
+  findById(data: b.BlogIdDto): Promise<b.BlogDto | null>;
+  isBlogPublished(data: b.BlogIdDto): Promise<boolean>;
+  createBlog(data: b.CreateBlogDto): Promise<b.BlogIdDto>;
+}
+
+// Example repository implementation
+// // > packages/api/repositories/impl/blog.repository.ts
+import * as b from '../../models/blog.model';
+/**
+ * Repository implementation for managing blog posts
+ */
+export const createDrizzleBlogRepository = (db: NodePgDatabase<any>): BlogRepository => {
+
+  return {
+    async createBlog(data: b.CreateBlogDto): Promise<b.BlogIdDto> {
+      const idDto: b.BlogDto = { id: crypto.randomUUID() }
+      await db.insert(blog).values({
+        id: idDto.id,
+        ...data,
+        // other data
+      });
+
+      return idDto;
+    }
+  },
+
+  // Other contract interface methods
+}
+```
