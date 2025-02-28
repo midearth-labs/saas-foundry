@@ -1,0 +1,81 @@
+---
+description: API Package Database Schema Specifications
+globs: packages/api/src/db/, packages/api/src/db/*,  packages/api/src/db/**, packages/api/src/db/**/**
+---
+# DB Configurations
+These represent rules and conventions that MUST be abided when creating 
+database and schema configurations of the API package.
+- Database configurations are critical and ALWAYS propose and ask for confirmation
+whenever the need to introduce schema changes or database modifications arises
+
+## File Structure
+packages/
+     ├── api/
+          ├── src/
+               ├── db/
+                    ├── schema/   # Database schema definitions
+                    ├── index.ts  # Database connection and configuration
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Create schema file under `packages/api/src/db/schema/` named as `{feature}.schema.ts`
+- Enums should be suffixed with `Enum`
+- Tables should be plural and snake_case in Postgres, camelCase in TypeScript
+- Types should follow `{Entity}` for select and `New{Entity}` for insert
+
+## Implementation Rules
+The following components are crucial in database schema files:
+- Table Enums:
+    - Define using pgEnum
+    - Name should reflect table usage
+    - Values in UPPERCASE
+    - Export for reuse
+- Table Definitions:
+    - Use pgTable for PostgreSQL tables
+    - Include standard fields (id, timestamps)
+    - Define foreign keys explicitly
+    - Use common helper functions
+- Common Fields:
+    - primaryKeyUUID for IDs
+    - timestamps for created_at/updated_at
+    - genericUUID for foreign keys
+    - requiredEmail for email fields
+- Type Exports:
+    - Export select and insert types
+    - Use Drizzle's $inferSelect/$inferInsert
+    - Follow naming convention
+- Code sample and template to follow/modify/extend:
+```ts
+import { pgTable, pgEnum, varchar } from 'drizzle-orm/pg-core';
+import { timestamps, genericUUID, primaryKeyUUID } from './common';
+// 1. Enum Definitions
+export const statusEnum = pgEnum('entity_status', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
+// 2. Table Definition
+export const entityTable = pgTable('entity_name', {
+// Primary Key
+id: primaryKeyUUID(),
+// Required Fields
+name: varchar('name', { length: 256 }).notNull(),
+status: statusEnum('status').notNull(),
+// Optional Fields
+description: varchar('description', { length: 256 }),
+// Foreign Keys
+relatedId: genericUUID('related_id')
+.references(() => relatedTable.id),
+// Timestamps
+...timestamps
+});
+// 3. Type Exports
+export type Entity = typeof entityTable.$inferSelect;
+export type NewEntity = typeof entityTable.$inferInsert;
+```
+
+## Database Connection Rules
+- Use environment variables for configuration
+- Implement connection pooling
+- Handle connection errors gracefully
+- Export a connection factory function
+- Keep configuration centralized in index.ts
+- Use Drizzle's connection utilities
+
+

@@ -1,0 +1,93 @@
+---
+description: API Package Schema Specifications
+globs: packages/api/src/api/schema/, packages/api/src/api/schema/*, packages/api/src/api/schema/**, packages/api/src/api/schema/**/**, packages/api/src/api/schema/**/**/**
+---
+
+# Schemas Configuration
+These represent rules and conventions the MUST be abided when creating the (Zod) validation
+ schema components of the API package.
+
+## File Structure
+packages/api/src/api/schema/
+                        ├── common/   # Commonly shared/reused schemas
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Create an aptly named subfolder under such as `packages/api/src/api/schema/blog` for this example.
+- Subsequent nomenclature of actual schema declaration: `blog.schema.ts`
+
+## Implementation Rules
+- When implmenting services, refer to existing source files such as [definition.schema.ts](mdc:packages/api/src/api/schema/waitlist/definition.schema.ts) 
+as thier code structure MUST be followed closely for code guidelines.
+
+- These are examples of schema declaration code components for a hypothetical `blog` featur, and thus, subsequent API schemas must follow this style when applicable:
+```ts
+// > packages/api/src/schema/blog/blog.schema.ts
+import { z } from 'zod';
+import { blogId } from './common.schema';  // You'll need to create this
+import { ConvertRoutesToType, ZodOperation, ZodRoutes } from '../../types/schema.zod.configuration';
+import { UUIDInputSchema, UUIDOutputSchema, VoidInputSchema } from '../common';
+import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configuration';
+
+const blogPostStatus = z
+.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
+
+const blogIDInputSchema = UUIDInputSchema;
+
+const create = {
+    input: z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+        status: blogPostStatus,
+        authorId: UUIDInputSchema,
+        tags: z.array(z.string()).optional(),
+    }),
+    output: UUIDOutputSchema,
+    type: 'mutation',
+} satisfies ZodOperation;
+
+const get = {
+    input: blogIDInputSchema,
+    output: z.object({
+        id: blogId, // DB primary key
+        ...create.input.shape,
+        createdAt: z.date(),
+        updatedAt: z.date(),
+    }),
+    type: 'query',
+} satisfies ZodOperation;
+
+const list = {
+    input: VoidInputSchema,
+    output: z.array(get.output),
+    type: 'query',
+} satisfies ZodOperation;
+
+export const BlogRoutesConfiguration = {
+    create,
+    get,
+    list,
+} satisfies ZodRoutes;
+
+export type BlogServiceShape = ConvertRoutesToType<typeof BlogRoutesConfiguration>
+export type BlogServiceRouter = ConvertRoutesToCreateRouterOptions<BlogServiceShape>
+```
+
+- Update the existing root schema declarations in `packages/api/src/api/schema/` ([root.ts](mdc:packages/api/src/api/schema/root.ts)) to reflect concurrent changes in the fashion below (be sure to always look 
+between the lines and maintain whatever you find existing and only introduce the additional changes):
+
+```ts
+import { InferredClientRoutes, InferredServiceRoutes, ZodRoutes } from '../types/schema.zod.configuration';
+import { BlogRoutesConfiguration } from './blog/blog.schema'; // Updates to be added
+
+export const AppRoutesConfiguration = {
+  blog: BlogRoutesConfiguration,
+} satisfies ZodRoutes;
+
+export type AppClientRouter = InferredClientRoutes<typeof AppRoutesConfiguration>
+export type AppServiceRouter = InferredServiceRoutes<typeof AppRoutesConfiguration>
+```
+
+
+
+

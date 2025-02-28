@@ -1,0 +1,118 @@
+---
+description: API Package Type Configuration Specifications
+globs: packages/api/src/api/types/, packages/api/src/api/types/*, packages/api/src/api/types/**
+---
+
+# Type Configurations
+These represent rules and conventions the MUST be abided when creating 
+type configurations of the API package.
+- Type configurations are rare and ALWAYS propose and ask for confirmation
+whenever the need to introduce such an implementation feature arises
+
+## File Structure
+packages/
+     ├── api/
+          ├── src/
+               ├── api/
+                    ├── types/   # Type configurations are declared herewith
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Subsequent nomenclature of actual type configuration: `schema.configuration.ts`
+
+## Implementation Rules
+The following components are crucial in type configuration files:
+- Operation<SchemaType>: 
+    - Basic building block
+    - Defines what goes in (input)
+    - Defines what comes out (output)
+    - Specifies the type of operation (query/mutation/subscription)
+- Routes<SchemaType>
+    - Container for your operations
+    - Can be nested (routes within routes)
+    - Uses string keys to name your routes
+- ConvertOperationToProcedure
+    - Converts your operation definitions into tRPC procedures
+    - Uses conditional types to pick the right procedure type
+    - Maintains type safety throughout
+- ConvertRoutesToRouterOptions
+    - Recursively converts all routes into tRPC router options
+    - Handles nested routes
+    - Preserves the structure of your API
+- CreateRouter
+    - Final step that creates a fully typed tRPC router
+    - Includes context, metadata, and error handling
+    - Ready to be used in your API
+- To use this template:
+    - Create your operations using the Operation type
+    - Group them into Routes
+    - Use CreateRouter to get your final router type
+    - The type system will ensure everything matches up correctly
+    - This template maintains all the type safety of the original while being more  
+      readable and easier to follow. Each piece has a clear purpose and builds on the previous pieces in a logical way.
+- Code sample and template to follow/modify/extend:
+```ts
+import { 
+  QueryProcedure,
+  MutationProcedure,
+  SubscriptionProcedure,
+  Router,
+  DefaultErrorShape,
+  ProcedureType
+} from '@trpc/server/unstable-core-do-not-import';
+
+// 1. Basic Operation Type
+// Represents a single API operation (query, mutation, or subscription)
+export type Operation<SchemaType> = {
+  input: SchemaType;    // What the operation accepts
+  output: SchemaType;   // What the operation returns
+  type: ProcedureType;  // 'query' | 'mutation' | 'subscription'
+}
+
+// 2. Routes Configuration
+// Defines the structure of your API routes
+// Can be nested (routes within routes) or flat
+export type Routes<SchemaType> = {
+  [key: string]: Operation<SchemaType> | Routes<SchemaType>;
+}
+
+// 3. Operation to Procedure Converter
+// Converts your operation definition into the correct tRPC procedure type
+export type ConvertOperationToProcedure<TOperation extends Operation<unknown>> = 
+  TOperation['type'] extends 'query' 
+    ? QueryProcedure<{
+        input: TOperation['input'];
+        output: TOperation['output'];
+      }>
+    : TOperation['type'] extends 'mutation'
+      ? MutationProcedure<{
+          input: TOperation['input'];
+          output: TOperation['output'];
+        }>
+      : TOperation['type'] extends 'subscription'
+        ? SubscriptionProcedure<{
+            input: TOperation['input'];
+            output: TOperation['output'];
+          }>
+        : never;
+
+// 4. Routes to Router Options Converter
+// Converts your route definitions into tRPC router configuration
+export type ConvertRoutesToRouterOptions<TRoutes extends Routes<unknown>> = {
+  [K in keyof TRoutes]: TRoutes[K] extends Operation<unknown>
+    ? ConvertOperationToProcedure<TRoutes[K]>
+    : TRoutes[K] extends Routes<unknown>
+      ? ConvertRoutesToRouterOptions<TRoutes[K]>
+      : never;
+}
+
+// 5. Final Router Type
+// Creates the final tRPC router type with your configuration
+export type CreateRouter<TRoutes extends Routes<unknown>> = Router<{
+  ctx: object;           // Your context type
+  meta: object;         // Metadata type
+  errorShape: DefaultErrorShape;
+  transformer: false;   // Data transformer configuration
+}, ConvertRoutesToRouterOptions<TRoutes>>
+
+```

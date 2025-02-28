@@ -1,0 +1,101 @@
+---
+description: API Package Model Specifications
+globs: packages/api/src/models/, packages/api/src/models/*, packages/api/src/models/**
+---
+
+# Model Configurations
+These represent rules and conventions that MUST be abided when creating 
+data transfer object (DTO) models of the API package.
+
+- Model configurations should be closely aligned with both schema and database definitions
+- Always propose and ask for confirmation when introducing new model types
+
+## File Structure
+packages/
+     ├── api/
+          ├── src/
+               ├── models/   
+                    ├── common.ts     # Shared DTO types
+                    └── {feature}.model.ts  # Feature-specific models
+
+## Naming Convention Rules
+Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
+- Create model file as `blog.model.ts`
+- Suffix all DTOs with `Dto`
+- Prefix create/update DTOs with `Create` or `Update`
+- Enums should be UPPERCASE and prefixed with feature name
+- Types derived from enums should be `keyof typeof` the enum
+
+## Implementation Rules
+The following components are crucial in model files:
+- Enums:
+    - Define using TypeScript enum
+    - Use UPPERCASE values
+    - Export both enum and type
+    - Follow naming pattern: `FEATURE_PURPOSE`
+- Base DTOs:
+    - Extend from common DTOs when possible
+    - Keep fields minimal and focused
+    - Use precise types
+    - Document with JSDoc comments
+- Operation DTOs:
+    - Create separate types for different operations
+    - Follow consistent naming patterns
+    - Combine base DTOs as needed
+- Common Types:
+    - Reuse common DTOs from `common.ts`
+    - Keep shared types minimal
+    - Document type purposes
+- Code sample and template to follow/modify/extend:
+```typescript
+import { TimestampsDto, StringIdDto } from "./common";
+
+// 1. Enum Definitions
+export enum BLOG_POST_STATUS { 
+    DRAFT = "DRAFT", 
+    PUBLISHED = "PUBLISHED", 
+    ARCHIVED = "ARCHIVED" 
+};
+export type BlogPostStatus = keyof typeof BLOG_POST_STATUS;
+
+/**
+ * Data transfer objects for blog post operations
+ */
+export type CreateBlogPostDto = {
+    title: string;
+    content: string;
+    status: BlogPostStatus;
+    authorId: string;
+    tags?: string[];
+}
+
+export type BlogPostIdDto = StringIdDto
+
+export type BlogPostDto = BlogPostIdDto & CreateBlogPostDto & TimestampsDto
+
+/**
+ * Data transfer objects for blog comment operations
+ */
+export type CreateBlogCommentDto = {
+    postId: string;
+    content: string;
+    authorId: string;
+}
+
+export type BlogCommentIdDto = StringIdDto
+```
+
+## Common DTO Rules
+- Base DTOs in `common.ts`:
+    - Keep minimal and widely reusable
+    - Use TypeScript primitive types
+    - Document with JSDoc when needed
+    - Follow consistent naming
+- Standard common DTOs:
+    - `StringIdDto` for UUID/string IDs
+    - `TimestampsDto` for created/updated dates
+    - `PaginationDto` for list operations
+    - `SortingDto` for order operations
+
+
+    
