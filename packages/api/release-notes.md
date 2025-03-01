@@ -1,4 +1,6 @@
-# Prompting Format for Cursor after declaring MDCs
+# Release Notes for Experimental Features
+
+## Prompting strategies for Cursor after declaring MDCs
 
 There are currently two main approaches to declaring and configuring MDCs:
 
@@ -6,17 +8,30 @@ There are currently two main approaches to declaring and configuring MDCs:
 2. Low-level approach: .mdc files are declared in the relevant folders where specific instructions are required
 
 ## ⚠ UPDATE
-**This YouTuber explains a better approach to MDCs (including use-cases involving monorepos) in this video: https://www.youtube.com/watch?v=A9BiNPf34Z4**
+* The High-Level approach is currently being used as there is currently no official support
+  for the Low-Level approach (doesn't get detected in Cursor Settings and Project Rules sub-settings).
 
-##
+* Current high-level MDC files are captured in Cursor's settings as seen below:
+
+  ![image](https://github.com/user-attachments/assets/c416c4fb-8157-46c3-a356-0d9cda69c5f9)
+
+* **This YouTuber explains a better approach to MDCs (including use-cases involving monorepos) in this video: https://www.youtube.com/watch?v=A9BiNPf34Z4**
+
 
 ## Prompting Format for Cursor after declaring MDCs
 
 ``` 
-This is a monorepo project but we are **ONLY** working on the api package located in root/packages/api. Hence, nothing outside should be modified without explicit request for approval and my confirmation. In the api packages, the tech stack is TypeScript, Zod, tRPC, Fastify, Drizzle, Postgres, pino. Please take note: whenever a command or prompt is issued by asking you to create something in the directory "api/<some_dir>", please **be informed that this means the api subpackage located in root/packages/api because this is a monorepo and we are ONLY and PRECISELY involved with that package alone**.
+This is a monorepo project but we are **ONLY** working on the api package located in root/packages/api. 
+Hence, nothing outside should be modified without explicit request for approval and my confirmation. 
+In the api packages, the tech stack is TypeScript, Zod, tRPC, Fastify, Drizzle, Postgres, pino. 
+Please take note: whenever a command or prompt is issued by asking you to create something in 
+the directory "api/<some_dir>", please **be informed that this means the api subpackage located in root/packages/api 
+because this is a monorepo and we are ONLY and PRECISELY involved with that package alone**.
     
 I want to implement a new `hotel-guests` feature in the API package (packages/api/). 
-Following the controller-service-repository pattern, I'll need guidance on creating all necessary components. I need you to preciesly abide (100% NECESSARY) by the following MDC rules:
+Following the controller-service-repository pattern, I'll need guidance on creating all necessary components. 
+I need you to preciesly abide (100% NECESSARY) by the following MDC rules:
+
 - API Package Model Specifications (api-package-db-model-rules.mdc)
 - API Package Database Schema Specifications (api-package-db-schema-rules.mdc)
 - API Package Base Level Specifications (api-package-general-rules.mdc)
@@ -25,7 +40,8 @@ Following the controller-service-repository pattern, I'll need guidance on creat
 - API Package tRPC Configuration Specifications (api-package-trpc-rules.mdc)
 - API Package Type Configurations Specifications (api-package-type-config-rules.mdc)
 
-Take your time to carefully evaluate the imports to ensure you are correcly addressing references, so that you don't hallucinate and reference non-existent entities.
+Take your time to carefully evaluate the imports to ensure you are correcly addressing references, 
+so that you don't hallucinate and reference non-existent entities.
 ```
 
 ### Results can be seen in commit [`70d84f`](https://github.com/midearth-labs/saas-foundry/commit/70d84f6c4d9ee1fa91c300050a134c5d307f00c6)
@@ -33,14 +49,14 @@ Take your time to carefully evaluate the imports to ensure you are correcly addr
 ## Cursor's Response When Asked for Explanation of Generated Code
 
 I'll explain all the components created for the hotel-guests feature, following the controller-service-repository pattern:
-1. Models (DTOs) - [hotel-guest.model.ts](../../packages\api\src\models\hotel-guest.model.ts)
+1. Models (DTOs) - [hotel-guest.model.ts](../../packages/api/src/models/hotel-guest.model.ts)
     ```
     - HOTEL_GUEST_STATUS enum: Defines possible guest states (CHECKED_IN, CHECKED_OUT, etc.)
     - CreateHotelGuestDto: Base DTO for creating guests with required and optional fields
     - HotelGuestIdDto: Extends StringIdDto for ID handling
     - HotelGuestDto: Complete DTO combining ID, base fields, and timestamps
     ```
-2. Database Schema - [hotel-guest.schema.ts](../../packages\api\src\db\schema\hotel-guest.schema.ts)
+2. Database Schema - [hotel-guest.schema.ts](../../packages/api/src/db/schema/hotel-guest.schema.ts)
     ```
     - hotelGuestStatusEnum: Postgres enum for guest statuses
     - hotelGuestTable: Drizzle table definition with:
@@ -49,8 +65,8 @@ I'll explain all the components created for the hotel-guests feature, following 
     - Optional fields (roomNumber, checkInDate, checkOutDate, specialRequests)
     - Timestamps (createdAt, updatedAt)
     ```
-3. Repository Layer
-    a. Interface - [hotel-guest.repository.ts](../../packages\api\src\repositories\interfaces\hotel-guest.repository.ts)
+3. Repository Layer<br>
+    a. Interface - [hotel-guest.repository.ts](../../packages/api/src/repositories/interfaces/hotel-guest.repository.ts)
     ```
     - Defines CRUD operations contract:
     - create(): Creates new guest
@@ -59,13 +75,13 @@ I'll explain all the components created for the hotel-guests feature, following 
     - update(): Updates guest data
     - delete(): Removes guest
     ```
-    b. Implementation - [hotel-guest.repository.impl.ts](../../packages\api\src\repositories\impl\hotel-guest.repository.ts)
+    b. Implementation - [hotel-guest.repository.impl.ts](../../packages/api/src/repositories/impl/hotel-guest.repository.ts)
     ```
     - Implements repository interface using Drizzle
     - Handles date conversions between DB and DTO formats
     - Uses mapToDto helper for consistent data transformation
     ```
-4. Service Layer
+4. Service Layer<br>
     a. Interface - [hotel-guest.service.ts](../../packages/api/src/services/interfaces/hotel-guest.service.ts)
     ```
     - Defines HotelGuestContext type with repository dependency
@@ -77,7 +93,7 @@ I'll explain all the components created for the hotel-guests feature, following 
     - Handles error cases (e.g., NOT_FOUND)
     - Delegates data operations to repository
     ```
-5. Schema Validation - [hotel-guest.schema.ts](../../packages\api\src\db\schema\hotel-guest.schema.ts)
+5. Schema Validation - [hotel-guest.schema.ts](../../packages/api/src/db/schema/hotel-guest.schema.ts)
     ```
     - Zod schemas for input/output validation
     - Defines routes configuration:
@@ -88,7 +104,7 @@ I'll explain all the components created for the hotel-guests feature, following 
     - delete: Removes guest
     - Exports service shape types
     ```
-6. tRPC Router - [hotel-guest.router.ts](../../packages\api\src\trpc\routers\hotel-guest.router.ts)
+6. tRPC Router - [hotel-guest.router.ts](../../packages/api/src/trpc/routers/hotel-guest.router.ts)
     ```
     - Sets up base procedure with repository context
     - Defines API endpoints:
@@ -99,13 +115,13 @@ I'll explain all the components created for the hotel-guests feature, following 
     - delete (mutation)
     - Links schemas, service, and procedures
     ```
-7. Repository Registration
-    a. Type Definition - [repositories.ts](../../packages\api\src\trpc\repositories.ts)
+7. Repository Registration<br>
+    a. Type Definition - [repositories.ts](../../packages/api/src/trpc/repositories.ts)
     ```
     - Extends Repositories interface with hotelGuest
     - Maintains type safety for repository access
     ```
-    b. Implementation - [repositories.impl.ts](../../packages\api\src\trpc\repositories.impl.ts)
+    b. Implementation - [repositories.impl.ts](../../packages/api/src/trpc/repositories.impl.ts)
     ```
     - Registers hotelGuest repository in createRepositories
     - Integrates with existing repository setup
