@@ -1,6 +1,7 @@
 import { HotelGuestServiceShape } from '../../api/schema/hotel-guest/hotel-guest.schema';
 import { HotelGuestRepository } from '../../repositories/interfaces/hotel-guest.repository';
 
+// @TODO: @Awwal this should be imported from trpc/base-procedures/hotel-guest.ts
 export type HotelGuestContext = {
     hotelGuestRepository: HotelGuestRepository;
 };

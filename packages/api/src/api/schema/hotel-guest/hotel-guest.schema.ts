@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ConvertRoutesToType, ZodOperation, ZodRoutes } from '../../types/schema.zod.configuration';
 import { UUIDInputSchema, UUIDOutputSchema, VoidInputSchema } from '../common';
+import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configuration';
 
 const hotelGuestStatus = z.enum(['CHECKED_IN', 'CHECKED_OUT', 'RESERVED', 'CANCELLED']);
 
@@ -62,3 +63,4 @@ export const HotelGuestRoutesConfiguration = {
 } satisfies ZodRoutes;
 
 export type HotelGuestServiceShape = ConvertRoutesToType<typeof HotelGuestRoutesConfiguration>;
+export type HotelGuestServiceRouter = ConvertRoutesToCreateRouterOptions<HotelGuestServiceShape>

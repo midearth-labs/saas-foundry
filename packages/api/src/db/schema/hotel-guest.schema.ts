@@ -1,5 +1,5 @@
 import { pgTable, pgEnum, varchar, date, text } from 'drizzle-orm/pg-core';
-import { timestamps, primaryKeyUUID } from './common';
+import { timestamps, primaryKeyUUID, requiredEmail } from './common';
 
 // Status enum for hotel guests
 export const hotelGuestStatusEnum = pgEnum('hotel_guest_status', [
@@ -16,7 +16,8 @@ export const hotelGuestTable = pgTable('hotel_guests', {
     // Required Fields
     firstName: varchar('first_name', { length: 100 }).notNull(),
     lastName: varchar('last_name', { length: 100 }).notNull(),
-    email: varchar('email', { length: 255 }).notNull(),
+    // @TODO: @Awwal this could have used requiredEmail from common.ts
+    email: requiredEmail("email"),
     phone: varchar('phone', { length: 20 }).notNull(),
     status: hotelGuestStatusEnum('status').notNull(),
     
