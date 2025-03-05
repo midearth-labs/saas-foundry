@@ -28,17 +28,27 @@ Please take note: whenever a command or prompt is issued by asking you to create
 the directory "api/<some_dir>", please **be informed that this means the api subpackage located in root/packages/api 
 because this is a monorepo and we are ONLY and PRECISELY involved with that package alone**.
     
-I want to implement a new `hotel-guests` feature in the API package (packages/api/). 
+I want to implement a new `bookstore` feature in the API package (packages/api/). 
 Following the controller-service-repository pattern, I'll need guidance on creating all necessary components. 
 I need you to preciesly abide (100% NECESSARY) by the following MDC rules:
 
-- API Package Model Specifications (api-package-db-model-rules.mdc)
+- API Package Database Model Specifications (api-package-db-model-rules.mdc)
 - API Package Database Schema Specifications (api-package-db-schema-rules.mdc)
+- API Package API Schema Specifications (api-package-api-schema-rules.mdc)
 - API Package Base Level Specifications (api-package-general-rules.mdc)
 - API Package Repository Pattern Specifications (api-package-repository-rules.mdc)
-- API Package Schema Specifications (api-package-service-rules.mdc)
+- API Package Service Specifications (api-package-service-rules.mdc)
 - API Package tRPC Configuration Specifications (api-package-trpc-rules.mdc)
 - API Package Type Configurations Specifications (api-package-type-config-rules.mdc)
+
+Other extremely important rules that you must not forget or gloss over:
+- When declaring API schemas in packages/api/src/api/schema, ALWAYS export service router types. Recheck the API Package API Schema Specifications (api-package-api-schema-rules.mdc) again to be sure as this is totally mandatory.
+
+- The AppRoutesConfiguration declaration in the root schema file (packages/api/src/api/schema/root.ts) MUST contain high level inclusion of all routes belonging to a new API feature, nested under one key-value entry. Also, router configurations MUST be typed whenever they are being generated. Recheck the API Package tRPC Configuration Specifications (api-package-trpc-rules.mdc) again to be sure as this is totally mandatory.
+
+- When declaring Zod validation schemas, ALWAYS consider opprtunities to "not repeat yourself": check packages/api/src/db/schema/common.ts and see if commonly defined schemas already exist (e.g. required emails).
+
+- Context creation MUST NEVER be directly implemented in interfaces for services (packages/api/src/services/interfaces) for each API feature implemented, they should instead be declared in base procedures (packages/api/src/trpc/base-procedures/{new-feature}.ts). Recheck the API Package Service Specifications (api-package-service-rules.mdc) again to be sure as this is totally mandatory.
 
 Take your time to carefully evaluate the imports to ensure you are correcly addressing references, 
 so that you don't hallucinate and reference non-existent entities.
