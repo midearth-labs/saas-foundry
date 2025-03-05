@@ -8,6 +8,13 @@
       "when": 1740572269705,
       "tag": "0000_complex_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741182096250,
+      "tag": "0001_stale_riptide",
+      "breakpoints": true
     }
   ]
 }

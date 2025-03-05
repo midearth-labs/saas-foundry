@@ -2,6 +2,7 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { BaseLogger } from "pino";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
+import { createDBConnection } from "../db";
 
 type InFunction<T> = () => T | undefined;
 type OutFunction<T> = (value: T | undefined) => void;
@@ -31,9 +32,12 @@ export type BaseContext = {
 }
 
 export const getContextCreator = () => {
-  // createContext will be called per request.
-  // Add any objects that need to be created once outside here. 
-  const repositories = createRepositories();
+  
+  // Create database connection
+  const db = createDBConnection();
+  
+  // Create repositories with the database connection
+  const repositories = createRepositories(db);
 
   const createContext = async ({ req, res }: CreateFastifyContextOptions) => {
     const extendedRequestId = crypto.randomUUID();
