@@ -1,20 +1,26 @@
 ---
+description: 
+globs: 
+---
+---
 description: API Package Database Schema Specifications
 globs: packages/api/src/db/, packages/api/src/db/*,  packages/api/src/db/**, packages/api/src/db/**/**
 ---
-# DB Configurations
+# Database Schema Configuration Rules
 These represent rules and conventions that MUST be abided when creating 
 database and schema configurations of the API package.
 - Database configurations are critical and ALWAYS propose and ask for confirmation
 whenever the need to introduce schema changes or database modifications arises
 
 ## File Structure
+```
 packages/
      ├── api/
           ├── src/
                ├── db/
                     ├── schema/   # Database schema definitions
                     ├── index.ts  # Database connection and configuration
+```
 
 ## Naming Convention Rules
 Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
@@ -25,6 +31,12 @@ Assuming the example of a `blog` API or feature, then the following convention m
 
 ## Implementation Rules
 The following components are crucial in database schema files:
+- ALWAYS USE/RE-USE Common Fields when neccesary:
+    - Check `packages/api/db/schema/common.ts` and reuse the following components whenever applicable:
+        - primaryKeyUUID for IDs
+        - timestamps for created_at/updated_at
+        - genericUUID for foreign keys
+        - requiredEmail for email fields
 - Table Enums:
     - Define using pgEnum
     - Name should reflect table usage
@@ -35,11 +47,6 @@ The following components are crucial in database schema files:
     - Include standard fields (id, timestamps)
     - Define foreign keys explicitly
     - Use common helper functions
-- Common Fields:
-    - primaryKeyUUID for IDs
-    - timestamps for created_at/updated_at
-    - genericUUID for foreign keys
-    - requiredEmail for email fields
 - Type Exports:
     - Export select and insert types
     - Use Drizzle's $inferSelect/$inferInsert

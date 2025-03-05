@@ -1,5 +1,4 @@
 import * as waitlist from '../repositories/impl/waitlist.repository';
-import { createDrizzleHotelGuestRepository } from '../repositories/impl/hotel-guest.repository';
 import { Repositories } from './repositories';
 import { createDBConnection } from "../db";
 
@@ -10,7 +9,6 @@ export const createRepositories = (): Repositories => {
     waitlist: {
       definition: waitlist.createDrizzleWaitListDefinitionRepository(db),
       entry: waitlist.createDrizzleWaitListEntryRepository(db),
-    },
-    hotelGuest: createDrizzleHotelGuestRepository(db),
+    }
   }
 } 

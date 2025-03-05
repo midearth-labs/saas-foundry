@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: API Package tRPC Configuration Specifications
 globs: packages/api/src/trpc/, packages/api/src/trpc/**, packages/api/src/trpc/**/*
 ---
@@ -10,14 +14,16 @@ tRPC components of the API package.
 - Always propose and ask for confirmation when introducing new procedures or contexts
 
 ## File Structure
+```
 packages/api/src/trpc/
-                ├── base-procedures/  # Base procedure definitions
-                ├── routers/         # Feature-specific routers
-                ├── context.ts       # Context type definitions
-                ├── repositories.ts   # Repository type definitions
-                ├── repositories.impl.ts # Repository implementations
-                ├── trpc.ts          # Base tRPC initialization
-                └── root.ts          # Root router configuration
+                    ├── base-procedures/     # Base procedure definitions
+                    ├── routers/             # Feature-specific routers
+                    ├── context.ts           # Context type definitions
+                    ├── repositories.ts      # Repository type definitions
+                    ├── repositories.impl.ts # Repository implementations
+                    ├── trpc.ts              # Base tRPC initialization
+                    └── root.ts              # Root router configuration
+```
 
 ## Naming Convention Rules
 Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
@@ -34,12 +40,15 @@ Assuming the example of a `blog` API or feature, then the following convention m
 The following components are crucial in tRPC files:
 
 ### Base Procedures
-- Create feature-specific base procedures
+- ALWAYS create feature-specific BASE LEVEL procedures
+- Base procedures are to be stored in `packages/api/src/trpc/base-procedures/`
+- For the `blog` API example, we store `blog.ts` in the directory above and declare the base procedure within
 - Implement middleware for context enhancement
 - Extract repositories from context
 - Add proper logging context
 - Code sample:
 ```typescript
+// > packages/api/src/trpc/base-procedures/blog.ts
 const blogBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
     const { repositories, ...rest } = ctx;
     const blogContext = {
@@ -58,11 +67,13 @@ const blogBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
 ```
 
 ### Router Configuration
-- Implement router per feature
 - Use appropriate base procedures
+- DO NOT directly call tRPC `router()` method that enwraps all procedures
+- Use/implement individual router per feature instead, each of which must be adequately typed
 - Match schema configurations
 - Follow service interfaces
-- Code sample:
+- Each procedure or router MUST unfailingly be typed (no exceptions)
+- MUST absolutely conform to, and follow this code sample/pattern:
 ```typescript
 const blogRouter: BlogServiceRouter = {
     create: blogPublicProcedure

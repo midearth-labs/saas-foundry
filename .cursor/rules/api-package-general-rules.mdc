@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: API Package Base Level Specifications
 globs: packages/api/ , packages/api/*, packages/api/**, packages/api/**/**, packages/api/**/**/**, packages/api/**/**/**/**/**
 ---
@@ -32,12 +36,14 @@ declaratively abstracted procedures and routers.
 - Follow the Spring-esque controller-service-repository pattern as much as possible.
 
 ## Directory Structure
+```
 packages/api/
           ├── schema/       # Zod schemas and validations
           ├── types/        # TypeScript type definitions
           ├── services/     # Business logic layer
           ├── repositories/ # Data access layer
           └── trpc/         # tRPC routers and procedures
+```
 
 ## Service Layer Rules
 - Actual services to be implemented in `packages/api/src/services/` directory
@@ -69,7 +75,7 @@ packages/api/
 
 ## Schema Rules
 - Actual schemas to be implemented/declared in `packages/api/src/api/schema/` directory
-- ***MUST ABIDE BY ALL RULES IN [api-package-schema-rules.mdc](mdc:.cursor/rules/api-package-schema-rules.mdc) AND/OR [api-package-db-schema-rules.mdc](mdc:.cursor/rules/api-package-db-schema-rules.mdc) ***
+- ***MUST ABIDE BY ALL RULES IN [api-package-api-schema-rules.mdc](mdc:.cursor/rules/api-package-api-schema-rules.mdc) AND/OR [api-package-db-schema-rules.mdc](mdc:.cursor/rules/api-package-db-schema-rules.mdc) ***
 - All input/output must be Zod validated
 - Reuse common schemas
 - Export validation helpers

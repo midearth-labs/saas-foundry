@@ -11,12 +11,14 @@ data transfer object (DTO) models of the API package.
 - Always propose and ask for confirmation when introducing new model types
 
 ## File Structure
+```
 packages/
      ├── api/
           ├── src/
                ├── models/   
                     ├── common.ts     # Shared DTO types
                     └── {feature}.model.ts  # Feature-specific models
+```
 
 ## Naming Convention Rules
 Assuming the example of a `blog` API or feature, then the following convention must be satisfied:

@@ -3,17 +3,19 @@ description:
 globs: 
 ---
 ---
-description: API Package Schema Specifications
+description: API Package API Schema Specifications
 globs: packages/api/src/api/schema/, packages/api/src/api/schema/*, packages/api/src/api/schema/**, packages/api/src/api/schema/**/**, packages/api/src/api/schema/**/**/**
 ---
 
-# Schemas Configuration
+# API Schemas Configuration Rules
 These represent rules and conventions the MUST be abided when creating the (Zod) validation
  schema components of the API package.
 
 ## File Structure
+```
 packages/api/src/api/schema/
                         ├── common/   # Commonly shared/reused schemas
+```
 
 ## Naming Convention Rules
 Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
@@ -76,14 +78,22 @@ export const BlogRoutesConfiguration = {
 export type BlogServiceShape = ConvertRoutesToType<typeof BlogRoutesConfiguration>
 export type BlogServiceRouter = ConvertRoutesToCreateRouterOptions<BlogServiceShape>
 ```
+- Pay extra attention to the export of the router type through conversion to create router options, as it's pertinent to the overall architecture:
+```ts
+export type BlogServiceShape = ConvertRoutesToType<typeof BlogRoutesConfiguration>
+export type BlogServiceRouter = ConvertRoutesToCreateRouterOptions<BlogServiceShape>
+```
+One is meant to export the shape and the other for the router.
 
 - Update the existing root schema declarations in `packages/api/src/api/schema/` ([root.ts](mdc:packages/api/src/api/schema/root.ts)) to reflect concurrent changes in the fashion below (be sure to always look 
 between the lines and maintain whatever you find existing and only introduce the additional changes):
 
 ```ts
+// > packages/api/src/api/schema/root.ts
 import { InferredClientRoutes, InferredServiceRoutes, ZodRoutes } from '../types/schema.zod.configuration';
 import { BlogRoutesConfiguration } from './blog/blog.schema'; // Updates to be added
 
+// -MUST BE ALWAYS UPDATED/POPULATED WITH NEW ROUTER CONFIGURATIONS FOR NEW ENDPOINTS
 export const AppRoutesConfiguration = {
   blog: BlogRoutesConfiguration,
 } satisfies ZodRoutes;

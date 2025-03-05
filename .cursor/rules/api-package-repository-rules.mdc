@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: API Package Repository Pattern Specifications
 globs: packages/api/repositories, packages/api/repositories/*, packages/api/repositories/**, packages/api/repositories/**/**, packages/api/repositories/**/**/**
 ---

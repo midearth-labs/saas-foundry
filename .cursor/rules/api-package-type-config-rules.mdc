@@ -1,4 +1,8 @@
 ---
+description: 
+globs: 
+---
+---
 description: API Package Type Configuration Specifications
 globs: packages/api/src/api/types/, packages/api/src/api/types/*, packages/api/src/api/types/**
 ---
@@ -10,11 +14,13 @@ type configurations of the API package.
 whenever the need to introduce such an implementation feature arises
 
 ## File Structure
+```
 packages/
      ├── api/
           ├── src/
                ├── api/
                     ├── types/   # Type configurations are declared herewith
+```
 
 ## Naming Convention Rules
 Assuming the example of a `blog` API or feature, then the following convention must be satisfied:
