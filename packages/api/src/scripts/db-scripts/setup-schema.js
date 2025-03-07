@@ -3,22 +3,24 @@ import path from "path";
 import { fileURLToPath } from "url";
 import pg from "pg";
 
-// Get the directory name of the current module
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const apiRoot = path.resolve(__dirname, "../../..");
 
-// Load environment variables from the root of the API package
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+// Load environment variables from the root .env file
+dotenv.config({ path: path.resolve(apiRoot, ".env") });
+
+// Log the DATABASE_URL to debug
+console.log("Using DATABASE_URL:", process.env.DATABASE_URL);
 
 async function createTables() {
   console.log("Creating Drizzle-compatible tables...");
 
-  // Connect to the saasfoundry database
+  // Use the DATABASE_URL from environment variables instead of hardcoded values
   const client = new pg.Client({
-    user: "postgres",
-    password: "postgres",
-    host: "localhost",
-    port: 5432,
-    database: "saasfoundry",
+    connectionString:
+      process.env.DATABASE_URL ||
+      "postgresql://postgres:postgres@localhost:5432/saasfoundry",
   });
 
   try {

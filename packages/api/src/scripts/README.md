@@ -11,6 +11,8 @@ This directory contains shell scripts for testing the Bookstore API endpoints. T
 
 ## Available Shell Tests
 
+Equivalent (`zsh`) shell scripts are available in the `../shell-api-tests/` directory for Mac users:
+
 - **test-book-create.sh**: Tests creating a new book
 - **test-book-get.sh**: Tests retrieving a book by ID
 - **test-book-list.sh**: Tests listing all books
@@ -65,10 +67,6 @@ The project also includes several database management scripts in the `../db-scri
 - **create-tables-direct.js**: Creates tables using direct SQL
 - **create-tables-drizzle-compatible.js**: Creates tables compatible with Drizzle ORM
 
-### Seed Scripts
-- **seed-books.js**: Seeds the database with sample books
-- **seed-direct.js**: Seeds the database with sample data using direct connection
-- **seed-env-fix.js**: Seeds the database using environment variables
 
 ### Web Client
 - **bookstore-test-client.html**: A simple web client for testing the API in a browser

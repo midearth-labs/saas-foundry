@@ -15,13 +15,8 @@
         "db:studio": "drizzle-kit studio",
         "db:push": "drizzle-kit push:pg",
         "db:setup": "node src/scripts/db-scripts/setup-db.js",
-        "db:reset": "node src/scripts/db-scripts/reset-db.js",
         "db:setup-schema": "node src/scripts/db-scripts/setup-schema.js",
-        "docker:db:start": "node src/scripts/db-scripts/docker-db-setup.js start",
-        "docker:db:stop": "node src/scripts/db-scripts/docker-db-setup.js stop",
-        "docker:db:restart": "node src/scripts/db-scripts/docker-db-setup.js restart",
-        "docker:db:setup": "node src/scripts/db-scripts/docker-db-setup.js setup",
-        "docker:db:start-setup": "node src/scripts/db-scripts/docker-db-setup.js start-setup"
+        "db:reset": "node src/scripts/db-scripts/reset-db.js"
     },
     "dependencies": {
         "@fastify/cors": "^10.0.2",
