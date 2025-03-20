@@ -1,10 +1,7 @@
 ---
-description: 
-globs: 
----
----
 description: API Package tRPC Configuration Specifications
 globs: packages/api/src/trpc/, packages/api/src/trpc/**, packages/api/src/trpc/**/*
+alwaysApply: false
 ---
 
 # tRPC Configurations

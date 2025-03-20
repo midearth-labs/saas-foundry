@@ -1,11 +1,9 @@
 ---
-description: 
-globs: 
----
----
 description: API Package Base Level Specifications
 globs: packages/api/ , packages/api/*, packages/api/**, packages/api/**/**, packages/api/**/**/**, packages/api/**/**/**/**/**
+alwaysApply: false
 ---
+
 # API Package Base Level Rules
 These are API package-level base instructions. Changes being made into this monorepo
 package MUST be as **self-contained and isolated from the root package as much as possible.

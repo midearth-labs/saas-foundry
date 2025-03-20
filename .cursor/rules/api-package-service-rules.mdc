@@ -1,11 +1,9 @@
 ---
-description: 
-globs: 
----
----
 description: API Package Service Pattern Specifications
 globs: packages/api/services/ , packages/api/services/*, packages/api/services/**, packages/api/services/**/**, packages/api/services/**/**/**
+alwaysApply: false
 ---
+
 # Services Configuration
 These represent rules and conventions the MUST be abided when creating the service components
 of the API package in accordance with the typical controller-_service_-repository pattern.

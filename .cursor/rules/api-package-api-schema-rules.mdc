@@ -1,10 +1,7 @@
 ---
-description: 
-globs: 
----
----
 description: API Package API Schema Specifications
 globs: packages/api/src/api/schema/, packages/api/src/api/schema/*, packages/api/src/api/schema/**, packages/api/src/api/schema/**/**, packages/api/src/api/schema/**/**/**
+alwaysApply: false
 ---
 
 # API Schemas Configuration Rules

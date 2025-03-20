@@ -1,10 +1,7 @@
 ---
-description: 
-globs: 
----
----
 description: API Package Type Configuration Specifications
 globs: packages/api/src/api/types/, packages/api/src/api/types/*, packages/api/src/api/types/**
+alwaysApply: false
 ---
 
 # Type Configurations

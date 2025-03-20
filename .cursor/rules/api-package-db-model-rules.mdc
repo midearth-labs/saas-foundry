@@ -1,6 +1,7 @@
 ---
 description: API Package Model Specifications
 globs: packages/api/src/models/, packages/api/src/models/*, packages/api/src/models/**
+alwaysApply: false
 ---
 
 # Model Configurations

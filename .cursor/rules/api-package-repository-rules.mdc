@@ -1,11 +1,9 @@
 ---
-description: 
-globs: 
----
----
 description: API Package Repository Pattern Specifications
 globs: packages/api/repositories, packages/api/repositories/*, packages/api/repositories/**, packages/api/repositories/**/**, packages/api/repositories/**/**/**
+alwaysApply: false
 ---
+
 # Repositories Configuration
 These represent rules and conventions the MUST be abided when creating the repository components
 of the API package in accordance with the typical controller-service-_repository_ pattern.

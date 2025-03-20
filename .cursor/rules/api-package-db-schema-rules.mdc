@@ -1,11 +1,9 @@
 ---
-description: 
-globs: 
----
----
 description: API Package Database Schema Specifications
 globs: packages/api/src/db/, packages/api/src/db/*,  packages/api/src/db/**, packages/api/src/db/**/**
+alwaysApply: false
 ---
+
 # Database Schema Configuration Rules
 These represent rules and conventions that MUST be abided when creating 
 database and schema configurations of the API package.
