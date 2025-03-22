@@ -2,6 +2,8 @@ import fastify from 'fastify';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { getAppRouter } from './trpc/root';
 import { getContextCreator } from './trpc/context';
+import { auth } from './auth';
+import { toNodeHandler } from 'better-auth/node';
 
 export async function startServer() {
 
@@ -41,6 +43,16 @@ export async function startServer() {
         });
 
         server.get('/health', async () => ({ status: 'ok' }));
+
+        server.decorate("auth", auth);
+
+        // https://www.better-auth.com/docs/installation#mount-handler
+        const nodeHandler = toNodeHandler(auth);
+        server.all("/api/auth/*", async (request, reply) => {
+            const req = request.raw;
+            const res = reply.raw;
+            await nodeHandler(req, res);
+        });
 
         const address = await server.listen({
             port: 3005, // 3000 for development, 3333 for test,

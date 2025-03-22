@@ -15,6 +15,27 @@
       "when": 1741182096250,
       "tag": "0001_stale_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742490769603,
+      "tag": "0002_powerful_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1742568985678,
+      "tag": "0003_narrow_captain_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1742632983618,
+      "tag": "0004_petite_talkback",
+      "breakpoints": true
     }
   ]
 }

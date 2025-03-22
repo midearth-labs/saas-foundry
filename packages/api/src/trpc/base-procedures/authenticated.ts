@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 // Convert this to a middleware for reuse
 // Maybe use type for ctx T that extends the base context
-const authenticatedProcedure = publicProcedure.use(async ({ ctx, next }) => {
+export const authenticatedProcedure = publicProcedure.use(async ({ ctx, next }) => {
     const tenantId = ctx.in.getTenantId();
     if (!tenantId) {
         //Should be handled by the error handling middleware and this should be a domain error

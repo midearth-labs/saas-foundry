@@ -1,5 +1,6 @@
 import * as waitlist from '../repositories/interfaces/waitlist.repository';
 import { BookRepository, OrderRepository } from '../repositories/interfaces/bookstore.repository';
+import { AuthRepository } from '../repositories/interfaces/auth.repository';
 
 export interface Repositories {
     waitlist: {
@@ -10,4 +11,5 @@ export interface Repositories {
       book: BookRepository;
       order: OrderRepository;
     };
+    auth: AuthRepository;
 }

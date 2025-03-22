@@ -7,7 +7,10 @@ import pg from "pg";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load environment variables from the root of the API package
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+//dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env')
+});
 
 async function resetDatabase() {
   console.log("Resetting database...");
@@ -35,12 +38,13 @@ async function resetDatabase() {
     // Drop and recreate the database
     console.log("Dropping saasfoundry database...");
     await adminClient.query("DROP DATABASE IF EXISTS saasfoundry");
-    console.log("Creating saasfoundry database...");
+    console.log("Recreating saasfoundry database...");
     await adminClient.query("CREATE DATABASE saasfoundry");
-
-    console.log("Database reset completed!");
+    const [dbAdrStart, dbAdrLen] = [process.env.DATABASE_URL.indexOf("@"), process.env.DATABASE_URL.length];
+    console.log(`All tables in <DB>${process.env.DATABASE_URL.slice(dbAdrStart, dbAdrLen)} dropped!`);
+    "dd".indexOf("@")
   } catch (error) {
-    console.error("Error resetting database:", error);
+    console.error("Error deleting database:", error);
   } finally {
     await adminClient.end();
   }
