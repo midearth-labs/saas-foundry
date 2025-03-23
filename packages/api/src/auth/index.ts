@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin } from "better-auth/plugins";
+import { admin, openAPI } from "better-auth/plugins";
 import * as dotenv from "dotenv";
 import { createDBConnection } from "../db";
 import { FastifyRequest } from "fastify";
@@ -11,6 +11,7 @@ dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
+// @Awwal: Note we need to refactor (later) to make sure there is only one database connection across 
 const db = createDBConnection();
 
 export const auth = betterAuth({
@@ -18,6 +19,7 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   plugins: [
+    openAPI(), // @TODO: disable in production /api/auth/reference
     admin(),
   ],
   session: {
@@ -45,7 +47,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    autoSignIn: true,
+    autoSignIn: false,
   },
 } satisfies BetterAuthOptions);
 

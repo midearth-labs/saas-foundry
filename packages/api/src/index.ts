@@ -4,6 +4,7 @@ import { getAppRouter } from './trpc/root';
 import { getContextCreator } from './trpc/context';
 import { auth } from './auth';
 import { toNodeHandler } from 'better-auth/node';
+import { HttpHeader } from 'fastify/types/utils';
 
 export async function startServer() {
 
@@ -44,14 +45,27 @@ export async function startServer() {
 
         server.get('/health', async () => ({ status: 'ok' }));
 
-        server.decorate("auth", auth);
-
+        // server.decorate("auth", auth);
         // https://www.better-auth.com/docs/installation#mount-handler
-        const nodeHandler = toNodeHandler(auth);
-        server.all("/api/auth/*", async (request, reply) => {
-            const req = request.raw;
-            const res = reply.raw;
-            await nodeHandler(req, res);
+        // Bug fix due to suspected fastify / better-auth race condition in consuming the request body
+        // https://github.com/better-auth/better-auth/issues/599#issuecomment-2557799177
+        // This causes the requests to hang ~indefinitely / time-out
+        await server.register((server) => {
+            const authhandler = toNodeHandler(auth);
+          
+            server.addContentTypeParser(
+              "application/json",
+              (_request, _payload, done) => {
+                done(null, null);
+              },
+            );
+          
+            server.all("/api/auth/*", async (request, reply) => {
+                // Copy back the headers to the raw reply object
+                reply.raw.setHeaders(headersRecordToMap(reply.getHeaders()));
+
+                await authhandler(request.raw, reply.raw);
+            });
         });
 
         const address = await server.listen({
@@ -69,6 +83,19 @@ export async function startServer() {
         throw error;
     }
 }
+
+export const headersRecordToMap = (
+    headers: Record<HttpHeader, string | number | string[] | undefined>
+) => {
+    const entries = Object.entries(headers);
+    const map: Map<string, number | string | readonly string[]> = new Map();
+    for (const [headerKey, headerValue] of entries) {
+        if (headerValue != null) {
+            map.set(headerKey, headerValue);
+        }
+    }
+    return map;
+};
 
 startServer()
     .then(() => {

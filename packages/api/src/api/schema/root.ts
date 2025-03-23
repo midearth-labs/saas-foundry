@@ -1,12 +1,10 @@
 import { InferredClientRoutes, InferredServiceRoutes, ZodRoutes } from '../types/schema.zod.configuration';
 import { WaitlistRoutesConfiguration } from './waitlist';
 import { BookstoreRoutesConfiguration } from './bookstore';
-import { AuthRoutesConfiguration } from './auth';
 
 export const AppRoutesConfiguration = {
   waitlist: WaitlistRoutesConfiguration,
   bookstore: BookstoreRoutesConfiguration,
-  auth: AuthRoutesConfiguration,
 } satisfies ZodRoutes;
 
 /*
