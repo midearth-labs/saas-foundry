@@ -11,6 +11,8 @@ type InContext = {
   getAuthorizationToken: InFunction<string>;
   getRequestId: InFunction<string>;
   getTenantId: InFunction<string>;
+  getBetterAuthJWT: InFunction<string>;
+  getBetterAuthBearerToken: InFunction<string>;
 }
 
 type OutContext = {
@@ -28,7 +30,9 @@ export type BaseContext = {
   out: OutContext,
   extendedRequestId: string,
   logger: CreateFastifyContextOptions['req']['log'],
-  repositories: Repositories
+  repositories: Repositories,
+  req: CreateFastifyContextOptions['req'],
+  res: CreateFastifyContextOptions['res']
 }
 
 export const getContextCreator = () => {
@@ -48,11 +52,15 @@ export const getContextCreator = () => {
         getAuthorizationToken: () => req.headers['authorization'],
         getRequestId: () => extractLastHeaderValue(req.headers['x-request-id']),
         getTenantId: () => extractLastHeaderValue(req.headers['x-tenant-id']),
+        getBetterAuthJWT: () => extractLastHeaderValue(req.headers['set-auth-jwt']),
+        getBetterAuthBearerToken: () => extractLastHeaderValue(req.headers['set-auth-token']),
       },
       out: { },
       extendedRequestId,
       logger: req.log.child({ extendedRequestId }),
       repositories,
+      req,
+      res
     } satisfies BaseContext;
   };
 

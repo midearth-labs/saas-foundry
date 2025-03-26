@@ -1,6 +1,8 @@
 /**
  * Schema required by better-auth to store user and session data.
  * See https://www.better-auth.com/docs/concepts/database for more information.
+ * 
+ * See also, https://www.better-auth.com/docs/plugins/jwt for JWT configuration.
  */
 import { sql } from "drizzle-orm";
 import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -56,4 +58,11 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at"),
   updatedAt: timestamp("updated_at"),
+});
+
+export const jwks = pgTable("jwks", {
+  id: text("id").primaryKey(),
+  publicKey: text("public_key").notNull(),
+  privateKey: text("private_key").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
