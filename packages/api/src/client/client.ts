@@ -1,12 +1,18 @@
 import { createTRPCClient, httpLink } from '@trpc/client';
-import type { AppClientRouter } from './api/schema/root';
+import type { AppClientRouter } from '../api/schema/root';
 import { createAuthClient, SuccessContext } from 'better-auth/client';
 import { adminClient } from 'better-auth/client/plugins';
+import path from 'path';
+import * as dotenv from "dotenv";
+
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env')
+});
 
 const client2 = createTRPCClient<AppClientRouter>({
   links: [
     httpLink({
-      url: 'http://localhost:3005/api/trpc',
+      url: process.env.API_URL || 'http://localhost:3005/api/trpc',
       headers: () => ({
         'x-tenant-id': 'your-tenant-id-2'
       })
@@ -16,7 +22,7 @@ const client2 = createTRPCClient<AppClientRouter>({
 
 // Auth Client Configuration
 const authClient = createAuthClient({
-  baseURL: 'http://localhost:3005/api/auth',
+  baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
   plugins: [adminClient()]
 });
 

@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin, openAPI } from "better-auth/plugins";
+import { admin, bearer, openAPI } from "better-auth/plugins";
 import * as dotenv from "dotenv";
 import { createDBConnection } from "../db";
 import { FastifyRequest } from "fastify";
@@ -21,6 +21,7 @@ export const auth = betterAuth({
   plugins: [
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin(),
+    bearer()  // https://www.better-auth.com/docs/plugins/bearer
   ],
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days

@@ -5,6 +5,13 @@ import { getContextCreator } from './trpc/context';
 import { auth } from './auth';
 import { toNodeHandler } from 'better-auth/node';
 import { HttpHeader } from 'fastify/types/utils';
+import path from 'path';
+import * as dotenv from 'dotenv';
+
+
+dotenv.config({
+    path: path.resolve(process.cwd(), '.env')
+});
 
 export async function startServer() {
 
@@ -28,7 +35,7 @@ export async function startServer() {
         // CORS plugin and types registration
         await server.register(import('@fastify/cors'), {
             origin: (origin, cb) => {
-                const allowedOrigins = ["http://localhost:3005"]; // or ["http://localhost:3000"];
+                const allowedOrigins = [process.env.API_ORIGIN ?? "http://localhost:3005"]; // or ["http://localhost:3000"];
                 cb(null, allowedOrigins.includes(origin??''));
             },
             credentials: true,
@@ -69,8 +76,8 @@ export async function startServer() {
         });
 
         const address = await server.listen({
-            port: 3005, // 3000 for development, 3333 for test,
-            host: 'localhost', // '127.0.0.1'
+            port: parseInt(process.env.API_PORT ?? '3005'), // 3000 for development, 3333 for test,
+            host: process.env.API_HOST ?? 'localhost', // '127.0.0.1'
         });
         console.log(`Server listening at ${address}`);
         // displayBanner();

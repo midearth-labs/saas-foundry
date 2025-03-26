@@ -5,7 +5,10 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch src/index.ts",
-        "dev-client": "tsx watch src/client.ts",
+        "dev-client": "tsx watch src/client/client.ts",
+        "dev-client-backend": "tsx watch src/client/client-backend.ts",
+        "dev-client-backend-no-bearer": "tsx watch src/client/client-backend-no-bearer.ts",
+        "dev-client-backend-bearer": "tsx watch src/client/client-backend-bearer.ts",
         "build": "tsup",
         "start": "node dist/index.js",
         "check-types": "tsc --noEmit",
