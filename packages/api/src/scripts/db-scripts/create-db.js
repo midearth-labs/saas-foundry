@@ -1,49 +1,82 @@
 import * as dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "path"
 import pg from "pg";
 
 // Get the directory name of the current module
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load environment variables from the root of the API package
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+// dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env')
+});
 
 async function setupDatabase() {
   console.log("Setting up database...");
   
+  let [
+    user,
+    password,
+    host,
+    port,
+    database] = [
+      process.env.DATABASE_USERNAME || "postgres",
+      process.env.DATABSE_PASSWORD || "postgres",
+      process.env.DATABASE_HOST || "localhost",
+      process.env.DATABASE_PORT || 5432,
+      process.env.DATABASE_NAME || "saasfoundry"]
+
   // First connect to default postgres database
   const adminClient = new pg.Client({
-    user: "postgres",
-    password: "postgres",
-    host: "localhost",
-    port: 5432,
-    database: "postgres"
+    user,
+    password,
+    host,
+    port,
+    // database,
   });
   
   try {
     await adminClient.connect();
     
-    // Check if saasfoundry database exists
-    const dbCheckResult = await adminClient.query(
-      "SELECT 1 FROM pg_database WHERE datname = 'saasfoundry'"
-    );
-    
-    // Create database if it doesn't exist
-    if (dbCheckResult.rows.length === 0) {
-      console.log("Creating saasfoundry database...");
-      await adminClient.query("CREATE DATABASE saasfoundry");
+    try {
+      // First connect to postgres database to be able to create new databases
+      await adminClient.query('SELECT datname FROM pg_database WHERE datname = $1', [database]);
+      console.log(`Creating ${database} database...`);
+      // Need to use double quotes to preserve case sensitivity
+      await adminClient.query(`CREATE DATABASE "${database}"`);
       console.log("Database created successfully!");
-    } else {
-      console.log("Database saasfoundry already exists.");
+    } catch (err) {
+      if (err.code === '42P04') {
+        // 42P04 is the error code when database already exists
+        console.log(`Database "${database}" already exists`);
+      } else if (err.code === '3D000') {
+        // 3D000 is invalid database error, likely means we need to connect to 'postgres' db first
+        console.log('Connecting to postgres database first...');
+        adminClient.database = 'postgres';
+        await adminClient.query(`CREATE DATABASE "${database}"`);
+        console.log("Database created successfully!");
+      } else {
+        throw err; // Re-throw unexpected errors
+      }
     }
-    
+
     console.log("Database setup completed!");
   } catch (error) {
-    console.error("Error setting up database:", error);
+    console.error("Error setting up database:", error.message);
+    if (error.code) {
+      console.error("Error code:", error.code);
+    }
+    process.exit(1); // Exit with error code
   } finally {
-    await adminClient.end();
+    try {
+      await adminClient.end();
+    } catch (err) {
+      console.error("Error closing connection:", err.message);
+    }
   }
 }
 
-setupDatabase(); 
+// Run the function
+setupDatabase().catch(err => {
+  console.error("Unhandled error:", err);
+  process.exit(1);
+}); 

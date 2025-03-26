@@ -1,5 +1,5 @@
 // This script will clear all values from the tables specified below, in the database.
-// It will not drop any tables.
+// It will not drop any tables or schemas or any other configs.
 import { 
   user, 
   session, 
