@@ -48,11 +48,11 @@ echo "Publisher: $PUBLISHER"
 echo "Published Year: $PUBLISHED_YEAR"
 
 # Prompt for authorization token
-read -sp "Enter your Bearer token (leave blank for now): " AUTH_TOKEN
+read -sp "Enter your Bearer token: " AUTH_TOKEN
 echo
 
 # Prompt for set-auth-token
-read -sp "Enter your BetterAuth Bearer Token (set-auth-token): " SET_AUTH_TOKEN
+read -sp "Enter your BetterAuth Bearer Token (set-auth-token; same as Bearer token): " SET_AUTH_TOKEN
 echo
 
 # Prompt for JWT (set-auth-jwt)

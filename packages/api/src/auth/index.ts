@@ -22,7 +22,6 @@ export const auth = betterAuth({
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin(),
     bearer(),  // https://www.better-auth.com/docs/plugins/bearer
-    jwt(),     // https://www.better-auth.com/docs/plugins/jwt
   ],
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -52,12 +51,6 @@ export const auth = betterAuth({
     autoSignIn: false,
   },
 } satisfies BetterAuthOptions);
-
-export const getServerSession = async (req: FastifyRequest) => {
-  return await auth.api.getSession({
-    headers: req.headers as unknown as Headers,
-  });
-};
 
 export type Session = typeof auth.$Infer.Session;
 export type AuthUserType = Session["user"];

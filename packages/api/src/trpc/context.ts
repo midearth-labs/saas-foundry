@@ -1,8 +1,11 @@
 import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
-import { BaseLogger } from "pino";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { createDBConnection } from "../db";
+import { auth, Session } from "../auth";
+import { FastifyRequest } from "fastify";
+import { TRPCError } from "@trpc/server";
+
 
 type InFunction<T> = () => T | undefined;
 type OutFunction<T> = (value: T | undefined) => void;
@@ -11,8 +14,7 @@ type InContext = {
   getAuthorizationToken: InFunction<string>;
   getRequestId: InFunction<string>;
   getTenantId: InFunction<string>;
-  getBetterAuthJWT: InFunction<string>;
-  getBetterAuthBearerToken: InFunction<string>;
+  getSessionOrThrow: InFunction<Promise<Session | null>>;
 }
 
 type OutContext = {
@@ -25,14 +27,22 @@ function extractLastHeaderValue(header: string | string[] | undefined): string |
   return header;
 }
 
+export const getServerSessionOrThrow = async (req: FastifyRequest) => {
+  const session = await auth.api.getSession({
+    headers: req.headers as unknown as Headers,
+  });
+  if (!session) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid session' });
+  }
+  return session;
+};
+
 export type BaseContext = {
   in: InContext,
   out: OutContext,
   extendedRequestId: string,
   logger: CreateFastifyContextOptions['req']['log'],
   repositories: Repositories,
-  req: CreateFastifyContextOptions['req'],
-  res: CreateFastifyContextOptions['res']
 }
 
 export const getContextCreator = () => {
@@ -52,15 +62,12 @@ export const getContextCreator = () => {
         getAuthorizationToken: () => req.headers['authorization'],
         getRequestId: () => extractLastHeaderValue(req.headers['x-request-id']),
         getTenantId: () => extractLastHeaderValue(req.headers['x-tenant-id']),
-        getBetterAuthJWT: () => extractLastHeaderValue(req.headers['set-auth-jwt']),
-        getBetterAuthBearerToken: () => extractLastHeaderValue(req.headers['set-auth-token']),
+        getSessionOrThrow: () => getServerSessionOrThrow(req),
       },
       out: { },
       extendedRequestId,
       logger: req.log.child({ extendedRequestId }),
       repositories,
-      req,
-      res
     } satisfies BaseContext;
   };
 

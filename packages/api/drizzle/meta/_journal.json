@@ -43,6 +43,13 @@
       "when": 1743001603851,
       "tag": "0005_swift_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1743089642944,
+      "tag": "0006_crazy_shape",
+      "breakpoints": true
     }
   ]
 }
