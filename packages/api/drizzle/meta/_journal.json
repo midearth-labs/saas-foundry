@@ -50,6 +50,13 @@
       "when": 1743089642944,
       "tag": "0006_crazy_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1743253334327,
+      "tag": "0007_ambiguous_supernaut",
+      "breakpoints": true
     }
   ]
 }

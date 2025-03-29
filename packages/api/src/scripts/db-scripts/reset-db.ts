@@ -7,12 +7,6 @@ import {
   verification,
 } from "../../db/schema/auth.schema";
 
-import { 
-  booksTable, 
-  ordersTable, 
-  orderItemsTable 
-} from "../../db/schema/bookstore.schema";
-
 import {
   waitlistDefinitions,
   waitlistEntries
@@ -32,10 +26,7 @@ const tables = [
   user, 
   session, 
   account, 
-  verification, 
-  booksTable, 
-  ordersTable, 
-  orderItemsTable, 
+  verification,
   waitlistDefinitions, 
   waitlistEntries
 ];
