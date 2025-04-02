@@ -50,6 +50,13 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     autoSignIn: false,
   },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      //redirectURI: "http://localhost:3005/api/auth/callback/google",
+    },
+  },
 } satisfies BetterAuthOptions);
 
 export type Session = typeof auth.$Infer.Session;

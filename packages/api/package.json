@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "tsx watch src/index.ts",
         "dev-client-auth": "tsx watch src/client/auth-trpc-client-integration/auth-trpc-client.ts",
+        "dev-client-google": "tsx watch src/client/auth-trpc-client-integration/google-social-client.ts",
         "build": "tsup",
         "start": "node dist/index.js",
         "check-types": "tsc --noEmit",

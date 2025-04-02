@@ -38,6 +38,32 @@ export const getAuthClient = (): ReturnType<typeof createAuthClient> => {
 export type AuthClient = ReturnType<typeof getAuthClient>;
 export const authClient: AuthClient = getAuthClient();
 
+/** Sign in a user via Google Social Provider */
+export const signInGoogleUserOrThrow = async () => {
+    let googleUser = await authClient.signIn.social({
+        provider: "google",
+    }, {
+        onError: (ectx: ErrorContext) => {
+          const errorMessage = JSON.stringify(ectx.error, null, 2);
+          console.error(`\nFailed to sign in with Google: ${errorMessage}`);
+        },
+        onSuccess: (sctx: SuccessContext) => {
+          console.info(JSON.stringify(sctx.data, null, 2));
+        }
+    });
+    if (googleUser.data) {
+        console.info(
+            "\nRedirecting to Google OAuth2.0..."
+        )
+    } else if (googleUser.error.code === "INVALID_CREDENTIALS") {
+        console.error("Invalid credentials.")
+    } else {
+        throw new Error("Failed to sign in.")
+    }
+
+    return { googleUser };
+}
+
 /** Sign in a user via BetterAuth Client or throw an error */
 export const signInUserOrThrow = async (email: string, password: string) => {
     let signedInUser = await authClient.signIn.email({
