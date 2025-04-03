@@ -14,7 +14,7 @@ dotenv.config({
 // @Awwal: Note we need to refactor (later) to make sure there is only one database connection across 
 const db = createDBConnection();
 
-export const auth = betterAuth({
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),

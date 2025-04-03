@@ -49,16 +49,17 @@ export const signInGoogleUserOrThrow = async () => {
         },
         onSuccess: (sctx: SuccessContext) => {
           console.info(JSON.stringify(sctx.data, null, 2));
+          console.info("\nGoogle OAuth2.0 Response:", JSON.stringify(sctx.response, null, 2));
+          console.info("\nGoogle OAuth Request:", JSON.stringify(sctx.request, null, 2));
         }
     });
     if (googleUser.data) {
         console.info(
-            "\nRedirecting to Google OAuth2.0..."
+            "\nRedirecting to Google OAuth2.0...",
+            JSON.stringify(googleUser, null, 2)
         )
-    } else if (googleUser.error.code === "INVALID_CREDENTIALS") {
-        console.error("Invalid credentials.")
     } else {
-        throw new Error("Failed to sign in.")
+        throw new Error("Failed to sign in via Google.")
     }
 
     return { googleUser };
