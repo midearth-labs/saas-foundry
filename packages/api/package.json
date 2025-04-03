@@ -7,6 +7,7 @@
         "dev": "tsx watch src/index.ts",
         "dev-client-auth": "tsx watch src/client/auth-trpc-client-integration/auth-trpc-client.ts",
         "dev-client-google": "tsx watch src/client/auth-trpc-client-integration/google-social-client.ts",
+        "dev-client-verification": "tsx watch src/client/auth-trpc-client-integration/email-password-verification-client.ts",
         "build": "tsup",
         "start": "node dist/index.js",
         "check-types": "tsc --noEmit",
@@ -31,6 +32,7 @@
         "pg": "^8.13.3",
         "pino": "^9.6.0",
         "pino-pretty": "^13.0.0",
+        "resend": "^4.2.0",
         "zod": "^3.24.2"
     },
     "devDependencies": {

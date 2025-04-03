@@ -5,11 +5,40 @@ import path from 'path';
 import * as dotenv from "dotenv";
 import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/client';
 import { adminClient } from 'better-auth/client/plugins';
+import * as readline from 'readline';
+import { Writable } from 'stream';
 
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
-  });
+});
+  
+/** Create a custom muted stdout to hide the input */
+class MutedStdout extends Writable {
+    _write(chunk: any, encoding: string, callback: (error?: Error | null) => void): void {
+        callback();
+    }
+}
+
+/** Function to get user input in silent mode */
+export async function getTokenSilently(message: string): Promise<string> {
+    const mutedStdout = new MutedStdout();
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: mutedStdout,
+        terminal: true
+    });
+
+    process.stdout.write(message);
+
+    return new Promise((resolve) => {
+        rl.question('', (token) => {
+        process.stdout.write('\n');
+        rl.close();
+        resolve(token);
+        });
+    });
+}
   
 /** TRPC Client for interacting with the API */
 export const getTRPCClient = (token: string) => {
@@ -35,8 +64,28 @@ export const getAuthClient = (): ReturnType<typeof createAuthClient> => {
     });
 }
 
+/** Authenticated TRPC client that needs a valid token*/
+export async function getProtectedTRPCClient(token: string) {
+    if (!token) {
+      throw new Error("No token provided. Exiting.");
+    }
+    console.info(`Token received: ${token.slice(0,10)} ...[TRUNCATED]...\n`);
+    const authenticatedTRPCClient = getTRPCClient(token);
+    return authenticatedTRPCClient;
+}
+
 export type AuthClient = ReturnType<typeof getAuthClient>;
 export const authClient: AuthClient = getAuthClient();
+
+/** Email verification function using the token delivered in the verification email.
+ * This is in lieu of browser-based email verification */
+export const verifyEmailWithToken = async (token: string) => {
+    return await authClient.verifyEmail({
+        query: {
+            token
+        }
+    });
+}
 
 /** Sign in a user via Google Social Provider */
 export const signInGoogleUserOrThrow = async () => {

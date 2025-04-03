@@ -1,33 +1,8 @@
-import { signInGoogleUserOrThrow, getTRPCClient } from "./client-utils";
-import * as readline from 'readline';
-import { Writable } from 'stream';
-
-// Create a custom muted stdout to hide the input
-class MutedStdout extends Writable {
-  _write(chunk: any, encoding: string, callback: (error?: Error | null) => void): void {
-    callback();
-  }
-}
-
-// Function to get user input in silent mode
-async function getTokenSilently(message: string): Promise<string> {
-  const mutedStdout = new MutedStdout();
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: mutedStdout,
-    terminal: true
-  });
-
-  process.stdout.write(message);
-  
-  return new Promise((resolve) => {
-    rl.question('', (token) => {
-      process.stdout.write('\n');
-      rl.close();
-      resolve(token);
-    });
-  });
-}
+import { 
+  signInGoogleUserOrThrow, 
+  getTRPCClient, 
+  getTokenSilently 
+} from "./client-utils";
 
 async function signInViaGoogle() {
     await signInGoogleUserOrThrow();

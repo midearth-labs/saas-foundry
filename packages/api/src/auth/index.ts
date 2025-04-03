@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 import { createDBConnection } from "../db";
 import { FastifyRequest } from "fastify";
 import path from "path";
-
+import { sendVerificationEmailAdapter } from "./email";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -23,6 +23,20 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     admin(),
     bearer(),  // https://www.better-auth.com/docs/plugins/bearer
   ],
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url, token }, request) => {
+      await sendVerificationEmailAdapter({
+        email: user.email,
+        token,
+        url,
+        subject: "Verify your email",
+        text: `Click the link below to verify your email: ${url}`,
+        request,
+      });
+    }
+  },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
@@ -54,7 +68,6 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      //redirectURI: "http://localhost:3005/api/auth/callback/google",
     },
   },
 } satisfies BetterAuthOptions);
