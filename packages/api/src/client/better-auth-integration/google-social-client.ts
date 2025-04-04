@@ -2,7 +2,7 @@ import {
   signInGoogleUserOrThrow, 
   getTRPCClient, 
   getTokenSilently 
-} from "./client-utils";
+} from "../utils";
 
 async function signInViaGoogle() {
     await signInGoogleUserOrThrow();

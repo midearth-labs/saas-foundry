@@ -1,12 +1,28 @@
+/**
+ * Utility functions for the server client.
+ * 
+ * - {@link getTokenSilently}: Get a token silently from the user
+ * - {@link getTRPCClient}: Get a TRPC client
+ * - {@link getAuthClient}: Get an auth client
+ * - {@link getProtectedTRPCClient}: Get a protected TRPC client
+ * - {@link verifyEmailWithToken}: Verify an email with a token
+ * - {@link signInGoogleUserOrThrow}: Sign in a user via Google
+ * - {@link signInUserOrThrow}: Sign in a user via email and password
+ * - {@link signInUnsuccessfully}: Sign in a user with wrong password
+ * - {@link createUserOrThrow}: Create a user
+ * - {@link promoteUserToAdminOrThrow}: Promote a user to admin
+ */
 import { createTRPCClient, httpLink } from '@trpc/client';
 import type { AppClientRouter } from '../../api/schema/root';
-import { APIError } from 'better-auth/api';
 import path from 'path';
 import * as dotenv from "dotenv";
 import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/client';
-import { adminClient } from 'better-auth/client/plugins';
+import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
+import { user } from '../../db/schema/auth.schema';
+import { eq } from 'drizzle-orm';
+import { DB } from '../../db';
 
 
 dotenv.config({
@@ -55,16 +71,9 @@ export const getTRPCClient = (token: string) => {
         ]
     });
 }
-  
-/** BetterAuth Auth Client */
-export const getAuthClient = (): ReturnType<typeof createAuthClient> => {
-    return createAuthClient({
-        baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-        plugins: [adminClient()]
-    });
-}
 
-/** Authenticated TRPC client that needs a valid token*/
+
+/** Authenticated TRPC client that needs a valid token */
 export async function getProtectedTRPCClient(token: string) {
     if (!token) {
       throw new Error("No token provided. Exiting.");
@@ -72,6 +81,17 @@ export async function getProtectedTRPCClient(token: string) {
     console.info(`Token received: ${token.slice(0,10)} ...[TRUNCATED]...\n`);
     const authenticatedTRPCClient = getTRPCClient(token);
     return authenticatedTRPCClient;
+}
+
+/** BetterAuth Auth Client */
+export const getAuthClient = (): ReturnType<typeof createAuthClient> => {
+    return createAuthClient({
+        baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
+        plugins: [
+            adminClient(),
+            organizationClient(),
+        ]
+    });
 }
 
 export type AuthClient = ReturnType<typeof getAuthClient>;
@@ -142,6 +162,9 @@ export const signInUserOrThrow = async (email: string, password: string) => {
     return { signedInUser };
 }
 
+/** Infer the signed-in user type from the signInUserOrThrow function */
+export type SignedInUser = Awaited<ReturnType<typeof signInUserOrThrow>>['signedInUser'];
+
 /** Sign in a user via BetterAuth Client with wrong password */
 export const signInUnsuccessfully = async (email: string, password: string) => {
     let unsuccessfulUser;
@@ -185,3 +208,43 @@ export const createUserOrThrow = async (name: string, email: string, password: s
 
     return { createdUser };
 }
+
+// @TODO: This is temporary, role promotion would later be handled via the API at repository level
+/** Promote a signed-in user to admin role via direct database connection */
+export const promoteUserToAdminOrThrow = async (email: string) => {
+
+    try {
+        const result = await DB
+            .update(user)
+            .set({ role: "admin" })
+            .where(eq(user.email, email))
+            .returning();
+
+        if (!result.length) {
+            throw new Error("User not found or failed to update role");
+        }
+
+        console.info("User successfully promoted to admin:", result[0]);
+        return { updatedUser: result[0] };
+    } catch (error) {
+        console.error("Failed to promote user to admin:", error);
+        throw error;
+    }
+}
+
+/** Inferred return type for the admin promotion function */
+export type PromotedUser = Awaited<ReturnType<typeof promoteUserToAdminOrThrow>>['updatedUser'];
+
+/** Create an organization via direct database connection */
+export const createOrganizationOrThrow = async function ({
+    name,
+    slug,
+    logo,
+    metadata
+}: {
+    name: string;
+    slug: string;
+    logo?: string;
+    metadata?: string;
+}) {   
+} 

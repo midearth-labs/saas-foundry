@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import path from "path";
 import { createInterface } from 'readline';
 import { Writable } from 'stream';
-import { getTRPCClient } from './client-utils';
+import { getTRPCClient } from '../utils';
 
 // Load environment variables
 dotenv.config({

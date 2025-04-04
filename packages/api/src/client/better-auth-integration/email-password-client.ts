@@ -5,7 +5,7 @@ import {
   signInUserOrThrow,
   signInUnsuccessfully,
   getTRPCClient
-} from './client-utils';
+} from '../utils';
 
 
 dotenv.config({

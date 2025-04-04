@@ -1,6 +1,5 @@
 import * as waitlist from '../repositories/impl/waitlist.repository';
 import { Repositories } from './repositories';
-import { createDBConnection } from "../db";
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 // @TODO: Consider lazy loading these repositories and using memoization

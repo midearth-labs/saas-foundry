@@ -5,13 +5,10 @@ import {
   session, 
   account, 
   verification,
+  organization,
+  member,
+  invitation,
 } from "../../db/schema/auth.schema";
-
-import { 
-  booksTable, 
-  ordersTable, 
-  orderItemsTable 
-} from "../../db/schema/bookstore.schema";
 
 import {
   waitlistDefinitions,
@@ -19,7 +16,7 @@ import {
 } from "../../db/schema/waitlist.schema";
 
 import { reset } from "drizzle-seed";
-import { createDBConnection } from "../../db";
+import { DB } from "../../db";
 import * as dotenv from "dotenv";
 import path from "path";
 
@@ -33,17 +30,16 @@ const tables = [
   session, 
   account, 
   verification, 
-  booksTable, 
-  ordersTable, 
-  orderItemsTable, 
   waitlistDefinitions, 
-  waitlistEntries
+  waitlistEntries,
+  organization,
+  member,
+  invitation,
 ];
 
 async function main() {
   try {
-    const db = createDBConnection();
-    await reset(db, tables);
+    await reset(DB, tables);
     console.log("Database reset successfully! All values cleared.");
   } catch (error) {
     console.error(`Error resetting database: ${error}`);

@@ -1,15 +1,5 @@
-/**
- * Schema required by better-auth to store user and session data.
- * See https://www.better-auth.com/docs/concepts/database for more information.
- * 
- * See also:
- * - https://www.better-auth.com/docs/plugins/jwt for JWT configuration.
- * - https://www.better-auth.com/docs/plugins/organization for organization configuration.
- */
-import { sql } from "drizzle-orm";
-import { boolean, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-export const userRoleEnum = pgEnum("user_role", ["admin", "user"]);
-
+import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+			
 export const user = pgTable("user", {
 					id: text("id").primaryKey(),
 					name: text('name').notNull(),

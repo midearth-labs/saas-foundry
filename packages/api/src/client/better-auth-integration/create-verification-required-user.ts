@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import path from "path";
-import { createUserOrThrow } from './client-utils';
+import { createUserOrThrow } from '../utils';
 
 // Load environment variables
 dotenv.config({
@@ -20,10 +20,10 @@ async function createUser() {
     "verification-" + USER_EMAIL, 
     "verification-" + USER_PASSWORD
   );
-  console.log("\nUser created. Please complete the verification process:");
+  console.log("\nPlease complete the verification process:");
   console.debug(
-    "\n\t 1.) Check the server logs for the verification link.",
-    "\n\t 2.) Follow the link and copy the valid portion (just before the dot/hash) of the token from the redirect URL.",
+    "\n\t 1.) Check the server logs or your email (if using standard email provider) for the verification link.",
+    "\n\t 2.) Follow the link and copy the valid portion of the token (just before the dot/hash) from the redirected page.",
     "\n\t 3.) When prompted, paste the token to use in the verified procedure.",
   )
 }

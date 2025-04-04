@@ -1,27 +1,52 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin, bearer, jwt, openAPI } from "better-auth/plugins";
 import * as dotenv from "dotenv";
-import { createDBConnection } from "../db";
+import { DB } from "../db";  // Global database instance (all caps to distinguish from any other db instance)
 import { FastifyRequest } from "fastify";
 import path from "path";
 import { sendVerificationEmailAdapter } from "./email";
+import { 
+  admin, 
+  bearer,
+  openAPI,
+  organization,
+} from "better-auth/plugins";
+import { eq } from "drizzle-orm";
+import { user } from "../db/schema/auth.schema";
+
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
-// @Awwal: Note we need to refactor (later) to make sure there is only one database connection across 
-const db = createDBConnection();
+// @TODO: Temp fix for direct db query; will refactor for standard API repository level query later
+const isAdmin = async (email: string) => {
+  try {
+    const userRole = await DB.select().from(user).where(eq(user.email, email)).limit(1);
+    return userRole[0].role === "admin";
+  } catch (error) {
+    console.error(
+      "Failed to get user role.",
+      error,
+      "Safely returning false instead..."
+    );
+    return false;
+  }
+}
 
 export const auth: ReturnType<typeof betterAuth> = betterAuth({
-  database: drizzleAdapter(db, {
+  database: drizzleAdapter(DB, {
     provider: "pg",
   }),
   plugins: [
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin(),
-    bearer(),  // https://www.better-auth.com/docs/plugins/bearer
+    bearer(),
+    organization({
+      allowUserToCreateOrganization: async (user) => {
+        return await isAdmin(user.email);
+      }      
+    }),
   ],
   emailVerification: {
     sendOnSignUp: true,

@@ -1,7 +1,7 @@
 import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
-import { createDBConnection } from "../db";
+import { DB } from "../db";
 import { auth, Session } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
@@ -27,7 +27,7 @@ function extractLastHeaderValue(header: string | string[] | undefined): string |
   return header;
 }
 
-export const getServerSessionOrThrow = async (req: FastifyRequest) => {
+export const getServerSessionOrThrow = async (req: FastifyRequest): Promise<Session> => {
   const session = await auth.api.getSession({
     headers: req.headers as unknown as Headers,
   });
@@ -46,12 +46,8 @@ export type BaseContext = {
 }
 
 export const getContextCreator = () => {
-  
-  // Create database connection
-  const db = createDBConnection();
-  
   // Create repositories with the database connection
-  const repositories = createRepositories(db);
+  const repositories = createRepositories(DB);
 
   const createContext = async ({ req, res }: CreateFastifyContextOptions) => {
     const extendedRequestId = crypto.randomUUID();
