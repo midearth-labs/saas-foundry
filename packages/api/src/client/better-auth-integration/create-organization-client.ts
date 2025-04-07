@@ -61,13 +61,11 @@ async function createVerifiedAdminWithOrganization(): Promise<{
 
         // Step 6: Create organization
         console.log("\n6. Creating organization...");
-        /* Doesn't work, yet is shown in docs with all instructions already followed
         const organization = await authClient.organization.create({
             name: ORG_NAME,
             slug: ORG_SLUG,
             // logo: "https://example.com/logo.png" // Optional
         });
-        */
 
         console.log("\nOrganization created successfully:", organization);
         return { user: signedInUser.data, organization };

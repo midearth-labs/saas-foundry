@@ -34,7 +34,7 @@ const isAdmin = async (email: string) => {
   }
 }
 
-export const auth: ReturnType<typeof betterAuth> = betterAuth({
+export const auth = betterAuth({
   database: drizzleAdapter(DB, {
     provider: "pg",
   }),

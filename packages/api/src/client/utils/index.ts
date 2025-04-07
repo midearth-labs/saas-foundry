@@ -84,7 +84,7 @@ export async function getProtectedTRPCClient(token: string) {
 }
 
 /** BetterAuth Auth Client */
-export const getAuthClient = (): ReturnType<typeof createAuthClient> => {
+export const getAuthClient = () => {
     return createAuthClient({
         baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
         plugins: [
