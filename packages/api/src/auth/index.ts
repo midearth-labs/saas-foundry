@@ -4,7 +4,10 @@ import * as dotenv from "dotenv";
 import { DB } from "../db";  // Global database instance (all caps to distinguish from any other db instance)
 import { FastifyRequest } from "fastify";
 import path from "path";
-import { sendVerificationEmailAdapter } from "./email";
+import { 
+  sendVerificationEmailAdapter,
+  sendOrganizationInvitationEmailAdapter,
+} from "./email";
 import { 
   admin, 
   bearer,
@@ -26,15 +29,16 @@ const isAdmin = async (email: string) => {
     return userRole[0].role === "admin";
   } catch (error) {
     console.error(
-      "Failed to get user role.",
+      "Failed to get user role:\n",
       error,
-      "Safely returning false instead..."
+      "\nSafely returning false instead...\n"
     );
     return false;
   }
 }
 
-export const auth = betterAuth({
+// Type inference works as long as auth instance is used and referenced in-file (as is with authClient)
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
   database: drizzleAdapter(DB, {
     provider: "pg",
   }),
@@ -44,6 +48,15 @@ export const auth = betterAuth({
     bearer(),
     organization({
       allowUserToCreateOrganization: async (user) => { return await isAdmin(user.email) },
+      sendInvitationEmail: async (data) => {
+        await sendOrganizationInvitationEmailAdapter({
+          email: data.email,
+          url: `${process.env.BETTER_AUTH_BASE_URL}/api/auth/organization/${data.id}/join`,
+          inviterName: data.inviter.user.name,
+          inviterEmail: data.inviter.user.email,
+					orgName: data.organization.name,
+        });
+      },
       organizationCreation: {
         beforeCreate: async ({ organization, user }, request) => {
           // Extract the session token from cookies
