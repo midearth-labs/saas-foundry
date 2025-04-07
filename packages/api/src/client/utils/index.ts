@@ -83,19 +83,15 @@ export async function getProtectedTRPCClient(token: string) {
     return authenticatedTRPCClient;
 }
 
+// Type inference won't be a problem if this is used in-file only
 /** BetterAuth Auth Client */
-export const getAuthClient = () => {
-    return createAuthClient({
+export const authClient: ReturnType<typeof createAuthClient> = createAuthClient({
         baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
         plugins: [
             adminClient(),
             organizationClient(),
         ]
-    });
-}
-
-export type AuthClient = ReturnType<typeof getAuthClient>;
-export const authClient: AuthClient = getAuthClient();
+});
 
 /** Email verification function using the token delivered in the verification email.
  * This is in lieu of browser-based email verification */
