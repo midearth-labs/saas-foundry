@@ -1,0 +1,1 @@
+ALTER TABLE "session" ALTER COLUMN "active_organization_id" DROP NOT NULL;
