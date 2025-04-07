@@ -3,14 +3,12 @@ import path from "path";
 import { 
     createUserOrThrow, 
     promoteUserToAdminOrThrow, 
-    getTokenSilently,
-    authClient,
-    verifyEmailWithToken,
     signInUserOrThrow,
-    createOrganizationOrThrow
 } from '../utils';
-import { auth } from "../../auth";
-import { organization } from "better-auth/plugins";
+import readline from 'readline';
+import { adminClient, organizationClient } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/client";
+
 
 // Load environment variables
 dotenv.config({
@@ -24,60 +22,113 @@ const
     ORG_NAME = process.env.ORG_NAME || "My Organization",
     ORG_SLUG = process.env.ORG_SLUG || "my-org";
 
+const authClient = createAuthClient({
+    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
+    plugins: [
+        adminClient(),
+        organizationClient(),
+    ]
+});
+
+// Step 1: Create user
+const createInitialUser = async () => {
+    console.log("\n1. Creating new user...");
+    const { createdUser } = await createUserOrThrow(
+        USER_NAME,
+        USER_EMAIL,
+        USER_PASSWORD
+    );
+    return createdUser;
+};
+
+// Step 2: Wait for verification
+const waitForVerification = async () => {
+    console.log("\n2. Please verify your email and press any key to continue...");
+    
+    return new Promise<boolean>((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+
+        process.stdin.once('data', () => {
+            rl.close();
+            resolve(true);
+        });
+    });
+};
+
+// Step 3: Sign in user
+const signInUser = async () => {
+    console.log("\n4. Signing in user...");
+    const { signedInUser } = await signInUserOrThrow(USER_EMAIL, USER_PASSWORD);
+    if (!signedInUser.data?.token) {
+        throw new Error("Failed to get authentication token");
+    }
+    return signedInUser;
+};
+
+// Step 4: Promote to admin
+const promoteToAdmin = async () => {
+    console.log("\n5. Promoting user to admin...");
+    await promoteUserToAdminOrThrow(USER_EMAIL);
+    console.log("User promoted to admin successfully!");
+};
+
+// Step 5: Get latest session token
+const getLatestSessionToken = async (token: string) => {
+    const { data } = await authClient.listSessions({
+        fetchOptions: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    const session = data?.[0];
+    if (!session) {
+        throw new Error("Unable to create organization because no session was found");
+    }
+    return session.token;
+};
+
+// Step 6: Create organization
+const createOrg = async (token: string) => {
+    console.log("\n6. Creating organization...");
+    return await authClient.organization.create({ // auth.api.createOrganization({
+        name: ORG_NAME,
+        slug: ORG_SLUG,
+        fetchOptions: {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            }
+        }
+    });
+};
+
 async function createVerifiedAdminWithOrganization(): Promise<{
     user: { token: string };
     organization: any;
 }> {
-    try {
-        // Step 1: Create the user
-        console.log("\n1. Creating new user...");
-        const { createdUser } = await createUserOrThrow(
-            USER_NAME,
-            USER_EMAIL,
-            USER_PASSWORD
-        );
-
-        // Step 2: Wait for verification token
-        console.log("\n2. Please verify your email...");
-        console.log("Check your email or server logs for the verification token");
-        const verificationToken = await getTokenSilently("Enter verification token: ");
-
-        // Step 3: Verify the email
-        console.log("\n3. Verifying email...");
-        await verifyEmailWithToken(verificationToken);
-        console.log("Email verified successfully!");
-
-        // Step 4: Sign in the user to get authentication token
-        console.log("\n4. Signing in user...");
-        const { signedInUser } = await signInUserOrThrow(USER_EMAIL, USER_PASSWORD);
-        if (!signedInUser.data?.token) {
-            throw new Error("Failed to get authentication token");
-        }
-
-        // Step 5: Promote user to admin
-        console.log("\n5. Promoting user to admin...");
-        await promoteUserToAdminOrThrow(USER_EMAIL);
-        console.log("User promoted to admin successfully!");
-
-        // Step 6: Create organization
-        console.log("\n6. Creating organization...");
-        const organization = await authClient.organization.create({
-            name: ORG_NAME,
-            slug: ORG_SLUG,
-            // logo: "https://example.com/logo.png" // Optional
+    return createInitialUser()
+        .then(() => waitForVerification())
+        .then(() => signInUser())
+        .then(signedInUser => {
+            return promoteToAdmin()
+                .then(() => getLatestSessionToken(signedInUser.data.token))
+                .then(latestToken => createOrg(latestToken))
+                .then(organization => ({
+                    user: signedInUser.data,
+                    organization
+                }));
+        })
+        .catch(error => {
+            console.error("Error in organization creation process:", error);
+            throw error;
         });
-
-        console.log("\nOrganization created successfully:", organization);
-        return { user: signedInUser.data, organization };
-
-    } catch (error) {
-        console.error("Error in organization creation process:", error);
-        throw error;
-    }
 }
 
 // Execute
-if (require.main === module) {
+function main() {
     createVerifiedAdminWithOrganization()
         .then(result => {
             console.log("\nProcess completed successfully!");
@@ -85,5 +136,7 @@ if (require.main === module) {
         })
         .catch(console.error);
 }
+
+main();
 
 export { createVerifiedAdminWithOrganization };
