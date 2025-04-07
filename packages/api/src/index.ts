@@ -75,6 +75,17 @@ export async function startServer() {
             });
         });
 
+        // Base endpoint for testing auth redirects
+        server.get("/", (request, reply) => {
+            reply.send({ 
+                message: "Hello SaaS-Foundry!",
+                params: request.params,
+                query: request.query,
+                body: request.body,
+                headers: request.headers,
+            });
+        });
+
         const address = await server.listen({
             port: parseInt(process.env.API_PORT ?? '3005'), // 3000 for development, 3333 for test,
             host: process.env.API_HOST ?? 'localhost', // '127.0.0.1'

@@ -19,3 +19,9 @@ The auth schema needs to be force passed here to address the below error:
 export const createDBConnection = () => {
   return drizzle(process.env.DATABASE_URL!, { schema: authSchema });
 }
+
+/**
+ * @description Singleton GLOBAL instance of the database connection.
+ * @see {@link createDBConnection}
+ */
+export const DB = createDBConnection();

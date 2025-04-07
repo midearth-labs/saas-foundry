@@ -8,6 +8,6 @@ export const createRepositories = (db: NodePgDatabase<any>): Repositories => {
     waitlist: {
       definition: waitlist.createDrizzleWaitListDefinitionRepository(db),
       entry: waitlist.createDrizzleWaitListEntryRepository(db),
-    },
+    }
   }
 } 

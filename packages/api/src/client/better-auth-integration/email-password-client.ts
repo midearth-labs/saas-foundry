@@ -1,15 +1,21 @@
+import * as dotenv from "dotenv";
+import path from "path";
 import { 
   createUserOrThrow, 
   signInUserOrThrow,
   signInUnsuccessfully,
   getTRPCClient
-} from './auth-trpc-utils';
+} from '../utils';
 
+
+dotenv.config({
+    path: path.resolve(process.cwd(), '.env')
+});
 
 const
-  USER_NAME = "Oladipo Fasoro",
-  USER_EMAIL = "dfasoro@gmail.com",
-  USER_PASSWORD = "TheBestPassWordInTheUniverseNot"
+  USER_NAME = process.env.USER_NAME || "James Bond",
+  USER_EMAIL = process.env.USER_EMAIL || "james.bond@007.co.uk",
+  USER_PASSWORD = process.env.USER_PASSWORD || "Shaken-N0t-St!rred"
 
 async function main() {
 
