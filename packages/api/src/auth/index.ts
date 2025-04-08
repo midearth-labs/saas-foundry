@@ -56,25 +56,7 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
           inviterEmail: data.inviter.user.email,
 					orgName: data.organization.name,
         });
-      },
-      organizationCreation: {
-        beforeCreate: async ({ organization, user }, request) => {
-          // Extract the session token from cookies
-          const cookieHeader = request?.headers.get('cookie')
-          const cookies = cookieHeader?.split(';')
-          const sessionTokenCookie = cookies?.find((cookie: string) => 
-              cookie.trim().startsWith('better-auth.session_token=')
-          )
-          if (sessionTokenCookie) {
-              const tokenValue = sessionTokenCookie.split('=')[1].split('.')[0]
-              request?.headers.set('authorization', `Bearer ${tokenValue}`)
-              console.log("Token set from organization hook: ", tokenValue);
-          }
-          return {
-              data: { ...organization, request }
-          }
-        },
-    }      
+      }  
   }),
 ],
   emailVerification: {
