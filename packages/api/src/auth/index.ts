@@ -57,8 +57,8 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
 					orgName: data.organization.name,
         });
       }  
-  }),
-],
+    }),
+  ],
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
