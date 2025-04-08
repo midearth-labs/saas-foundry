@@ -182,10 +182,10 @@ const testOrganizationalOperations = async (userType: string, token: string) => 
     console.log(`\n5-6. Testing organizational operations for User ${userType}...`);
     
     try {
-        const orgs = authClient.useListOrganizations.get()['data']
-        console.log(`User ${userType}'s organizations: `, JSON.stringify(orgs, null, 2));
+        const { data: organizations } = await authClient.useListOrganizations.get();  // Bug -> returning null
+        console.log(`User ${userType}'s organizations: `, JSON.stringify(organizations, null, 2));
         
-        return orgs;
+        return organizations;
     } catch (error) {
         console.error(`Error listing organizations for User ${userType}:`, error);
         throw error;
