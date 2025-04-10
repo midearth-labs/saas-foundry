@@ -8,7 +8,7 @@ import {
 import readline from 'readline';
 import { organizationClient, adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/client";
-
+import { listOrgs } from "../../auth"; 
 
 // Initialize auth client with organization plugin
 const authClient = createAuthClient({
@@ -97,17 +97,17 @@ const selectWorkspace = async (token: string): Promise<string | null> => {
             }
         });
 
-        const orgs = await authClient.useListOrganizations.get();
-        console.log("organizations found:\n", JSON.stringify(orgs.data, null, 2));
+        const orgs = await listOrgs(token);
+        console.log("organizations found:\n", JSON.stringify(orgs, null, 2));
 
-        if (!orgs.data || orgs.data.length === 0) {
+        if (!orgs || orgs.length === 0) {
             console.log("\nNo organizations available. Using personal workspace.");
             return null;
         }
 
         console.log("\nAvailable workspaces:");
-        orgs.data.forEach((org, index) => {
-            console.log(`${index + 1}. ${org.name} (${org.slug})`);
+        orgs.forEach((org, index) => {
+            console.log(`${index + 1}. ${org.slug} (${org.slug})`);
         });
         console.log("0. Personal workspace");
 
@@ -115,8 +115,8 @@ const selectWorkspace = async (token: string): Promise<string | null> => {
         const choice = parseInt(selection);
 
         if (choice === 0) return null;
-        if (choice > 0 && choice <= orgs.data.length) {
-            return orgs.data[choice - 1].id;
+        if (choice > 0 && choice <= orgs.length) {
+            return orgs[choice - 1].id;
         }
 
         throw new Error("Invalid selection");
@@ -130,7 +130,7 @@ const selectWorkspace = async (token: string): Promise<string | null> => {
 const setActiveOrganizationForAllSessions = async (token: string, organizationId: string | null) => {
     try {
         // First, list all sessions
-        const sessions = await authClient.listSessions({
+        let sessions = await authClient.listSessions({
             fetchOptions: {
                 headers: { Authorization: `Bearer ${token}` }
             }
@@ -144,9 +144,16 @@ const setActiveOrganizationForAllSessions = async (token: string, organizationId
                     headers: { Authorization: `Bearer ${session.token}` }
                 }
             })
-        ));
-
-        console.log(`\nSet active organization ${organizationId || 'personal workspace'} for all sessions`);
+        )).then(async () => {
+            // Fetch updated sessions
+            sessions = await authClient.listSessions({
+                fetchOptions: {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            });
+            console.log(`\nSet active organization ${organizationId || 'personal workspace'} for all sessions:\n\t`);
+            console.info(sessions.data);
+        });
     } catch (error) {
         console.error("Error setting active organization:\n", error);
     }

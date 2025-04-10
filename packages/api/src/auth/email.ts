@@ -7,6 +7,7 @@ import { Email } from '../api/schema/common';
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
+
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
@@ -98,26 +99,31 @@ export const sendVerificationEmailAdapter = async function({
  * @param token - The token to include in the organization invitation email.
  * @param url - The URL to include in the organization invitation email.
  */
-export const sendOrganizationInvitationEmailAdapter = async function({
-    email,
-    url,
-    inviterName,
-    inviterEmail,
-    orgName,
-}: {
-    email: string,
-    url: string,
-    inviterName: string,
-    inviterEmail: string,
-    orgName: string,
+export const sendOrganizationInvitationEmailAdapter = async function(data: {
+    id: string;
+    role: string;
+    email: string;
+    organization: { name: string };
+    invitation: { id: string; email: string; status: string; expiresAt: Date; organizationId: string; role: string; inviterId: string; teamId?: string };
+    inviter: { user: { name: string; email: string } };
 }) {
+    const transformedData = {
+        email: data.email,
+        url: `${process.env.BETTER_AUTH_BASE_URL}/accept-invite/${data.invitation.id}`,
+        inviterName: data.inviter.user.name,
+        inviterEmail: data.inviter.user.email,
+        orgName: data.organization.name
+    };
+
+    // @ts-nocheck
+
     console.info(
         `\nSending organization invitation email to`,
-        `\n\t email: ${email}`,
-        `\n\t inviterName: ${inviterName}`,
-        `\n\t inviterEmail: ${inviterEmail}`,
-        `\n\t orgName: ${orgName}`,
-        `\n\t url: ${url}`
+        `\n\t email: ${transformedData.email}`,
+        `\n\t inviterName: ${transformedData.inviterName}`,
+        `\n\t inviterEmail: ${transformedData.inviterEmail}`,
+        `\n\t orgName: ${transformedData.orgName}`,
+        `\n\t url: ${transformedData.url}`
     );
-    // return await fireActualOrganizationInvitationEmail({ email, url, inviterName, inviterEmail, orgName });
+    // return await fireActualOrganizationInvitationEmail(transformedData);
 }

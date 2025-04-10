@@ -8,8 +8,7 @@ import {
 import readline from 'readline';
 import { organizationClient, adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/client";
-import { auth } from "../../auth";
-
+import { listOrgs } from "../../auth";
 
 const authClient = createAuthClient({
     baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
@@ -182,7 +181,8 @@ const testOrganizationalOperations = async (userType: string, token: string) => 
     console.log(`\n5-6. Testing organizational operations for User ${userType}...`);
     
     try {
-        const { data: organizations } = await authClient.useListOrganizations.get();  // Bug -> returning null
+        // const { data: organizations } = await authClient.useListOrganizations.get();  // Bug -> returning null
+        const organizations = await listOrgs(token);
         console.log(`User ${userType}'s organizations: `, JSON.stringify(organizations, null, 2));
         
         return organizations;
