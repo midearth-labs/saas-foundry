@@ -4,6 +4,9 @@ import * as dotenv from "dotenv";
 import { DB } from "../db";  // Global database instance (all caps to distinguish from any other db instance)
 import { FastifyRequest } from "fastify";
 import path from "path";
+import { eq } from "drizzle-orm";
+import { user } from "../db/schema/auth.schema";
+import { toNodeHandler } from "better-auth/node";
 import { 
   sendVerificationEmailAdapter,
   sendOrganizationInvitationEmailAdapter,
@@ -14,9 +17,13 @@ import {
   openAPI,
   organization,
 } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
-import { user } from "../db/schema/auth.schema";
-import { toNodeHandler } from "better-auth/node";
+import {
+  waitlistAdminRole,
+  waitlistUserRole,
+} from "./roles";
+import { 
+  waitlistAccessControl
+} from "./permissions";
 
 
 dotenv.config({
@@ -45,7 +52,13 @@ const auth = betterAuth({
   }),
   plugins: [
     openAPI(), // @TODO: disable in production /api/auth/reference
-    admin(),
+    admin({
+      ac: waitlistAccessControl,
+      roles: {
+        waitlistAdminRole,
+        waitlistUserRole,
+      },
+    }),
     bearer(),
     organization({
       allowUserToCreateOrganization: async (user) => { return await isAdmin(user.email) },
@@ -86,7 +99,7 @@ const auth = betterAuth({
   },
   rateLimit: {
     window: 60, // time window in seconds
-    max: 5, // max requests in the window
+    max: 10, // max requests in the window
   },
   emailAndPassword: {
     enabled: true,
@@ -95,8 +108,8 @@ const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "invalid-google-client-id",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "invalid-google-client-secret",
     },
   },
 } satisfies BetterAuthOptions);
@@ -116,9 +129,21 @@ export const getAuthHandler = async () => {
 
 export const listOrgs = async (token?: string) => {
   return await auth.api.listOrganizations({
-    headers: {
-      Authorization: `Bearer ${token}`,
+    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+  });
+}
+
+export const canCreateWaitlistDefinitions = async (userId: string, token?: string) => {
+  const result = await auth.api.userHasPermission({
+    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+    body: {
+      userId,
+      permission: {
+        waitlistDefinition: ["create"],  // Sadly can't check multiple permissions at once :(
+      },
     },
   });
+  console.log("\nUser has permission result:", JSON.stringify(result, null, 2));
+  return result;
 }
 

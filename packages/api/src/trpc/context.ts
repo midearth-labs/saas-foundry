@@ -2,7 +2,7 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { DB } from "../db";
-import { Session } from "../auth";
+import { canCreateWaitlistDefinitions, Session } from "../auth";
 import { getSession } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
@@ -16,6 +16,7 @@ type InContext = {
   getRequestId: InFunction<string>;
   getTenantId: InFunction<string>;
   getSessionOrThrow: InFunction<Promise<Session | null>>;
+  canCreateWaitDefsOrThrow: InFunction<Promise<boolean>>;
 }
 
 type OutContext = {
@@ -35,6 +36,17 @@ export const getServerSessionOrThrow = async (req: FastifyRequest): Promise<Sess
   }
   return session;
 };
+
+export const canCreateWaitlistDefinitionsOrThrow = async (req: FastifyRequest): Promise<boolean> => {
+  const session = await getServerSessionOrThrow(req);
+  const permissions = await canCreateWaitlistDefinitions(session.user.id, session.session.token);
+  if (!permissions) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Unable to verify permissions' });
+  }
+  const result = (permissions.success && !permissions.error);
+  console.log("\nUser ", session.user.email, " can create waitlist definitions result:", result);
+  return result;
+}
 
 export type BaseContext = {
   in: InContext,
@@ -58,6 +70,7 @@ export const getContextCreator = () => {
         getRequestId: () => extractLastHeaderValue(req.headers['x-request-id']),
         getTenantId: () => extractLastHeaderValue(req.headers['x-tenant-id']),
         getSessionOrThrow: () => getServerSessionOrThrow(req),
+        canCreateWaitDefsOrThrow: () => canCreateWaitlistDefinitionsOrThrow(req),
       },
       out: { },
       extendedRequestId,
