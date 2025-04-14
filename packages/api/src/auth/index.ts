@@ -16,6 +16,7 @@ import {
 } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { user } from "../db/schema/auth.schema";
+import { toNodeHandler } from "better-auth/node";
 
 
 dotenv.config({
@@ -37,8 +38,8 @@ const isAdmin = async (email: string) => {
   }
 }
 
-// Type inference works as long as auth instance is used and referenced in-file (as is with authClient)
-export const auth: ReturnType<typeof betterAuth> = betterAuth({
+// Type inference issue fixed as of BetterAuth 1.2.6-beta.7
+const auth = betterAuth({
   database: drizzleAdapter(DB, {
     provider: "pg",
   }),
@@ -48,17 +49,9 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
     bearer(),
     organization({
       allowUserToCreateOrganization: async (user) => { return await isAdmin(user.email) },
-      sendInvitationEmail: async (data) => {
-        await sendOrganizationInvitationEmailAdapter({
-          email: data.email,
-          url: `${process.env.BETTER_AUTH_BASE_URL}/api/auth/organization/${data.id}/join`,
-          inviterName: data.inviter.user.name,
-          inviterEmail: data.inviter.user.email,
-					orgName: data.organization.name,
-        });
-      }  
-  }),
-],
+      sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) }  
+    }),
+  ],
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
@@ -110,4 +103,22 @@ export const auth: ReturnType<typeof betterAuth> = betterAuth({
 
 export type Session = typeof auth.$Infer.Session;
 export type AuthUserType = Session["user"];
+
+export const getSession = async (req: FastifyRequest) => {
+  return await auth.api.getSession({
+    headers: req.headers as unknown as Headers,
+  });
+}
+
+export const getAuthHandler = async () => {
+  return toNodeHandler(auth);
+}
+
+export const listOrgs = async (token?: string) => {
+  return await auth.api.listOrganizations({
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
 

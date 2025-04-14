@@ -85,7 +85,7 @@ export async function getProtectedTRPCClient(token: string) {
 
 // Type inference won't be a problem if this is used in-file only
 /** BetterAuth Auth Client */
-export const authClient: ReturnType<typeof createAuthClient> = createAuthClient({
+const authClient: ReturnType<typeof createAuthClient> = createAuthClient({
         baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
         plugins: [
             adminClient(),
@@ -217,7 +217,7 @@ export const promoteUserToAdminOrThrow = async (email: string) => {
             .returning();
 
         if (!result.length) {
-            throw new Error("User not found or failed to update role");
+            throw new Error(`User with email ${email} not found or failed to update role`);
         }
 
         console.info("User successfully promoted to admin:", result[0]);

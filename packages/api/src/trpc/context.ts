@@ -2,7 +2,8 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { DB } from "../db";
-import { auth, Session } from "../auth";
+import { Session } from "../auth";
+import { getSession } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
 
@@ -28,9 +29,7 @@ function extractLastHeaderValue(header: string | string[] | undefined): string |
 }
 
 export const getServerSessionOrThrow = async (req: FastifyRequest): Promise<Session> => {
-  const session = await auth.api.getSession({
-    headers: req.headers as unknown as Headers,
-  });
+  const session = await getSession(req);
   if (!session) {
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid session' });
   }
