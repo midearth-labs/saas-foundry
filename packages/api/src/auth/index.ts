@@ -21,15 +21,13 @@ import {
 import { 
   waitlistAccessControl
 } from "./permissions";
-import { TRPCError } from "@trpc/server";
-import { getServerSessionOrThrow } from "../trpc/context";
 
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
-// @TODO: Temp fix for direct db query; will refactor for standard API repository level query later
+// @TODO: Temp fix; refactor appropriately later
 const isAdmin = async (email: string) => {
   return email.startsWith("admin_");
 }

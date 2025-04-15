@@ -19,12 +19,37 @@ const definitionRouter: DefinitionServiceRouter = {
     .meta({ permission: { waitlistDefinition: ["create"] } })
     .input(DefinitionRoutesConfiguration.create.input)
     .mutation(waitListDefinitionService.create),
+
+  getStats: waitlistAdminProcedure
+    .meta({ permission: { waitlistDefinition: ["getStats"] } })
+    .input(DefinitionRoutesConfiguration.getStats.input)
+    .query(waitListDefinitionService.getStats),
+
+  getActiveCount: waitlistAdminProcedure
+    .meta({ permission: { waitlistDefinition: ["getActiveCount"] } })
+    .input(DefinitionRoutesConfiguration.getActiveCount.input)
+    .query(waitListDefinitionService.getActiveCount),
 };
 
 const entryRouter: EntryServiceRouter = {
   create: waitlistPublicProcedure
     .input(EntryRoutesConfiguration.create.input)
     .mutation(waitListEntryService.create),
+
+  updateStatus: waitlistAdminProcedure
+    .meta({ permission: { waitlistEntry: ["updateStatus"] } })
+    .input(EntryRoutesConfiguration.updateStatus.input)
+    .mutation(waitListEntryService.updateStatus),
+
+  getEntry: waitlistAdminProcedure
+    .meta({ permission: { waitlistEntry: ["getEntry"] } })
+    .input(EntryRoutesConfiguration.getEntry.input)
+    .query(waitListEntryService.getEntry),
+
+  searchEntries: waitlistAdminProcedure
+    .meta({ permission: { waitlistEntry: ["searchEntries"] } })
+    .input(EntryRoutesConfiguration.searchEntries.input)
+    .query(waitListEntryService.searchEntries),
 };
 
 export const waitlistRouterConfiguration: WaitlistServiceRouter  = {

@@ -14,6 +14,7 @@
         "send-organization-invitation": "tsx src/client/better-auth-integration/organization-invitation-client.ts",
         "github-style-org-auth": "tsx src/client/better-auth-integration/org-auth-github-style.ts",
         "slack-style-org-auth": "tsx src/client/better-auth-integration/org-auth-slack-style.ts",
+        "enhanced-waitlist-client": "tsx src/client/better-auth-integration/enhanced-waitlist-client.ts",
         "build": "tsup",
         "start": "node dist/index.js",
         "check-types": "tsc --noEmit",

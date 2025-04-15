@@ -68,7 +68,6 @@ export const getTRPCClient = (token: string) => {
     });
 }
 
-
 /** Authenticated TRPC client that needs a valid token */
 export async function getProtectedTRPCClient(token: string) {
     if (!token) {
@@ -200,17 +199,3 @@ export const createUserOrThrow = async (name: string, email: string, password: s
 
     return { createdUser };
 }
-
-/** Create an organization via direct database connection */
-export const createOrganizationOrThrow = async function ({
-    name,
-    slug,
-    logo,
-    metadata
-}: {
-    name: string;
-    slug: string;
-    logo?: string;
-    metadata?: string;
-}) {   
-} 

@@ -8,6 +8,8 @@ export type WaitListDefinitionRepository = {
   findById(data: wl.WaitListDefinitionIdDto): Promise<wl.WaitListDefinitionDto | null>;
   isDefinitionRegistrationOpen(data: wl.WaitListDefinitionIdDto): Promise<boolean>;
   create(data: wl.CreateWaitListDefinitionDto): Promise<wl.WaitListDefinitionIdDto>;
+  getStats(data: wl.WaitListDefinitionIdDto): Promise<wl.WaitListDefinitionStatsDto>;
+  getActiveCount(data: wl.WaitListDefinitionIdDto): Promise<wl.WaitListDefinitionActiveCountDto>;
 }
 
 /**
@@ -15,4 +17,7 @@ export type WaitListDefinitionRepository = {
  */
 export type WaitListEntryRepository = {
   create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto>;
+  findById(data: wl.WaitListEntryIdDto): Promise<wl.WaitListEntryDto | null>;
+  updateStatus(data: wl.UpdateWaitListEntryStatusDto): Promise<wl.WaitListEntryDto>;
+  search(data: wl.SearchWaitListEntriesDto): Promise<wl.SearchWaitListEntriesResultDto>;
 }

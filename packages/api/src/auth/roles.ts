@@ -8,8 +8,8 @@ const userRole = waitlistAccessControl.newRole({
 const defaultAdminStatements = adminAc.statements;
 
 const adminRole = waitlistAccessControl.newRole({
-    waitlistDefinition: ["create", "get", "list"],
-    waitlistEntry: ["create"],
+    waitlistDefinition: ["create", "get", "list", "getStats", "getActiveCount"],
+    waitlistEntry: ["create", "updateStatus", "getEntry", "searchEntries"],
     ...defaultAdminStatements,
 });
 

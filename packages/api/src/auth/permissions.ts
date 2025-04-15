@@ -3,8 +3,8 @@ import { defaultStatements as defaultUserStatements } from "better-auth/plugins/
 
 export const waitlistPermissionStatement = {
     ...defaultUserStatements,
-    waitlistDefinition: ["create", "get", "list"],
-    waitlistEntry: ["create"],
+    waitlistDefinition: ["create", "get", "list", "getStats", "getActiveCount"],
+    waitlistEntry: ["create", "updateStatus", "getEntry", "searchEntries"],
 } as const;
 
 export const waitlistAccessControl = createAccessControl(waitlistPermissionStatement);

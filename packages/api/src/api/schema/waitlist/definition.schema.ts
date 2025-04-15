@@ -40,10 +40,36 @@ const list = {
     type: 'query',
 } satisfies ZodOperation;
 
+const getStats = {
+    input: definitionIDInputSchema,
+    output: z.object({
+        totalEntries: z.number(),
+        statusCounts: z.object({
+            PENDING: z.number(),
+            APPROVED: z.number(),
+            REJECTED: z.number(),
+        }),
+        lastEntryDate: z.date().nullable(),
+        isActive: z.boolean(),
+    }),
+    type: 'query',
+} satisfies ZodOperation;
+
+const getActiveCount = {
+    input: definitionIDInputSchema,
+    output: z.object({
+        pendingCount: z.number(),
+        isActive: z.boolean(),
+    }),
+    type: 'query',
+} satisfies ZodOperation;
+
 export const DefinitionRoutesConfiguration = {
     create,
     get,
     list,
+    getStats,
+    getActiveCount,
 } satisfies ZodRoutes;
 
 export type DefinitionServiceShape = ConvertRoutesToType<typeof DefinitionRoutesConfiguration>

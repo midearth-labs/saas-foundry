@@ -4,7 +4,8 @@ import { TRPCError } from '@trpc/server';
 
 export const waitListDefinitionService: WaitListDefinitionService = {
   async create({ input, ctx: { waitlistContext: { definitionRepository } } }) {
-    return await definitionRepository.create(input);
+    const result = await definitionRepository.create(input);
+    return { id: result.id };
   },
   async list({ ctx: { waitlistContext: { definitionRepository } } }) {
     return await definitionRepository.findAll();
@@ -18,6 +19,26 @@ export const waitListDefinitionService: WaitListDefinitionService = {
       });
     }
     return definition;
+  },
+  async getStats({ input, ctx: { waitlistContext: { definitionRepository } } }) {
+    const definition = await definitionRepository.findById(input);
+    if (!definition) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'WaitListDefinition not found'
+      });
+    }
+    return await definitionRepository.getStats(input);
+  },
+  async getActiveCount({ input, ctx: { waitlistContext: { definitionRepository } } }) {
+    const definition = await definitionRepository.findById(input);
+    if (!definition) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'WaitListDefinition not found'
+      });
+    }
+    return await definitionRepository.getActiveCount(input);
   }
 };
 
@@ -32,6 +53,55 @@ export const waitListEntryService: WaitListEntryService = {
       });
     }
 
-    return await entryRepository.create(input);
+    const result = await entryRepository.create(input);
+    return { id: result.id };
+  },
+  async updateStatus({ input, ctx: { waitlistContext: { entryRepository } } }) {
+    const entry = await entryRepository.findById({ id: input.entryId.id });
+    if (!entry) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'WaitListEntry not found'
+      });
+    }
+    const updatedEntry = await entryRepository.updateStatus({
+      ...input,
+      entryId: input.entryId
+    });
+    return {
+      id: { id: updatedEntry.id },
+      status: updatedEntry.status,
+      updatedAt: updatedEntry.updatedAt,
+    };
+  },
+  async getEntry({ input, ctx: { waitlistContext: { entryRepository } } }) {
+    const entry = await entryRepository.findById({ id: input.id });
+    if (!entry) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'WaitListEntry not found'
+      });
+    }
+    return {
+      ...entry,
+      id: { id: entry.id }
+    };
+  },
+  async searchEntries({ input, ctx: { waitlistContext: { definitionRepository, entryRepository } } }) {
+    const definition = await definitionRepository.findById({ id: input.definitionId });
+    if (!definition) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'WaitListDefinition not found'
+      });
+    }
+    const result = await entryRepository.search(input);
+    return {
+      ...result,
+      entries: result.entries.map(entry => ({
+        ...entry,
+        id: { id: entry.id }
+      }))
+    };
   }
 };
