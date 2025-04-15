@@ -3,7 +3,6 @@ import path from "path";
 import { 
     createUserOrThrow, 
     signInUserOrThrow,
-    promoteUserToAdminOrThrow,
 } from '../utils';
 import readline from 'readline';
 import { organizationClient, adminClient } from "better-auth/client/plugins";
@@ -31,7 +30,7 @@ const rand = () => Math.floor(Math.random() * 900 + 100);
 const Users = {
     A: {
         name: `John Smith`,
-        email: `asmith${rand()}@example.com`.toLowerCase(),
+        email: `admin_asmith${rand()}@example.com`.toLowerCase(),
         password: `SecureA!${rand()}`
     },
     B: {
@@ -68,21 +67,6 @@ const getUserInput = async (prompt: string): Promise<string> => {
         rl.question(prompt, (answer) => {
             rl.close();
             resolve(answer);
-        });
-    });
-};
-
-// Wait for verification utility
-const waitForVerification = async (email: string) => {
-    console.log(`\nPlease verify the email for ${email} and press any key to continue...`);
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
         });
     });
 };
@@ -173,23 +157,16 @@ const signInWithWorkspaceSelection = async (email: string, password: string) => 
 };
 
 // Step 1: Create and verify all users
-const createAndVerifyUsers = async () => {
+const createUsers = async () => {
     console.log("\n1. Creating users A, B, and C...");
     
     return createUserOrThrow(Users.A.name, Users.A.email, Users.A.password)
-        .then(() => waitForVerification(Users.A.email))
-        .then(() => new Promise(resolve => setTimeout(resolve, 1000)))
-        .then(() => promoteUserToAdminOrThrow(Users.A.email))
         .then(() => {
             return Promise.all([
                 createUserOrThrow(Users.B.name, Users.B.email, Users.B.password),
                 createUserOrThrow(Users.C.name, Users.C.email, Users.C.password)
             ]);
-        })
-        .then(() => Promise.all([
-            waitForVerification(Users.B.email),
-            waitForVerification(Users.C.email)
-        ]));
+        });
 };
 
 // Step 2: Create organizations with User A
@@ -302,7 +279,7 @@ function main() {
     };
 
     // Start the chain with user creation and verification
-    return createAndVerifyUsers()
+    return createUsers()
         .then(() => {
             console.log("\nUsers created and verified successfully");
             return signInWithWorkspaceSelection(Users.A.email, Users.A.password);

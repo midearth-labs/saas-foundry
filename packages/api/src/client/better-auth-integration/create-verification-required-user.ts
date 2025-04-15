@@ -2,6 +2,8 @@ import * as dotenv from "dotenv";
 import path from "path";
 import { createUserOrThrow } from '../utils';
 
+// Before running this test, set the AUTH_PREFERENCE_EMAIL_VERIFICATION environment variable to true
+
 // Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')

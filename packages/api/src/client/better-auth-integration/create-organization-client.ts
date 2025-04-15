@@ -1,8 +1,7 @@
 import * as dotenv from "dotenv";
 import path from "path";
 import { 
-    createUserOrThrow, 
-    promoteUserToAdminOrThrow, 
+    createUserOrThrow,
     signInUserOrThrow,
 } from '../utils';
 import readline from 'readline';
@@ -17,7 +16,7 @@ dotenv.config({
 
 const
     USER_NAME = process.env.USER_NAME || "Admin User",
-    USER_EMAIL = process.env.USER_EMAIL || "admin@example.com",
+    USER_EMAIL = process.env.USER_EMAIL || "admin_123@example.com",
     USER_PASSWORD = process.env.USER_PASSWORD || "Adm!n123Secure",
     ORG_NAME = process.env.ORG_NAME || "My Organization",
     ORG_SLUG = process.env.ORG_SLUG || "my-org";
@@ -68,13 +67,6 @@ const signInUser = async () => {
     return signedInUser;
 };
 
-// Step 4: Promote to admin
-const promoteToAdmin = async () => {
-    console.log("\n5. Promoting user to admin...");
-    await promoteUserToAdminOrThrow(USER_EMAIL);
-    console.log("User promoted to admin successfully!");
-};
-
 // Step 5: Get latest session token
 const getLatestSessionToken = async (token: string) => {
     const { data } = await authClient.listSessions({
@@ -113,8 +105,7 @@ async function createVerifiedAdminWithOrganization(): Promise<{
         .then(() => waitForVerification())
         .then(() => signInUser())
         .then(signedInUser => {
-            return promoteToAdmin()
-                .then(() => getLatestSessionToken(signedInUser.data.token))
+            return getLatestSessionToken(signedInUser.data.token)
                 .then(latestToken => createOrg(latestToken))
                 .then(organization => ({
                     user: signedInUser.data,

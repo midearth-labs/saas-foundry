@@ -4,8 +4,6 @@ import * as dotenv from "dotenv";
 import { DB } from "../db";  // Global database instance (all caps to distinguish from any other db instance)
 import { FastifyRequest } from "fastify";
 import path from "path";
-import { eq } from "drizzle-orm";
-import { user } from "../db/schema/auth.schema";
 import { toNodeHandler } from "better-auth/node";
 import { 
   sendVerificationEmailAdapter,
@@ -18,8 +16,7 @@ import {
   organization,
 } from "better-auth/plugins";
 import {
-  waitlistAdminRole,
-  waitlistUserRole,
+  roles,
 } from "./roles";
 import { 
   waitlistAccessControl
@@ -32,18 +29,10 @@ dotenv.config({
 
 // @TODO: Temp fix for direct db query; will refactor for standard API repository level query later
 const isAdmin = async (email: string) => {
-  try {
-    const userRole = await DB.select().from(user).where(eq(user.email, email)).limit(1);
-    return userRole[0].role === "admin";
-  } catch (error) {
-    console.error(
-      "Failed to get user role:\n",
-      error,
-      "\nSafely returning false instead...\n"
-    );
-    return false;
-  }
+  return email.startsWith("admin_");
 }
+
+const requireEmailVerification = process.env.AUTH_PREFERENCE_EMAIL_VERIFICATION === "true";
 
 // Type inference issue fixed as of BetterAuth 1.2.6-beta.7
 const auth = betterAuth({
@@ -53,11 +42,11 @@ const auth = betterAuth({
   plugins: [
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin({
+      // @TODO: Make this more generic for future access control needs
       ac: waitlistAccessControl,
-      roles: {
-        waitlistAdminRole,
-        waitlistUserRole,
-      },
+      roles,
+      adminRoles: ["admin", "adminRole"],
+      defaultRole: "user",
     }),
     bearer(),
     organization({
@@ -65,10 +54,11 @@ const auth = betterAuth({
       sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) }  
     }),
   ],
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url, token }, request) => {
+  ...(requireEmailVerification ? {
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      sendVerificationEmail: async ({ user, url, token }, request) => {
       await sendVerificationEmailAdapter({
         email: user.email,
         token,
@@ -77,8 +67,9 @@ const auth = betterAuth({
         text: `Click the link below to verify your email: ${url}`,
         request,
       });
+      }
     }
-  },
+  } : {}),
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
@@ -87,23 +78,25 @@ const auth = betterAuth({
       maxAge: 5 * 60, // Cache duration in seconds
     },
   },
-  user: {
-    additionalFields: {
-      role: {
-        // required: true,
-        type: "string",
-        defaultValue: "user",
-        input: false,
-      },
-    },
-  },
   rateLimit: {
     window: 60, // time window in seconds
     max: 10, // max requests in the window
   },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const role = await isAdmin(user.email) ? "adminRole" : "userRole";
+          console.log("\nSetting role for user:", user.email, "to: ", role);
+          // Add role data to user object before creation
+          return { data: { ...user, role } };
+        }
+      }
+    },
+  },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification,
     autoSignIn: false,
   },
   socialProviders: {

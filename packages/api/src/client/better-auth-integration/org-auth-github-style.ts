@@ -3,7 +3,6 @@ import path from "path";
 import { 
     createUserOrThrow, 
     signInUserOrThrow,
-    promoteUserToAdminOrThrow,
 } from '../utils';
 import readline from 'readline';
 import { organizationClient, adminClient } from "better-auth/client/plugins";
@@ -30,7 +29,7 @@ const rand = () => Math.floor(Math.random() * 900 + 100);
 const Users = {
     A: {
         name: `John Smith`,
-        email: `ajohn${rand()}@example.com`.toLowerCase(),
+        email: `admin_ajohn${rand()}@example.com`.toLowerCase(),
         password: `SecureA!${rand()}`
     },
     B: {
@@ -56,55 +55,19 @@ const Organizations = {
     }
 };
 
-// Wait for verification utility
-const waitForVerification = async (email: string) => {
-    console.log(`\nPlease verify the email for ${email} and press any key to continue...`);
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
-        });
-    });
-};
-
 // Step 1: Create and verify all users
-const createAndVerifyUsers = async () => {
+const createUsers = async () => {
     console.log("\n1. Creating users A, B, and C...");
     
     // Handle User A first - create, verify, and promote to admin
     return createUserOrThrow(Users.A.name, Users.A.email.toLowerCase(), Users.A.password)
-        .then(() => waitForVerification(Users.A.email.toLowerCase()))
-        .then(() => new Promise(resolve => setTimeout(resolve, 1000))) // Wait 1s for DB
-        .then(async () => {
-            // Try promoting to admin with retry
-            let retries = 3;
-            while (retries > 0) {
-                try {
-                    await promoteUserToAdminOrThrow(Users.A.email.toLowerCase());
-                    break; // Success, exit loop
-                } catch (error) {
-                    retries--;
-                    if (retries === 0) throw error; // No more retries, rethrow
-                    console.log(`Retrying admin promotion... (${retries} attempts left)`);
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retry
-                }
-            }
-        })
         .then(() => {
             // Now create B and C
             return Promise.all([
                 createUserOrThrow(Users.B.name, Users.B.email.toLowerCase(), Users.B.password),
                 createUserOrThrow(Users.C.name, Users.C.email.toLowerCase(), Users.C.password)
             ]);
-        })
-        .then(() => Promise.all([
-            waitForVerification(Users.B.email.toLowerCase()),
-            waitForVerification(Users.C.email.toLowerCase())
-        ]));
+        });
 };
 
 // Step 2: Create organizations with User A
@@ -231,7 +194,7 @@ function main() {
     };
 
     // Start the chain with user creation and verification
-    return createAndVerifyUsers()
+    return createUsers()
         .then(users => {
             console.log("Users created and verified successfully");
             return signInUserOrThrow(Users.A.email, Users.A.password);

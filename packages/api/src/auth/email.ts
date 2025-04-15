@@ -8,6 +8,7 @@ dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
+/*
 export const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
@@ -17,7 +18,7 @@ export const resend = new Resend(process.env.RESEND_API_KEY);
  * @param url - The URL to include in the verification email.
  * @param subject - The subject of the verification email.
  * @param text - Instructional message included in the verification email.
- */
+ * /
 export const fireActualVerificationEmail = async function({
     email,
     token,
@@ -44,7 +45,7 @@ export const fireActualVerificationEmail = async function({
  * @param inviterName - The name of the inviter.
  * @param inviterEmail - The email address of the inviter.
  * @param orgName - The name of the organization.
- */
+ * /
 export const fireActualOrganizationInvitationEmail = async function({
     email,
     url,
@@ -65,6 +66,7 @@ export const fireActualOrganizationInvitationEmail = async function({
         html: `<p>${inviterName} has invited you to join ${orgName}.</p><p>Click the link below to verify your email:</p><a href="${url}">${url}</a>`,
     });
 }
+*/
 
 /**
  * Adapter function for sending verification emails.

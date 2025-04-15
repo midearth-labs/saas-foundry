@@ -20,10 +20,6 @@ import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/clie
 import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
-import { user } from '../../db/schema/auth.schema';
-import { eq } from 'drizzle-orm';
-import { DB } from '../../db';
-
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -204,54 +200,6 @@ export const createUserOrThrow = async (name: string, email: string, password: s
 
     return { createdUser };
 }
-
-// @TODO: This is temporary, role promotion would later be handled via the API at repository level
-/** Promote a signed-in user to admin role via direct database connection */
-export const promoteUserToAdminOrThrow = async (email: string) => {
-
-    try {
-        const result = await DB
-            .update(user)
-            .set({ role: "admin" })
-            .where(eq(user.email, email))
-            .returning();
-
-        if (!result.length) {
-            throw new Error(`User with email ${email} not found or failed to update role`);
-        }
-
-        console.info("User successfully promoted to admin:", result[0]);
-        return { updatedUser: result[0] };
-    } catch (error) {
-        console.error("Failed to promote user to admin:", error);
-        throw error;
-    }
-}
-
-/** Promote a signed-in user to a specific role via direct database connection */
-export const promoteUserToSpecificRoleOrThrow = async (email: string, role: string) => {
-
-    try {
-        const result = await DB
-            .update(user)
-            .set({ role: role })
-            .where(eq(user.email, email))
-            .returning();
-
-        if (!result.length) {
-            throw new Error(`User with email ${email} not found or failed to update role`);
-        }
-
-        console.info("User successfully promoted to role:", result[0]);
-        return { updatedUser: result[0] };
-    } catch (error) {
-        console.error("Failed to promote user to role:", error);
-        throw error;
-    }
-}
-
-/** Inferred return type for the admin promotion function */
-export type PromotedUser = Awaited<ReturnType<typeof promoteUserToAdminOrThrow>>['updatedUser'];
 
 /** Create an organization via direct database connection */
 export const createOrganizationOrThrow = async function ({

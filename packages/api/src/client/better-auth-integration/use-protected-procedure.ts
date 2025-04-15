@@ -3,11 +3,9 @@ import path from "path";
 import { 
     createUserOrThrow, 
     signInUserOrThrow,
-    promoteUserToSpecificRoleOrThrow,
     getTRPCClient,
     getTokenSilently 
 } from '../utils';
-import readline from 'readline';
 
 // Load environment variables
 dotenv.config({
@@ -21,29 +19,14 @@ const rand = () => Math.floor(Math.random() * 9000 + 100);
 const Users = {
     Admin: {
         name: `Admin User`,
-        email: `admin${rand()}@example.com`.toLowerCase(),
+        email: `admin_${rand()}@example.com`.toLowerCase(),
         password: `AdminPass!${rand()}`
     },
     Regular: {
         name: `Regular User`,
-        email: `user${rand()}@example.com`.toLowerCase(),
+        email: `user_${rand()}@example.com`.toLowerCase(),
         password: `UserPass!${rand()}`
     }
-};
-
-// Wait for verification utility
-const waitForVerification = async (email: string) => {
-    console.log(`\nPlease verify the email for ${email} and press any key to continue...`);
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
-        });
-    });
 };
 
 // Utility to truncate error messages
@@ -70,17 +53,11 @@ function main() {
         .then(() => createUserOrThrow(Users.Regular.name, Users.Regular.email, Users.Regular.password))
         .then(() => {
             console.log("\nBoth users created successfully");
-            // Wait for both verifications
-            return Promise.all([
-                waitForVerification(Users.Admin.email),
-                waitForVerification(Users.Regular.email)
-            ]);
         })
-        // Step 2: Sign in admin user and promote to admin
+        // Step 2: Sign in admin user
         .then(() => signInUserOrThrow(Users.Admin.email, Users.Admin.password))
         .then(({ signedInUser }) => {
             contextData.adminUser = { token: signedInUser.data!.token };
-            return promoteUserToSpecificRoleOrThrow(Users.Admin.email, "waitlistAdminRole"); // Role param must match what is prescribed in the auth/roles.ts ...MUST.
         })
         // Step 3: Sign in regular user
         .then(() => signInUserOrThrow(Users.Regular.email, Users.Regular.password))

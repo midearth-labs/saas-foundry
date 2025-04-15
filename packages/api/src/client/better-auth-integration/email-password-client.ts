@@ -6,7 +6,6 @@ import {
   signInUnsuccessfully,
   getTRPCClient
 } from '../utils';
-import readline from 'readline';
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -25,26 +24,10 @@ const truncateError = (error: any, maxLength: number = 150): string => {
     : errorMessage;
 };
 
-// Wait for verification utility
-const waitForVerification = async (email: string) => {
-    console.log(`\nPlease verify the email for ${email} and press any key to continue...`);
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
-        });
-    });
-};
-
 function main() {
   return createUserOrThrow(USER_NAME, USER_EMAIL, USER_PASSWORD)
     .then(() => {
       console.log("\nUser created successfully");
-      return waitForVerification(USER_EMAIL);
     })
     .then(() => {
       console.log("\nAttempting successful sign in...");

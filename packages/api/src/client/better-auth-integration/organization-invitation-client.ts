@@ -3,9 +3,7 @@ import path from "path";
 import { 
     createUserOrThrow, 
     signInUserOrThrow,
-    promoteUserToAdminOrThrow
 } from '../utils';
-import readline from 'readline';
 import { organizationClient, adminClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/client";
 
@@ -17,7 +15,7 @@ dotenv.config({
 
 // Generate unique credentials for this run
 const timestamp = Date.now();
-const INVITER_EMAIL = `inviter${timestamp}@example.com`;
+const INVITER_EMAIL = `admin_inviter${timestamp}@example.com`;
 const INVITEE_EMAIL = `invitee${timestamp}@example.com`;
 const COMMON_PASSWORD = `SecurePass!${timestamp}`;
 const ORG_NAME = `Test Organization ${timestamp}`;
@@ -42,23 +40,6 @@ const createInviterUser = async () => {
     return createdUser;
 };
 
-// Step 2: Wait for verification
-const waitForVerification = async (email: string) => {
-    console.log(`\nPlease verify the email for ${email} and press any key to continue...`);
-    
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
-        });
-    });
-};
-
 // Step 3: Sign in inviter
 const signInInviter = async () => {
     console.log("\n3. Signing in inviter...");
@@ -67,13 +48,6 @@ const signInInviter = async () => {
         throw new Error("Failed to get authentication token for inviter");
     }
     return signedInUser;
-};
-
-// Step 3.5: Promote to admin
-const promoteToAdmin = async () => {
-    console.log("\n3.5. Promoting user to admin...");
-    await promoteUserToAdminOrThrow(INVITER_EMAIL);
-    console.log("User promoted to admin successfully!");
 };
 
 // Step 4: Create organization
@@ -141,11 +115,9 @@ const acceptInvitation = async (token: string, invitationId: string) => {
 
 async function createOrganizationInvitationFlow() {
     return createInviterUser()
-        .then(() => waitForVerification(INVITER_EMAIL))
         .then(() => signInInviter())
         .then(inviterSession => {
-            return promoteToAdmin()
-                .then(() => createOrg(inviterSession.data.token))
+            return createOrg(inviterSession.data.token)
                 .then(organization => ({
                     inviterSession,
                     organization
@@ -161,7 +133,6 @@ async function createOrganizationInvitationFlow() {
         })
         .then(({ inviterSession, organization, invitation }) => {
             return createInviteeUser()
-                .then(() => waitForVerification(INVITEE_EMAIL))
                 .then(() => signInInvitee())
                 .then(inviteeSession => ({
                     inviterSession,
