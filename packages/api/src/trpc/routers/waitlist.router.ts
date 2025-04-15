@@ -6,14 +6,17 @@ import { WaitlistServiceRouter } from "../../api/schema/waitlist";
 
 const definitionRouter: DefinitionServiceRouter = {
   list: waitlistAdminProcedure
+    .meta({ permission: { waitlistDefinition: ["list"] } })
     .input(DefinitionRoutesConfiguration.list.input)
     .query(waitListDefinitionService.list),
 
   get: waitlistAdminProcedure
+    .meta({ permission: { waitlistDefinition: ["get"] } })
     .input(DefinitionRoutesConfiguration.get.input)
     .query(waitListDefinitionService.get),
 
   create: waitlistAdminProcedure
+    .meta({ permission: { waitlistDefinition: ["create"] } })
     .input(DefinitionRoutesConfiguration.create.input)
     .mutation(waitListDefinitionService.create),
 };

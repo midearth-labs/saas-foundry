@@ -21,6 +21,8 @@ import {
 import { 
   waitlistAccessControl
 } from "./permissions";
+import { TRPCError } from "@trpc/server";
+import { getServerSessionOrThrow } from "../trpc/context";
 
 
 dotenv.config({
@@ -126,17 +128,22 @@ export const listOrgs = async (token?: string) => {
   });
 }
 
-export const canCreateWaitlistDefinitions = async (userId: string, token?: string) => {
-  const result = await auth.api.userHasPermission({
+export const checkPermission = async (session: Session, permission: Record<string, string[]>) => {
+  const token = session.session.token;
+  const userId = session.user.id;
+
+  const userHasPermission = await auth.api.userHasPermission({
     ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     body: {
       userId,
-      permission: {
-        waitlistDefinition: ["create"],  // Sadly can't check multiple permissions at once :(
-      },
+      permission: permission,
     },
   });
-  console.log("\nUser has permission result:", JSON.stringify(result, null, 2));
-  return result;
+
+  if (!userHasPermission) {
+    throw new Error("Unable to verify permissions");
+  }
+
+  return (userHasPermission.success && !userHasPermission.error);
 }
 

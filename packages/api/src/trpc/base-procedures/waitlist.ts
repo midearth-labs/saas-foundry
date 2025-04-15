@@ -1,7 +1,6 @@
 import { inferProcedureBuilderResolverOptions, TRPCError } from "@trpc/server";
 import { publicProcedure } from "../trpc";
 import { protectedProcedure } from "./protected";
-// import { authenticatedProcedure } from "./authenticated";
 
 const waitListBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
     // Extract out the needed repositories from ctx
@@ -34,15 +33,10 @@ export const waitlistProtectedProcedure = protectedProcedure.use(async ({ ctx, n
 
 // Now chain the admin procedure to the waitlistProtectedProcedure
 export const waitlistAdminProcedure = waitlistProtectedProcedure.use(async ({ ctx, next }) => {
-    const allowedToCreateWDef = await ctx.in.canCreateWaitDefsOrThrow();
-    if (!allowedToCreateWDef) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "User does not have permission to create waitlist definitions" });
-    }
     return next({ 
         ctx: { 
             ...ctx, 
-            permissions: allowedToCreateWDef,
-            logger: ctx.logger.child({ permissions: allowedToCreateWDef }) 
+            logger: ctx.logger.child({ "segment": "admin" }) 
         } 
     });
 });

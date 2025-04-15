@@ -1,7 +1,13 @@
 import { initTRPC } from '@trpc/server';
 import { BaseContext } from './context';
 
-const trpc = initTRPC.context<BaseContext>().meta<object>().create();
+
+export interface Meta {
+    permission?: Record<string, string[]>;
+  }
+  
+
+const trpc = initTRPC.context<BaseContext>().meta<Meta>().create();
 
 // Base router and procedure helpers
 export const router = trpc.router;

@@ -40,23 +40,6 @@ const createInitialUser = async () => {
     return createdUser;
 };
 
-// Step 2: Wait for verification
-const waitForVerification = async () => {
-    console.log("\n2. Please verify your email and press any key to continue...");
-    
-    return new Promise<boolean>((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-
-        process.stdin.once('data', () => {
-            rl.close();
-            resolve(true);
-        });
-    });
-};
-
 // Step 3: Sign in user
 const signInUser = async () => {
     console.log("\n4. Signing in user...");
@@ -102,7 +85,6 @@ async function createVerifiedAdminWithOrganization(): Promise<{
     organization: any;
 }> {
     return createInitialUser()
-        .then(() => waitForVerification())
         .then(() => signInUser())
         .then(signedInUser => {
             return getLatestSessionToken(signedInUser.data.token)
