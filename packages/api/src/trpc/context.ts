@@ -2,7 +2,7 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { DB } from "../db";
-import { checkPermission, Session } from "../auth";
+import { checkAdminPermission, checkOrgPermission, Session } from "../auth";
 import { getSession } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
@@ -16,6 +16,7 @@ type InContext = {
   getRequestId: InFunction<string | undefined>;
   getSessionOrThrow: InFunction<Promise<Session>>;
   checkAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
+  checkOrgAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
 }
 
 type OutContext = {
@@ -58,6 +59,7 @@ export const getContextCreator = () => {
         getRequestId: () => extractLastHeaderValue(req.headers['x-request-id']),
         getSessionOrThrow: () => getServerSessionOrThrow(req),
         checkAuthorized,
+        checkOrgAuthorized,
       },
       out: { },
       extendedRequestId,
@@ -71,7 +73,14 @@ export const getContextCreator = () => {
 
 
 const checkAuthorized: InContext["checkAuthorized"] = async (session, permission) => {
-  const hasPermission = await checkPermission(session, permission);
+  const hasPermission = await checkAdminPermission(session, permission);
+  if (!hasPermission) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'User does not have required permissions' });
+  }
+}
+
+const checkOrgAuthorized: InContext["checkOrgAuthorized"] = async (session, permission) => {
+  const hasPermission = await checkOrgPermission(session, permission);
   if (!hasPermission) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'User does not have required permissions' });
   }

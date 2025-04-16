@@ -1,13 +1,13 @@
 import { adminAc } from "better-auth/plugins/admin/access";
-import { waitlistAccessControl } from "./permissions";
+import { adminAccessControl } from "./permissions";
 
-const userRole = waitlistAccessControl.newRole({
+const userRole = adminAccessControl.newRole({
     waitlistEntry: ["create"]
 });
 
 const defaultAdminStatements = adminAc.statements;
 
-const adminRole = waitlistAccessControl.newRole({
+const adminRole = adminAccessControl.newRole({
     waitlistDefinition: ["create", "get", "list", "getStats", "getActiveCount"],
     waitlistEntry: ["create", "updateStatus", "getEntry", "searchEntries"],
     ...defaultAdminStatements,

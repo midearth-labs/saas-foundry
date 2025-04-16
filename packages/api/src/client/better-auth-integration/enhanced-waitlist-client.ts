@@ -5,10 +5,22 @@ import {
     signInUserOrThrow,
     getTRPCClient
 } from '../utils';
+import { createOrg, addOrgMember } from "../../auth";
+import { createAuthClient } from "better-auth/client";
+import { adminClient, organizationClient } from "better-auth/client/plugins";
 
 // Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
+});
+
+// Initialize auth client with organization plugin
+const authClient = createAuthClient({
+    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
+    plugins: [
+        adminClient(),
+        organizationClient(),
+    ]
 });
 
 // Generate random x-digit number for unique usernames
@@ -16,6 +28,11 @@ const rand = () => Math.floor(Math.random() * 9000 + 100);
 
 // Define test users
 const Users = {
+    Owner: {
+        name: 'Creator Owner',
+        email: `admin_creator_owner_${rand()}@example.com`.toLowerCase(),
+        password: `CreatorPass!${rand()}`
+    },
     Admin: {
         name: `Admin User`,
         email: `admin_${rand()}@example.com`.toLowerCase(),
@@ -28,6 +45,10 @@ const Users = {
     }
 };
 
+// Organization details
+const ORG_NAME = `Test Organization ${rand()}`;
+const ORG_SLUG = `test-org-${rand()}`;
+
 // Utility to truncate error messages
 const truncateError = (error: any, maxLength: number = 200): string => {
     const errorMessage = error?.message || String(error);
@@ -38,41 +59,114 @@ const truncateError = (error: any, maxLength: number = 200): string => {
 
 function main() {
     let contextData: {
-        adminUser: { token: string } | null;
-        regularUser: { token: string } | null;
+        ownerUser: { token: string; id: string } | null;
+        adminUser: { token: string; id: string } | null;
+        regularUser: { token: string; id: string } | null;
+        organization: any;
         waitlistDefinition: any;
         waitlistEntries: any[];
     } = {
+        ownerUser: null,
         adminUser: null,
         regularUser: null,
+        organization: null,
         waitlistDefinition: null,
         waitlistEntries: []
     };
 
-    // Step 1: Create both users
-    return createUserOrThrow(Users.Admin.name, Users.Admin.email, Users.Admin.password)
+    // Step 1: Create all users
+    console.log("\n1. Creating users...");
+    return createUserOrThrow(Users.Owner.name, Users.Owner.email, Users.Owner.password)
+        .then(() => createUserOrThrow(Users.Admin.name, Users.Admin.email, Users.Admin.password))
         .then(() => createUserOrThrow(Users.Regular.name, Users.Regular.email, Users.Regular.password))
         .then(() => {
-            console.log("\nBoth users created successfully");
+            console.log("\nAll users created successfully");
         })
-        // Step 2: Sign in admin user
+        // Step 2: Sign in owner user
+        .then(() => signInUserOrThrow(Users.Owner.email, Users.Owner.password))
+        .then(({ signedInUser }) => {
+            contextData.ownerUser = { 
+                token: signedInUser.data!.token,
+                id: signedInUser.data!.user.id
+            };
+        })
+        // Step 3: Sign in admin user
         .then(() => signInUserOrThrow(Users.Admin.email, Users.Admin.password))
         .then(({ signedInUser }) => {
-            contextData.adminUser = { token: signedInUser.data!.token };
+            contextData.adminUser = { 
+                token: signedInUser.data!.token,
+                id: signedInUser.data!.user.id
+            };
         })
-        // Step 3: Sign in regular user
+        // Step 4: Sign in regular user
         .then(() => signInUserOrThrow(Users.Regular.email, Users.Regular.password))
         .then(({ signedInUser }) => {
-            contextData.regularUser = { token: signedInUser.data!.token };
+            contextData.regularUser = { 
+                token: signedInUser.data!.token,
+                id: signedInUser.data!.user.id
+            };
         })
-        // Step 4: Create TRPC clients
+        // Step 5: Create organization and set it as active for all users
         .then(() => {
+            console.log("\n2. Creating organization...");
+            return createOrg(contextData.ownerUser!.token, ORG_NAME, ORG_SLUG)
+                .then(org => {
+                    contextData.organization = org;
+                    
+                    // Set active organization for owner
+                    return authClient.organization.setActive({
+                        organizationId: String(org?.id),
+                        fetchOptions: {
+                            headers: { Authorization: `Bearer ${contextData.ownerUser!.token}` }
+                        }
+                    })
+                    .then(() => {
+                        // Add admin user to organization with adminRole
+                        return addOrgMember(
+                            contextData.ownerUser!.token,
+                            contextData.adminUser!.id,
+                            String(org?.id),
+                            ["adminRole"]
+                        );
+                    })
+                    .then(() => {
+                        // Set active organization for admin
+                        return authClient.organization.setActive({
+                            organizationId: String(org?.id),
+                            fetchOptions: {
+                                headers: { Authorization: `Bearer ${contextData.adminUser!.token}` }
+                            }
+                        });
+                    })
+                    .then(() => {
+                        // Add regular user to organization with memberRole
+                        return addOrgMember(
+                            contextData.ownerUser!.token,
+                            contextData.regularUser!.id,
+                            String(org?.id),
+                            ["memberRole"]
+                        );
+                    })
+                    .then(() => {
+                        // Set active organization for regular user
+                        return authClient.organization.setActive({
+                            organizationId: String(org?.id),
+                            fetchOptions: {
+                                headers: { Authorization: `Bearer ${contextData.regularUser!.token}` }
+                            }
+                        });
+                    });
+                });
+        })
+        // Step 6: Create TRPC clients
+        .then(() => {
+            console.log("\n3. Creating TRPC clients and testing operations...");
             const adminTrpc = getTRPCClient(contextData.adminUser!.token);
             const regularTrpc = getTRPCClient(contextData.regularUser!.token);
 
             console.log("\nTesting waitlist definition creation...");
             
-            // Step 5: Create a waitlist definition as admin
+            // Step 7: Create a waitlist definition as admin
             return adminTrpc.waitlist.definition.create.mutate({ 
                 name: 'Test Waitlist', 
                 description: 'A test waitlist for feature testing', 
@@ -98,7 +192,7 @@ function main() {
                     });
                 });
             })
-            // Step 7: Create multiple entries
+            // Step 8: Create multiple entries
             .then(() => {
                 console.log("\nCreating multiple waitlist entries...");
                 const entries = [
@@ -118,13 +212,13 @@ function main() {
                 contextData.waitlistEntries = entries;
                 console.log("\nCreated waitlist entries:", entries.map(e => e.id));
 
-                // Step 8: Get updated stats
+                // Step 9: Get updated stats
                 return adminTrpc.waitlist.definition.getStats.query({ id: contextData.waitlistDefinition.id })
                 .then(stats => {
                     console.log("\nUpdated waitlist stats:", stats);
                 });
             })
-            // Step 9: Test entry status updates
+            // Step 10: Test entry status updates
             .then(() => {
                 console.log("\nTesting entry status updates...");
                 const [entry1, entry2] = contextData.waitlistEntries;
@@ -148,7 +242,7 @@ function main() {
                     rejected: rejected.status
                 });
 
-                // Step 10: Search entries with various filters
+                // Step 11: Search entries with various filters
                 return Promise.all([
                     // Search approved entries
                     adminTrpc.waitlist.entry.searchEntries.query({
@@ -180,7 +274,7 @@ function main() {
                     pending: pending.entries.length
                 });
 
-                // Step 11: Get active count
+                // Step 12: Get active count
                 return adminTrpc.waitlist.definition.getActiveCount.query({ 
                     id: contextData.waitlistDefinition.id 
                 });
@@ -188,7 +282,7 @@ function main() {
             .then(activeCount => {
                 console.log("\nActive count:", activeCount);
 
-                // Step 12: Test regular user permissions
+                // Step 13: Test regular user permissions
                 console.log("\nTesting regular user permissions...");
                 return Promise.all([
                     // Try to update entry status (should fail)

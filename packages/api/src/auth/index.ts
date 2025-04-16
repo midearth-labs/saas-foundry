@@ -15,13 +15,10 @@ import {
   openAPI,
   organization,
 } from "better-auth/plugins";
-import {
-  roles,
-} from "./roles";
-import { 
-  waitlistAccessControl
-} from "./permissions";
-
+import { roles as adminRoles } from "./admin/roles";
+import { adminAccessControl } from "./admin/permissions";
+import { roles as orgRoles } from "./org/roles";
+import { organizationAccessControl } from "./org/permissions";
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -43,15 +40,17 @@ const auth = betterAuth({
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin({
       // @TODO: Make this more generic for future access control needs
-      ac: waitlistAccessControl,
-      roles,
+      ac: adminAccessControl,
+      roles: adminRoles,
       adminRoles: ["admin", "adminRole"],
       defaultRole: "user",
     }),
     bearer(),
     organization({
       allowUserToCreateOrganization: async (user) => { return await isAdmin(user.email) },
-      sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) }  
+      sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) },
+      ac: organizationAccessControl,
+      roles: orgRoles,
     }),
   ],
   ...(requireEmailVerification ? {
@@ -126,10 +125,16 @@ export const listOrgs = async (token?: string) => {
   });
 }
 
-export const checkPermission = async (session: Session, permission: Record<string, string[]>) => {
+/**
+ * Checks top-level workspace user permissions via BetterAuth Admin API
+ */
+export const checkAdminPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const userId = session.user.id;
 
+  // Silly naming from BetterAuth; auth.api.userHasPermission is used for admin permissions
+  // While auth.api.hasPermission is used for org permissions
+  // Very easy to mix them up
   const userHasPermission = await auth.api.userHasPermission({
     ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
     body: {
@@ -145,3 +150,49 @@ export const checkPermission = async (session: Session, permission: Record<strin
   return (userHasPermission.success && !userHasPermission.error);
 }
 
+/**
+ * Checks org-level user permissions via BetterAuth Org API
+ */
+export const checkOrgPermission = async (session: Session, permission: Record<string, string[]>) => {
+  const token = session.session.token;
+  const resource = Object.keys(permission)[0] as keyof typeof permission;
+  const actions = permission[resource];
+
+  const userHasPermission = await auth.api.hasPermission({
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: {
+      permission: { [resource]: actions },
+    },
+  });
+
+  if (!userHasPermission) {
+    throw new Error("Unable to verify organization permissions");
+  }
+
+  return (userHasPermission.success && !userHasPermission.error);
+}
+
+export const createOrg = async (token: string, name: string, slug: string) => {
+  return await auth.api.createOrganization({
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: { name, slug },
+  });
+}
+
+type OrgRole = "adminRole" | "analystRole" | "memberRole" | "ownerRole";
+export const addOrgMember = async (token: string, userId: string, organizationId: string, roles: OrgRole | OrgRole[]) => {
+  return await auth.api.addMember({
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: {
+      userId,
+      organizationId,
+      role: Array.isArray(roles) ? roles : [roles]
+    }
+  });
+}
+
+export const verifyEmail = async (token: string, userId: string) => {
+  return await auth.api.verifyEmail({
+    query: { token },
+  });
+}
