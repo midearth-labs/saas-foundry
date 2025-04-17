@@ -20,9 +20,36 @@ import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/clie
 import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
+import { adminAccessControl } from '../../auth/admin/permissions';
+import { organizationAccessControl } from '../../auth/org/permissions';
+import { roles as adminRoles } from '../../auth/admin/roles';
+import { OrgRoleTypeKeys, roles as orgRoles } from '../../auth/org/roles';
+import { Session } from 'better-auth';
 
+
+// Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
+});
+
+// Type inference won't be a problem if this is used in-file only
+/** BetterAuth Auth Client */
+const authClient = createAuthClient({
+    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
+    plugins: [
+        adminClient({
+            ac: adminAccessControl,
+            roles: adminRoles,
+            adminRoles: ["admin", "adminRole", "owner", "ownerRole"],
+            defaultRole: "user",
+          }),
+        organizationClient({
+            ac: organizationAccessControl,
+            roles: orgRoles,
+            adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
+            defaultRole: "member",
+        }),
+    ]
 });
   
 /** Create a custom muted stdout to hide the input */
@@ -51,6 +78,100 @@ export async function getTokenSilently(message: string): Promise<string> {
         });
     });
 }
+
+/** Get the latest session token from the user or throw an error*/
+export const getSessionTokenOrThrow = async (token: string) => {
+    const { data } = await authClient.listSessions({
+        fetchOptions: {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    });
+    const session = data?.[0];
+    if (!session) {
+        throw new Error("Unable to create organization because no session was found");
+    }
+    return session.token;
+};
+
+/** Get the active organization for a user via BetterAuth Client */
+export const getActiveOrganization = async (token: string) => {
+    const response = await authClient.useActiveOrganization.get();
+    if (response.data) {
+        console.info("Active organization retrieved successfully")
+    } else {
+        return null;
+    }
+    return response;
+};
+
+/** Set the active organization for the user or throw an error */
+export const setActiveOrganizationOrThrow = async (token: string, orgId: string) => {
+    const response = await authClient.organization.setActive({
+        organizationId: orgId,
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    if (response.data) {
+        console.info("Organization set as active successfully")
+    } else {
+        throw new Error("Failed to set organization as active.")
+    }
+    return response;
+};
+
+/** Get all sessions for a user via BetterAuth Client or throw an error */
+export const getAllSessionsOrThrow = async (token: string) => {
+    const response = await authClient.listSessions({
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    return response;
+};
+
+/** Invite a user to an organization via BetterAuth Client or throw an error */
+export const inviteUserToOrgOrThrow = async (token: string, email: string, role: string, orgId: string) => {
+    const response = await authClient.organization.inviteMember({
+        email,
+        role: role as OrgRoleTypeKeys,
+        organizationId: orgId,
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    if (response.data) {
+        console.info("User invited to organization successfully")
+    } else {
+        throw new Error("Failed to invite user to organization.")
+    }
+    return response;
+};
+
+/** Accept an invitation to an organization via BetterAuth Client or throw an error */
+export const acceptOrgInvitationOrThrow = async (token: string, invitationId: string) => {
+    const response = await authClient.organization.acceptInvitation({
+        invitationId,
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    if (response.data) {
+        console.info("Organization invitation accepted successfully")
+    } else {
+        throw new Error("Failed to accept organization invitation.")
+    }
+    return response;
+};
+
+/** Create an organization via BetterAuth Client or throw an error */
+export const createOrgOrThrow = async (token: string, name: string, slug: string) => {
+    const response = await authClient.organization.create({ 
+        name,
+        slug,
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    if (response.data) {
+        console.info("Organization created successfully")
+    } else {
+        throw new Error("Failed to create organization.")
+    }
+    return response;
+};
   
 /** TRPC Client for interacting with the API */
 export const getTRPCClient = (token: string) => {
@@ -77,16 +198,6 @@ export async function getProtectedTRPCClient(token: string) {
     const authenticatedTRPCClient = getTRPCClient(token);
     return authenticatedTRPCClient;
 }
-
-// Type inference won't be a problem if this is used in-file only
-/** BetterAuth Auth Client */
-const authClient: ReturnType<typeof createAuthClient> = createAuthClient({
-        baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-        plugins: [
-            adminClient(),
-            organizationClient(),
-        ]
-});
 
 /** Email verification function using the token delivered in the verification email.
  * This is in lieu of browser-based email verification */

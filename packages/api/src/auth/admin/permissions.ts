@@ -1,8 +1,8 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements as defaultUserStatements } from "better-auth/plugins/admin/access";
+import { defaultStatements as defaultAdminStatements } from "better-auth/plugins/admin/access";
 
 export const adminPermissionStatement = {
-    ...defaultUserStatements,
+    ...defaultAdminStatements,
     waitlistDefinition: ["create", "get", "list", "getStats", "getActiveCount"],
     waitlistEntry: ["create", "updateStatus", "getEntry", "searchEntries"],
 } as const;

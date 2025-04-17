@@ -42,7 +42,7 @@ const auth = betterAuth({
       // @TODO: Make this more generic for future access control needs
       ac: adminAccessControl,
       roles: adminRoles,
-      adminRoles: ["admin", "adminRole"],
+      adminRoles: ["admin", "adminRole", "owner", "ownerRole"],
       defaultRole: "user",
     }),
     bearer(),
@@ -51,6 +51,8 @@ const auth = betterAuth({
       sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) },
       ac: organizationAccessControl,
       roles: orgRoles,
+      adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
+      defaultRole: "member",
     }),
   ],
   ...(requireEmailVerification ? {
@@ -119,10 +121,16 @@ export const getAuthHandler = async () => {
   return toNodeHandler(auth);
 }
 
-export const listOrgs = async (token?: string) => {
+export const listOrgs = async (token: string) => {
   return await auth.api.listOrganizations({
-    ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}),
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
+}
+
+export const listOrgsWithoutAuth = async () => {
+  return await auth.api.listOrganizations();
 }
 
 /**
@@ -190,6 +198,7 @@ export const addOrgMember = async (token: string, userId: string, organizationId
     }
   });
 }
+
 
 export const verifyEmail = async (token: string, userId: string) => {
   return await auth.api.verifyEmail({

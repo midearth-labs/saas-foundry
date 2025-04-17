@@ -1,27 +1,25 @@
 import * as dotenv from "dotenv";
 import path from "path";
 import { 
+    acceptOrgInvitationOrThrow,
+    createOrgOrThrow,
     createUserOrThrow, 
+    getActiveOrganization, 
+    getAllSessionsOrThrow, 
+    getSessionTokenOrThrow, 
+    inviteUserToOrgOrThrow, 
+    setActiveOrganizationOrThrow, 
     signInUserOrThrow,
 } from '../utils';
 import readline from 'readline';
-import { organizationClient, adminClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/client";
 import { listOrgs } from "../../auth"; 
 
-// Initialize auth client with organization plugin
-const authClient = createAuthClient({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-    plugins: [
-        adminClient(),
-        organizationClient(),
-    ]
-});
 
 // Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
+
 
 // Generate random 3-digit number
 const rand = () => Math.floor(Math.random() * 900 + 100);
@@ -75,11 +73,7 @@ const getUserInput = async (prompt: string): Promise<string> => {
 const selectWorkspace = async (token: string): Promise<string | null> => {
     try {
         // Ensure the request is being made for EXACT intended user by explicit authentication
-        await authClient.getSession({
-            fetchOptions: {
-                headers: { Authorization: `Bearer ${token}` }
-            }
-        });
+        await getSessionTokenOrThrow(token);
 
         const orgs = await listOrgs(token);
         console.log("organizations found:\n", JSON.stringify(orgs, null, 2));
@@ -91,7 +85,7 @@ const selectWorkspace = async (token: string): Promise<string | null> => {
 
         console.log("\nAvailable workspaces:");
         orgs.forEach((org, index) => {
-            console.log(`${index + 1}. ${org.slug} (${org.slug})`);
+            console.log(`${index + 1}. ${org.name} (${org.slug})`);
         });
         console.log("0. Personal workspace");
 
@@ -114,27 +108,16 @@ const selectWorkspace = async (token: string): Promise<string | null> => {
 const setActiveOrganizationForAllSessions = async (token: string, organizationId: string | null) => {
     try {
         // First, list all sessions
-        let sessions = await authClient.listSessions({
-            fetchOptions: {
-                headers: { Authorization: `Bearer ${token}` }
-            }
-        });
+        let sessions = await getAllSessionsOrThrow(token);
 
         // Set active organization for each session
-        await Promise.all((sessions?.data ?? []).map(session => 
-            authClient.organization.setActive({
-                organizationId,
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${session.token}` }
-                }
-            })
-        )).then(async () => {
+        await Promise.all((sessions?.data ?? []).map(async session => {
+            if (organizationId) {
+                await setActiveOrganizationOrThrow(session.token, String(organizationId))
+            }
+        })).then(async () => {
             // Fetch updated sessions
-            sessions = await authClient.listSessions({
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            });
+            sessions = await getAllSessionsOrThrow(token);
             console.log(`\nSet active organization ${organizationId || 'personal workspace'} for all sessions:\n\t`);
             console.info(sessions.data);
         });
@@ -173,21 +156,8 @@ const createUsers = async () => {
 const createOrganizations = async (token: string) => {
     console.log("\n2. Creating organizations...");
     
-    const firstOrg = await authClient.organization.create({
-        name: Organizations.First.name,
-        slug: Organizations.First.slug,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
-
-    const secondOrg = await authClient.organization.create({
-        name: Organizations.Second.name,
-        slug: Organizations.Second.slug,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const firstOrg = await createOrgOrThrow(token, Organizations.First.name, Organizations.First.slug);
+    const secondOrg = await createOrgOrThrow(token, Organizations.Second.name, Organizations.Second.slug);
 
     return { firstOrg, secondOrg };
 };
@@ -196,23 +166,9 @@ const createOrganizations = async (token: string) => {
 const addUserBToOrganizations = async (token: string, orgs: any) => {
     console.log("\n3. Adding User B to both organizations...");
     
-    const firstOrgInvite = await authClient.organization.inviteMember({
-        email: Users.B.email,
-        role: "member",
-        organizationId: orgs.firstOrg.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const firstOrgInvite = await inviteUserToOrgOrThrow(token, Users.B.email, "member", orgs.firstOrg.data.id);
 
-    const secondOrgInvite = await authClient.organization.inviteMember({
-        email: Users.B.email,
-        role: "member",
-        organizationId: orgs.secondOrg.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const secondOrgInvite = await inviteUserToOrgOrThrow(token, Users.B.email, "member", orgs.secondOrg.data.id);
 
     return { firstOrgInvite, secondOrgInvite };
 };
@@ -221,19 +177,9 @@ const addUserBToOrganizations = async (token: string, orgs: any) => {
 const acceptInvitations = async (token: string, invites: any) => {
     console.log("\n4. User B accepting invitations...");
     
-    const firstAccept = await authClient.organization.acceptInvitation({
-        invitationId: invites.firstOrgInvite.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const firstAccept = await acceptOrgInvitationOrThrow(token, invites.firstOrgInvite.data.id);
 
-    const secondAccept = await authClient.organization.acceptInvitation({
-        invitationId: invites.secondOrgInvite.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const secondAccept = await acceptOrgInvitationOrThrow(token, invites.secondOrgInvite.data.id);
 
     return { firstAccept, secondAccept };
 };
@@ -244,16 +190,16 @@ const testWorkspaceOperations = async (userType: string, token: string) => {
     
     try {
         // Get current workspace context
-        const activeOrg = await authClient.useActiveOrganization.get();
+        const activeOrg = await getActiveOrganization(token);
 
         console.log(`Current workspace context for User ${userType}:\n`, 
-            activeOrg.data ? activeOrg.data.name : "Personal workspace");
+            activeOrg?.data ? activeOrg.data.name : "Personal workspace");
 
         // Test some operations
-        const orgs = authClient.useListOrganizations.get()
+        const orgs = await listOrgs(token);
 
         console.log(`Available organizations for User ${userType}:`, 
-            JSON.stringify(orgs.data, null, 2));
+            JSON.stringify(orgs, null, 2));
 
         return { activeOrg, orgs };
     } catch (error) {

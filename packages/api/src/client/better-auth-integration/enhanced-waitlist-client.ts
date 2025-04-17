@@ -3,24 +3,21 @@ import path from "path";
 import { 
     createUserOrThrow, 
     signInUserOrThrow,
-    getTRPCClient
+    getTRPCClient,
+    setActiveOrganizationOrThrow
 } from '../utils';
 import { createOrg, addOrgMember } from "../../auth";
 import { createAuthClient } from "better-auth/client";
 import { adminClient, organizationClient } from "better-auth/client/plugins";
+import { adminAccessControl } from "../../auth/admin/permissions";
+import { organizationAccessControl } from "../../auth/org/permissions";
+import { roles as adminRoles } from "../../auth/admin/roles";
+import { roles as orgRoles } from "../../auth/org/roles";
+
 
 // Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
-});
-
-// Initialize auth client with organization plugin
-const authClient = createAuthClient({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-    plugins: [
-        adminClient(),
-        organizationClient(),
-    ]
 });
 
 // Generate random x-digit number for unique usernames
@@ -114,12 +111,7 @@ function main() {
                     contextData.organization = org;
                     
                     // Set active organization for owner
-                    return authClient.organization.setActive({
-                        organizationId: String(org?.id),
-                        fetchOptions: {
-                            headers: { Authorization: `Bearer ${contextData.ownerUser!.token}` }
-                        }
-                    })
+                    return setActiveOrganizationOrThrow(contextData.ownerUser!.token, String(org?.id))
                     .then(() => {
                         // Add admin user to organization with adminRole
                         return addOrgMember(
@@ -131,12 +123,7 @@ function main() {
                     })
                     .then(() => {
                         // Set active organization for admin
-                        return authClient.organization.setActive({
-                            organizationId: String(org?.id),
-                            fetchOptions: {
-                                headers: { Authorization: `Bearer ${contextData.adminUser!.token}` }
-                            }
-                        });
+                        return setActiveOrganizationOrThrow(contextData.adminUser!.token, String(org?.id))
                     })
                     .then(() => {
                         // Add regular user to organization with memberRole
@@ -149,12 +136,7 @@ function main() {
                     })
                     .then(() => {
                         // Set active organization for regular user
-                        return authClient.organization.setActive({
-                            organizationId: String(org?.id),
-                            fetchOptions: {
-                                headers: { Authorization: `Bearer ${contextData.regularUser!.token}` }
-                            }
-                        });
+                        return setActiveOrganizationOrThrow(contextData.regularUser!.token, String(org?.id))
                     });
                 });
         })

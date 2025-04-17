@@ -1,11 +1,12 @@
 import * as dotenv from "dotenv";
 import path from "path";
 import { 
+    acceptOrgInvitationOrThrow,
+    createOrgOrThrow,
     createUserOrThrow, 
+    inviteUserToOrgOrThrow, 
     signInUserOrThrow,
 } from '../utils';
-import { organizationClient, adminClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/client";
 
 
 // Load environment variables
@@ -20,14 +21,6 @@ const INVITEE_EMAIL = `invitee${timestamp}@example.com`;
 const COMMON_PASSWORD = `SecurePass!${timestamp}`;
 const ORG_NAME = `Test Organization ${timestamp}`;
 const ORG_SLUG = `test-org-${timestamp}`;
-
-const authClient = createAuthClient({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-    plugins: [
-        organizationClient(),
-        adminClient()
-    ]
-});
 
 // Step 1: Create inviter user
 const createInviterUser = async () => {
@@ -53,30 +46,13 @@ const signInInviter = async () => {
 // Step 4: Create organization
 const createOrg = async (token: string) => {
     console.log("\n4. Creating organization...");
-    return await authClient.organization.create({
-        name: ORG_NAME,
-        slug: ORG_SLUG,
-        fetchOptions: {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    });
+    return await createOrgOrThrow(token, ORG_NAME, ORG_SLUG);
 };
 
 // Step 5: Send invitation
 const sendInvitation = async (token: string, organizationId: string) => {
     console.log("\n5. Sending invitation...");
-    return await authClient.organization.inviteMember({
-        email: INVITEE_EMAIL,
-        role: "member",
-        organizationId,
-        fetchOptions: {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    });
+    return await inviteUserToOrgOrThrow(token, INVITEE_EMAIL, "member", organizationId);
 };
 
 // Step 6: Create invitee user
@@ -103,14 +79,7 @@ const signInInvitee = async () => {
 // Step 8: Accept invitation
 const acceptInvitation = async (token: string, invitationId: string) => {
     console.log("\n8. Accepting invitation...");
-    return await authClient.organization.acceptInvitation({
-        invitationId,
-        fetchOptions: {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    });
+    return await acceptOrgInvitationOrThrow(token, invitationId);
 };
 
 async function createOrganizationInvitationFlow() {
