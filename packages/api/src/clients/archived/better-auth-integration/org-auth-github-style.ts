@@ -1,21 +1,15 @@
 import * as dotenv from "dotenv";
 import path from "path";
 import { 
+    acceptOrgInvitationOrThrow,
+    createOrgOrThrow,
     createUserOrThrow, 
+    getAllSessionsOrThrow, 
+    inviteUserToOrgOrThrow, 
     signInUserOrThrow,
-} from '../utils';
-import readline from 'readline';
-import { organizationClient, adminClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/client";
-import { listOrgs } from "../../auth";
+} from '../../utils';
+import { listOrgs } from "../../../auth";
 
-const authClient = createAuthClient({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-    plugins: [
-        adminClient(),
-        organizationClient(),
-    ]
-});
 
 // Load environment variables
 dotenv.config({
@@ -64,8 +58,14 @@ const createUsers = async () => {
         .then(() => {
             // Now create B and C
             return Promise.all([
-                createUserOrThrow(Users.B.name, Users.B.email.toLowerCase(), Users.B.password),
-                createUserOrThrow(Users.C.name, Users.C.email.toLowerCase(), Users.C.password)
+                createUserOrThrow(
+                    Users.B.name, 
+                    Users.B.email.toLowerCase(), 
+                    Users.B.password),
+                createUserOrThrow(
+                    Users.C.name, 
+                    Users.C.email.toLowerCase(), 
+                    Users.C.password)
             ]);
         });
 };
@@ -73,23 +73,16 @@ const createUsers = async () => {
 // Step 2: Create organizations with User A
 const createOrganizations = async (token: string) => {
     console.log("\n2. Creating organizations...");
-    
-    const firstOrg = await authClient.organization.create({
-        name: Organizations.First.name,
-        slug: Organizations.First.slug,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
-
-    const secondOrg = await authClient.organization.create({
-        name: Organizations.Second.name,
-        slug: Organizations.Second.slug,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
-
+    const firstOrg = await createOrgOrThrow(
+        token, 
+        Organizations.First.name, 
+        Organizations.First.slug
+    );
+    const secondOrg = await createOrgOrThrow(
+        token, 
+        Organizations.Second.name, 
+        Organizations.Second.slug
+    );
     return { firstOrg, secondOrg };
 };
 
@@ -97,23 +90,19 @@ const createOrganizations = async (token: string) => {
 const addUserBToOrganizations = async (token: string, orgs: any) => {
     console.log("\n3. Adding User B to both organizations...");
     
-    const firstOrgInvite = await authClient.organization.inviteMember({
-        email: Users.B.email.toLowerCase(),
-        role: "member",
-        organizationId: orgs.firstOrg.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const firstOrgInvite = await inviteUserToOrgOrThrow(
+        token, 
+        Users.B.email.toLowerCase(), 
+        "member", 
+        orgs.firstOrg.data.id
+    );
 
-    const secondOrgInvite = await authClient.organization.inviteMember({
-        email: Users.B.email.toLowerCase(),
-        role: "member",
-        organizationId: orgs.secondOrg.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const secondOrgInvite = await inviteUserToOrgOrThrow(
+        token, 
+        Users.B.email.toLowerCase(), 
+        "member", 
+        orgs.secondOrg.data.id
+    );
 
     return { firstOrgInvite, secondOrgInvite };
 };
@@ -122,19 +111,15 @@ const addUserBToOrganizations = async (token: string, orgs: any) => {
 const acceptInvitations = async (token: string, invites: any) => {
     console.log("\n4. User B accepting invitations...");
     
-    const firstAccept = await authClient.organization.acceptInvitation({
-        invitationId: invites.firstOrgInvite.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const firstAccept = await acceptOrgInvitationOrThrow(
+        token, 
+        invites.firstOrgInvite.data.id
+    );
 
-    const secondAccept = await authClient.organization.acceptInvitation({
-        invitationId: invites.secondOrgInvite.data.id,
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${token}` }
-        }
-    });
+    const secondAccept = await acceptOrgInvitationOrThrow(
+        token, 
+        invites.secondOrgInvite.data.id
+    );
 
     return { firstAccept, secondAccept };
 };
@@ -167,11 +152,7 @@ const createMultipleSessionsAndList = async (userType: string, email: string, pa
     ]);
 
     // List all sessions
-    const allSessions = await authClient.listSessions({
-        fetchOptions: {
-            headers: { Authorization: `Bearer ${sessions[0]?.signedInUser?.data?.token}` }
-        }
-    });
+    const allSessions = await getAllSessionsOrThrow(String(sessions[0]?.signedInUser?.data?.token));
 
     console.log(`All sessions for User ${userType}:`, allSessions);
     return { sessions, allSessions };

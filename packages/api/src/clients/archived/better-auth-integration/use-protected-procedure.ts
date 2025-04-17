@@ -4,8 +4,7 @@ import {
     createUserOrThrow, 
     signInUserOrThrow,
     getTRPCClient,
-    getTokenSilently 
-} from '../utils';
+} from '../../utils';
 
 // Load environment variables
 dotenv.config({

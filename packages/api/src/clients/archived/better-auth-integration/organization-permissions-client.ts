@@ -4,23 +4,15 @@ import {
     createUserOrThrow, 
     signInUserOrThrow,
     getTRPCClient,
-} from '../utils';
-import { createOrg, addOrgMember } from "../../auth";
-import { createAuthClient } from "better-auth/client";
-import { adminClient, organizationClient } from "better-auth/client/plugins";
+    getAllSessionsOrThrow,
+    setActiveOrganizationOrThrow,
+} from '../../utils';
+import { createOrg, addOrgMember } from "../../../auth";
+
 
 // Load environment variables
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
-});
-
-// Initialize auth client with organization plugin
-const authClient = createAuthClient({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
-    plugins: [
-        adminClient(),
-        organizationClient(),
-    ]
 });
 
 // Generate random x-digit number for unique usernames
@@ -84,20 +76,11 @@ interface TestContext {
 const setActiveOrganizationForAllSessions = async (token: string, organizationId: string) => {
     try {
         // First, list all sessions
-        let sessions = await authClient.listSessions({
-            fetchOptions: {
-                headers: { Authorization: `Bearer ${token}` }
-            }
-        });
+        let sessions = await getAllSessionsOrThrow(token);
 
         // Set active organization for each session
         await Promise.all((sessions?.data ?? []).map(session => 
-            authClient.organization.setActive({
-                organizationId,
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${session.token}` }
-                }
-            })
+            setActiveOrganizationOrThrow(session.token, organizationId)
         ));
 
         console.log(`\nSet active organization ${organizationId} for all sessions`);
@@ -170,12 +153,8 @@ async function runPermissionsTest() {
                 String(org?.id),
                 ["ownerRole"]
             )
-            .then(() => authClient.organization.setActive({
-                organizationId: String(org?.id),
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${context.users.testOwner.token}` }
-                }
-            }))
+            .then(() => setActiveOrganizationOrThrow(
+                context.users.testOwner.token, String(org?.id)))
             .then(() => ({ sessions, org, clients: { ownerTrpc, testOwnerTrpc, adminTrpc, analystTrpc, memberTrpc } }));
         })
         .then(({ sessions, org, clients }) => {
@@ -185,12 +164,8 @@ async function runPermissionsTest() {
                 String(org?.id),
                 ["adminRole"]
             )
-            .then(() => authClient.organization.setActive({
-                organizationId: String(org?.id),
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${context.users.admin.token}` }
-                }
-            }))
+            .then(() => setActiveOrganizationOrThrow(
+                context.users.admin.token, String(org?.id)))
             .then(() => ({ sessions, org, clients }));
         })
         .then(({ sessions, org, clients }) => {
@@ -200,12 +175,8 @@ async function runPermissionsTest() {
                 String(org?.id),
                 ["analystRole"]
             )
-            .then(() => authClient.organization.setActive({
-                organizationId: String(org?.id),
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${context.users.analyst.token}` }
-                }
-            }))
+            .then(() => setActiveOrganizationOrThrow(
+                context.users.analyst.token, String(org?.id)))
             .then(() => ({ sessions, org, clients }));
         })
         .then(({ sessions, org, clients }) => {
@@ -215,12 +186,8 @@ async function runPermissionsTest() {
                 String(org?.id),
                 ["memberRole"]
             )
-            .then(() => authClient.organization.setActive({
-                organizationId: String(org?.id),
-                fetchOptions: {
-                    headers: { Authorization: `Bearer ${context.users.member.token}` }
-                }
-            }))
+            .then(() => setActiveOrganizationOrThrow(
+                context.users.member.token, String(org?.id)))
             .then(() => ({ sessions, org, clients }));
         })
         .then(({ clients }) => {
@@ -269,14 +236,14 @@ async function runPermissionsTest() {
                     });
                 })
                 .then(searchResults => {
-                    console.log("\nAnalyst successfully searched entries:", searchResults);
+                    console.log("\nAnalyst successfully searched entries:", JSON.stringify(searchResults, null, 2));
                     // Test expected permission denial
                     return clients.memberTrpc.waitlist.entry.updateStatus.mutate({
                         entryId: { id: memberEntry.id },
                         status: 'APPROVED'
                     })
                     .catch(error => {
-                        console.log("\nMember correctly denied status update:", truncateError(error));
+                        console.error("\nMember correctly denied status update:", truncateError(error));
                     });
                 });
             });

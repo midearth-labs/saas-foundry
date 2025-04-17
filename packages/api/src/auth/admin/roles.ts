@@ -1,11 +1,14 @@
-import { adminAc } from "better-auth/plugins/admin/access";
+import { adminAc, userAc } from "better-auth/plugins/admin/access";
 import { adminAccessControl } from "./permissions";
 
-const userRole = adminAccessControl.newRole({
-    waitlistEntry: ["create"]
-});
 
 const defaultAdminStatements = adminAc.statements;
+const defaultUserStatements = userAc.statements;
+
+const userRole = adminAccessControl.newRole({
+    ...defaultUserStatements,
+    waitlistEntry: ["create"]
+});
 
 const adminRole = adminAccessControl.newRole({
     waitlistDefinition: ["create", "get", "list", "getStats", "getActiveCount"],
@@ -13,7 +16,14 @@ const adminRole = adminAccessControl.newRole({
     ...defaultAdminStatements,
 });
 
+const [user, admin] = [userRole, adminRole];  // Just to avoid namespace resolution issues
+
 export const roles = {
     userRole,
     adminRole,
+    user,
+    admin,
 };
+
+export type AdminRoleType = typeof roles[keyof typeof roles];
+export type AdminRoleTypeKeys = keyof typeof roles;
