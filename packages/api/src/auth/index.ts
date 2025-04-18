@@ -17,7 +17,7 @@ import {
 } from "better-auth/plugins";
 import { roles as adminRoles } from "./admin/roles";
 import { adminAccessControl } from "./admin/permissions";
-import { roles as orgRoles } from "./org/roles";
+import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
 import { organizationAccessControl } from "./org/permissions";
 
 dotenv.config({
@@ -55,6 +55,13 @@ const auth = betterAuth({
       defaultRole: "member",
     }),
   ],
+  account: {
+    accountLinking: {
+      enabled: true,
+      // trustedProviders: ["google"],  // Will autolink the user's account if one existed prior with same email
+      // allowDifferentEmails: true,  // Linking of accounts with different email addresses (should be used with extra security verification steps)
+    },
+  },
   ...(requireEmailVerification ? {
     emailVerification: {
       sendOnSignUp: true,
@@ -187,8 +194,7 @@ export const createOrg = async (token: string, name: string, slug: string) => {
   });
 }
 
-type OrgRole = "adminRole" | "analystRole" | "memberRole" | "ownerRole";
-export const addOrgMember = async (token: string, userId: string, organizationId: string, roles: OrgRole | OrgRole[]) => {
+export const addOrgMember = async (token: string, userId: string, organizationId: string, roles: OrgRoleTypeKeys | OrgRoleTypeKeys[]) => {
   return await auth.api.addMember({
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: {
@@ -198,7 +204,6 @@ export const addOrgMember = async (token: string, userId: string, organizationId
     }
   });
 }
-
 
 export const verifyEmail = async (token: string, userId: string) => {
   return await auth.api.verifyEmail({

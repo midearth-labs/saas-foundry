@@ -10,8 +10,8 @@ import {
     inviteUserToOrgOrThrow, 
     setActiveOrganizationOrThrow, 
     signInUserOrThrow,
+    getUserInput,
 } from '../utils';
-import readline from 'readline';
 import { listOrgs } from "../../auth"; 
 
 
@@ -19,7 +19,6 @@ import { listOrgs } from "../../auth";
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
-
 
 // Generate random 3-digit number
 const rand = () => Math.floor(Math.random() * 900 + 100);
@@ -52,21 +51,6 @@ const Organizations = {
         name: `Product Team`,
         slug: `prod-team-${rand()}`
     }
-};
-
-// Utility to get user input
-const getUserInput = async (prompt: string): Promise<string> => {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    return new Promise((resolve) => {
-        rl.question(prompt, (answer) => {
-            rl.close();
-            resolve(answer);
-        });
-    });
 };
 
 // Workspace selection utility
