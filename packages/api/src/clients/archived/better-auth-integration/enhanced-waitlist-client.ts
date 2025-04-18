@@ -5,14 +5,8 @@ import {
     signInUserOrThrow,
     getTRPCClient,
     setActiveOrganizationOrThrow
-} from '../utils';
-import { createOrg, addOrgMember } from "../../auth";
-import { createAuthClient } from "better-auth/client";
-import { adminClient, organizationClient } from "better-auth/client/plugins";
-import { adminAccessControl } from "../../auth/admin/permissions";
-import { organizationAccessControl } from "../../auth/org/permissions";
-import { roles as adminRoles } from "../../auth/admin/roles";
-import { roles as orgRoles } from "../../auth/org/roles";
+} from '../../utils';
+import { createOrg, addOrgMember } from "../../../auth";
 
 
 // Load environment variables
@@ -154,7 +148,7 @@ function main() {
                 description: 'A test waitlist for feature testing', 
                 status: 'ACTIVE' 
             })
-            .then(definition => {
+            .then((definition: any) => {
                 contextData.waitlistDefinition = definition;
                 console.log("\nAdmin successfully created waitlist definition:", definition);
                 
@@ -163,12 +157,12 @@ function main() {
                     definitionId: definition.id,
                     email: "test1@example.com"
                 })
-                .then(entry => {
+                .then((entry: any) => {
                     console.log("\nRegular user successfully created entry:", entry);
                     
                     // Now do admin operations with admin client
                     return adminTrpc.waitlist.definition.getStats.query({ id: definition.id })
-                    .then(stats => {
+                    .then((stats: any) => {
                         console.log("\nAdmin retrieved waitlist stats:", stats);
                         // Continue with other admin operations...
                     });
@@ -190,13 +184,13 @@ function main() {
                     })
                 ));
             })
-            .then(entries => {
+            .then((entries) => {
                 contextData.waitlistEntries = entries;
                 console.log("\nCreated waitlist entries:", entries.map(e => e.id));
 
                 // Step 9: Get updated stats
                 return adminTrpc.waitlist.definition.getStats.query({ id: contextData.waitlistDefinition.id })
-                .then(stats => {
+                .then((stats) => {
                     console.log("\nUpdated waitlist stats:", stats);
                 });
             })

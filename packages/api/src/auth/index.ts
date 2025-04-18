@@ -17,8 +17,9 @@ import {
 } from "better-auth/plugins";
 import { roles as adminRoles } from "./admin/roles";
 import { adminAccessControl } from "./admin/permissions";
-import { roles as orgRoles } from "./org/roles";
+import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
 import { organizationAccessControl } from "./org/permissions";
+
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -55,6 +56,13 @@ const auth = betterAuth({
       defaultRole: "member",
     }),
   ],
+  account: {
+    accountLinking: {
+      enabled: true,
+      // trustedProviders: ["google"],  // Will autolink the user's account if one existed prior with same email
+      // allowDifferentEmails: true,  // Linking of accounts with different email addresses (should be used with extra security verification steps)
+    },
+  },
   ...(requireEmailVerification ? {
     emailVerification: {
       sendOnSignUp: true,
@@ -133,9 +141,7 @@ export const listOrgsWithoutAuth = async () => {
   return await auth.api.listOrganizations();
 }
 
-/**
- * Checks top-level workspace user permissions via BetterAuth Admin API
- */
+/**Checks top-level workspace user permissions via BetterAuth Admin API */
 export const checkAdminPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const userId = session.user.id;
@@ -158,9 +164,7 @@ export const checkAdminPermission = async (session: Session, permission: Record<
   return (userHasPermission.success && !userHasPermission.error);
 }
 
-/**
- * Checks org-level user permissions via BetterAuth Org API
- */
+/** Checks org-level user permissions via BetterAuth Org API */
 export const checkOrgPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const resource = Object.keys(permission)[0] as keyof typeof permission;
@@ -187,8 +191,7 @@ export const createOrg = async (token: string, name: string, slug: string) => {
   });
 }
 
-type OrgRole = "adminRole" | "analystRole" | "memberRole" | "ownerRole";
-export const addOrgMember = async (token: string, userId: string, organizationId: string, roles: OrgRole | OrgRole[]) => {
+export const addOrgMember = async (token: string, userId: string, organizationId: string, roles: OrgRoleTypeKeys | OrgRoleTypeKeys[]) => {
   return await auth.api.addMember({
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: {
@@ -198,7 +201,6 @@ export const addOrgMember = async (token: string, userId: string, organizationId
     }
   });
 }
-
 
 export const verifyEmail = async (token: string, userId: string) => {
   return await auth.api.verifyEmail({

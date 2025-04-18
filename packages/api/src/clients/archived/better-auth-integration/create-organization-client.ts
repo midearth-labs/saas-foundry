@@ -5,7 +5,7 @@ import {
     createUserOrThrow,
     getSessionTokenOrThrow,
     signInUserOrThrow,
-} from '../utils';
+} from '../../utils';
 
 
 // Load environment variables

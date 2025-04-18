@@ -5,7 +5,7 @@ import {
   signInUserOrThrow,
   signInUnsuccessfully,
   getTRPCClient
-} from '../utils';
+} from '../../utils';
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
@@ -50,7 +50,7 @@ function main() {
               name: 'Test', 
               description: 'Desc', 
               status: 'ACTIVE' 
-            }).catch(error => {
+            }).catch((error: Error) => {
               console.error("\nAuthenticated TRPC operation failed:", truncateError(error));
               return null;
             }),
@@ -58,7 +58,7 @@ function main() {
               name: 'Test2', 
               description: 'Desc2', 
               status: 'ACTIVE' 
-            }).catch(error => {
+            }).catch((error: Error) => {
               console.error("\nUnauthenticated TRPC operation failed:", truncateError(error));
               return null;
             })

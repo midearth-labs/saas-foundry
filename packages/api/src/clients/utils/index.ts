@@ -10,7 +10,6 @@
  * - {@link signInUserOrThrow}: Sign in a user via email and password
  * - {@link signInUnsuccessfully}: Sign in a user with wrong password
  * - {@link createUserOrThrow}: Create a user
- * - {@link promoteUserToAdminOrThrow}: Promote a user to admin
  */
 import { createTRPCClient, httpLink } from '@trpc/client';
 import type { AppClientRouter } from '../../api/schema/root';
@@ -32,7 +31,7 @@ dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
-// Type inference won't be a problem if this is used in-file only
+// Should not be a problem if this is used in-file only
 /** BetterAuth Auth Client */
 const authClient = createAuthClient({
     baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
@@ -51,6 +50,28 @@ const authClient = createAuthClient({
         }),
     ]
 });
+
+// Experimental exported usage in wake of BetterAuth 1.2.6-beta.7 (probably won't work as expected)
+/** Get a BetterAuth Authentication Client */
+export const getAuthClient = () => {
+    return createAuthClient({
+        baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3005/api/auth',
+        plugins: [
+            adminClient({
+                ac: adminAccessControl,
+                roles: adminRoles,
+                adminRoles: ["admin", "adminRole", "owner", "ownerRole"],
+                defaultRole: "user",
+              }),
+            organizationClient({
+                ac: organizationAccessControl,
+                roles: orgRoles,
+                adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
+                defaultRole: "member",
+            }),
+        ]
+    })
+}
   
 /** Create a custom muted stdout to hide the input */
 class MutedStdout extends Writable {
@@ -208,6 +229,21 @@ export const verifyEmailWithToken = async (token: string) => {
         }
     });
 }
+
+/** Get user input from the console */
+export const getUserInput = async (prompt: string): Promise<string> => {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(prompt, (answer) => {
+            rl.close();
+            resolve(answer);
+        });
+    });
+};
 
 /** Sign in a user via Google Social Provider */
 export const signInGoogleUserOrThrow = async () => {

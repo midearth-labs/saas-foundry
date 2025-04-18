@@ -6,10 +6,9 @@ import {
     getTRPCClient,
     getAllSessionsOrThrow,
     setActiveOrganizationOrThrow,
-} from '../utils';
-import { createOrg, addOrgMember } from "../../auth";
-import { createAuthClient } from "better-auth/client";
-import { adminClient, organizationClient } from "better-auth/client/plugins";
+} from '../../utils';
+import { createOrg, addOrgMember } from "../../../auth";
+
 
 // Load environment variables
 dotenv.config({

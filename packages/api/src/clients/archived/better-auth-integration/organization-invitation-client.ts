@@ -6,7 +6,7 @@ import {
     createUserOrThrow, 
     inviteUserToOrgOrThrow, 
     signInUserOrThrow,
-} from '../utils';
+} from '../../utils';
 
 
 // Load environment variables
