@@ -20,6 +20,7 @@ import { adminAccessControl } from "./admin/permissions";
 import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
 import { organizationAccessControl } from "./org/permissions";
 
+
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
@@ -140,9 +141,7 @@ export const listOrgsWithoutAuth = async () => {
   return await auth.api.listOrganizations();
 }
 
-/**
- * Checks top-level workspace user permissions via BetterAuth Admin API
- */
+/**Checks top-level workspace user permissions via BetterAuth Admin API */
 export const checkAdminPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const userId = session.user.id;
@@ -165,9 +164,7 @@ export const checkAdminPermission = async (session: Session, permission: Record<
   return (userHasPermission.success && !userHasPermission.error);
 }
 
-/**
- * Checks org-level user permissions via BetterAuth Org API
- */
+/** Checks org-level user permissions via BetterAuth Org API */
 export const checkOrgPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const resource = Object.keys(permission)[0] as keyof typeof permission;

@@ -6,8 +6,8 @@ import {
     getTRPCClient,
     getAllSessionsOrThrow,
     setActiveOrganizationOrThrow,
-} from '../utils';
-import { createOrg, addOrgMember } from "../../auth";
+} from '../../utils';
+import { createOrg, addOrgMember } from "../../../auth";
 
 
 // Load environment variables

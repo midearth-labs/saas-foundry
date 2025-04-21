@@ -3,7 +3,7 @@ import path from "path";
 import { 
     getAuthClient,
     getUserInput,
-} from '../utils';
+} from '../../utils';
 
 
 // Load environment variables

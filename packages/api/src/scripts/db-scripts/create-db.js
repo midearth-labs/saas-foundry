@@ -13,17 +13,12 @@ dotenv.config({
 async function setupDatabase() {
   console.log("Setting up database...");
   
-  let [
-    user,
-    password,
-    host,
-    port,
-    database] = [
-      process.env.DATABASE_USERNAME || "postgres",
-      process.env.DATABSE_PASSWORD || "postgres",
-      process.env.DATABASE_HOST || "localhost",
-      process.env.DATABASE_PORT || 5432,
-      process.env.DATABASE_NAME || "saasfoundry"]
+  let 
+    user = process.env.DATABASE_USERNAME || "postgres",
+    password = process.env.DATABSE_PASSWORD || "postgres",
+    host = process.env.DATABASE_HOST || "localhost",
+    port = process.env.DATABASE_PORT || 5432,
+    database = process.env.DATABASE_NAME || "saasfoundry";
 
   // First connect to default postgres database
   const adminClient = new pg.Client({

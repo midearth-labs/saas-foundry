@@ -11,8 +11,8 @@ import {
     setActiveOrganizationOrThrow, 
     signInUserOrThrow,
     getUserInput,
-} from '../utils';
-import { listOrgs } from "../../auth"; 
+} from '../../utils';
+import { listOrgs } from "../../../auth"; 
 
 
 // Load environment variables

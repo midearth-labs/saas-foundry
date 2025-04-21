@@ -2,10 +2,10 @@ import {
   signInGoogleUserOrThrow, 
   getTRPCClient, 
   getTokenSilently,
-} from "../utils";
+} from "../../utils";
 
 async function signInViaGoogle() {
-    await signInGoogleUserOrThrow();
+    return await signInGoogleUserOrThrow();
 }
 
 async function useGoogleTokenInProtectedProcedure(token: string) {
@@ -25,7 +25,8 @@ async function useGoogleTokenInProtectedProcedure(token: string) {
 
 function main() {
   signInViaGoogle()
-  .then(() => {
+  .then((googleUser) => {
+    console.log(JSON.stringify(googleUser, null, 2));
     console.info("Google sign in URL was successfully generated. \nThere's currently no protected procedure that can be used to test the token for NOW.");
     // getTokenSilently('Please enter your token (input will be hidden): ')
     // .then((token) => { 

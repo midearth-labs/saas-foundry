@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import path from "path";
-import { createUserOrThrow } from '../utils';
+import { createUserOrThrow } from '../../utils';
 
 // Before running this test, set the AUTH_PREFERENCE_EMAIL_VERIFICATION environment variable to true
 
