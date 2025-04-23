@@ -5,10 +5,7 @@ import { DB } from "../db";  // Global database instance (all caps to distinguis
 import { FastifyRequest } from "fastify";
 import path from "path";
 import { toNodeHandler } from "better-auth/node";
-import { 
-  sendVerificationEmailAdapter,
-  sendOrganizationInvitationEmailAdapter,
-} from "./email";
+import EmailServiceFactory from "./email/factories/email-service-factory";
 import { 
   admin, 
   bearer,
@@ -31,9 +28,12 @@ const isAdmin = async (email: string) => {
 }
 
 const requireEmailVerification = process.env.AUTH_PREFERENCE_EMAIL_VERIFICATION === "true";
+// const sendVerificationEmailAdapter = EmailServiceFactory.createVerificationEmailService().sendVerificationEmailAdapter;
+// const sendOrganizationInvitationEmailAdapter = EmailServiceFactory.createOrganizationInvitationEmailService().sendOrganizationInvitationEmailAdapter;
 
 // Type inference issue fixed as of BetterAuth 1.2.6-beta.7
 const auth = betterAuth({
+  trustedOrigins: [process.env.API_ORIGIN || "http://localhost:3005", "/\\"],
   database: drizzleAdapter(DB, {
     provider: "pg",
   }),
@@ -49,7 +49,9 @@ const auth = betterAuth({
     bearer(),
     organization({
       allowUserToCreateOrganization: async (user) => { return await isAdmin(user.email) },
-      sendInvitationEmail: async (data) => { await sendOrganizationInvitationEmailAdapter(data) },
+      sendInvitationEmail: async (data) => { 
+        await EmailServiceFactory.createOrganizationInvitationEmailService().sendOrganizationInvitationEmailAdapter(data) 
+      },
       ac: organizationAccessControl,
       roles: orgRoles,
       adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
@@ -67,15 +69,8 @@ const auth = betterAuth({
     emailVerification: {
       sendOnSignUp: true,
       autoSignInAfterVerification: true,
-      sendVerificationEmail: async ({ user, url, token }, request) => {
-      await sendVerificationEmailAdapter({
-        email: user.email,
-        token,
-        url,
-        subject: "Verify your email",
-        text: `Click the link below to verify your email: ${url}`,
-        request,
-      });
+      sendVerificationEmail: async ({ user, url, token }) => {
+        await EmailServiceFactory.createVerificationEmailService().sendVerificationEmailAdapter({user, url, token});
       }
     }
   } : {}),

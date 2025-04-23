@@ -3,6 +3,8 @@ import path from "path";
 import { AuthClientInterface } from "../interfaces/auth-client.interface";
 import { createUserOrThrow } from "../common/utils";
 
+
+// !!! SET AUTH_PREFERENCE_EMAIL_VERIFICATION TO true IN .env TO ENABLE THIS CLIENT
 /**
  * Implementation of the AuthClientInterface for creating a user that requires verification
  */
