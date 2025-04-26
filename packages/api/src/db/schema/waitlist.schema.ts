@@ -3,6 +3,7 @@ import { timestamps, genericUUID, primaryKeyUUID, requiredEmail } from './common
 
 export const definitionStatusEnum = pgEnum('waitlist_status', ['ACTIVE', 'INACTIVE', 'ARCHIVED']);
 export const entryStatusEnum = pgEnum('waitlist_entry_status', ['PENDING', 'APPROVED', 'REJECTED']);
+export const waitlistTierEnum = pgEnum('waitlist_tier', ['BASIC', 'STANDARD', 'PRO']);
 
 // WaitList Definition table
 export const waitlistDefinitions = pgTable('waitlist_definitions', {
@@ -11,6 +12,7 @@ export const waitlistDefinitions = pgTable('waitlist_definitions', {
     description: varchar('description', { length: 256 }).notNull(),
     // waitlistType: varchar('waitlist_type').notNull(),
     status: definitionStatusEnum('status').notNull(),
+    tier: waitlistTierEnum('tier').notNull().default('BASIC'),
     // fields: jsonb('fields').notNull(),
     ...timestamps
 });

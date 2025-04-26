@@ -262,7 +262,8 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
         return testOwnerTrpc.waitlist.definition.create.mutate({
             name: 'Test Permissions Waitlist',
             description: 'A waitlist for testing permissions',
-            status: 'ACTIVE'
+            status: 'ACTIVE',
+            tier: 'BASIC'
         })
         .then(definition => {
             this.contextData.waitlistDefinitions = [definition];

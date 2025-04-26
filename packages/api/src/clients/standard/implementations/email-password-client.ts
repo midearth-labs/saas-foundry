@@ -16,6 +16,7 @@ export class EmailPasswordClient implements AuthClientInterface {
   private USER_NAME: string;
   private USER_EMAIL: string;
   private USER_PASSWORD: string;
+  private TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
 
   /**
    * Creates a new EmailPasswordClient
@@ -33,9 +34,9 @@ export class EmailPasswordClient implements AuthClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = userName || process.env.ADMIN_USER_NAME || "James Bond";
-    this.USER_EMAIL = userEmail || "admin_mi6@007.co.uk";
-    this.USER_PASSWORD = userPassword || process.env.ADMIN_USER_PASSWORD || "Shaken-N0t-St!rred";
+    this.USER_NAME = "John Smith " + this.TIMESTAMP;
+    this.USER_EMAIL = "admin_john_smith_" + this.TIMESTAMP + "@example.com";
+    this.USER_PASSWORD = "Adm!n123Secure";
   }
 
   /**
@@ -102,7 +103,8 @@ export class EmailPasswordClient implements AuthClientInterface {
               authenticatedTRPCClient.waitlist.definition.create.mutate({ 
                 name: 'Test', 
                 description: 'Desc', 
-                status: 'ACTIVE' 
+                status: 'ACTIVE' ,
+                tier: 'BASIC'
               }).catch(error => {
                 console.error("\nAuthenticated TRPC operation failed:", truncateError(error));
                 return null;
@@ -110,7 +112,8 @@ export class EmailPasswordClient implements AuthClientInterface {
               unauthenticatedTRPCClient.waitlist.definition.create.mutate({ 
                 name: 'Test2', 
                 description: 'Desc2', 
-                status: 'ACTIVE' 
+                status: 'ACTIVE',
+                tier: 'BASIC'
               }).catch(error => {
                 console.error("\nUnauthenticated TRPC operation failed:", truncateError(error));
                 return null;

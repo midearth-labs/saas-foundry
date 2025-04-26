@@ -178,7 +178,8 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
     return adminTrpc.waitlist.definition.create.mutate({ 
       name: 'Test Waitlist', 
       description: 'A test waitlist for feature testing', 
-      status: 'ACTIVE' 
+      status: 'ACTIVE',
+      tier: 'BASIC'
     })
     .then(definition => {
       this.waitlistDefinition = definition;

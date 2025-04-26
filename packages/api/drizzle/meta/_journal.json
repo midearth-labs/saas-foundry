@@ -78,6 +78,20 @@
       "when": 1743793111498,
       "tag": "0010_wild_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1745538528722,
+      "tag": "0011_chunky_frank_castle",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1745618348812,
+      "tag": "0012_familiar_cargill",
+      "breakpoints": true
     }
   ]
 }

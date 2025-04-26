@@ -1,13 +1,14 @@
-import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
-			
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+
 export const user = pgTable("user", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					name: text('name').notNull(),
  email: text('email').notNull().unique(),
  emailVerified: boolean('email_verified').notNull(),
  image: text('image'),
  createdAt: timestamp('created_at').notNull(),
  updatedAt: timestamp('updated_at').notNull(),
+ stripeCustomerId: text('stripe_customer_id'),
  role: text('role'),
  banned: boolean('banned'),
  banReason: text('ban_reason'),
@@ -15,7 +16,7 @@ export const user = pgTable("user", {
 				});
 
 export const session = pgTable("session", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					expiresAt: timestamp('expires_at').notNull(),
  token: text('token').notNull().unique(),
  createdAt: timestamp('created_at').notNull(),
@@ -28,7 +29,7 @@ export const session = pgTable("session", {
 				});
 
 export const account = pgTable("account", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					accountId: text('account_id').notNull(),
  providerId: text('provider_id').notNull(),
  userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
@@ -44,7 +45,7 @@ export const account = pgTable("account", {
 				});
 
 export const verification = pgTable("verification", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					identifier: text('identifier').notNull(),
  value: text('value').notNull(),
  expiresAt: timestamp('expires_at').notNull(),
@@ -52,8 +53,21 @@ export const verification = pgTable("verification", {
  updatedAt: timestamp('updated_at')
 				});
 
+export const subscription = pgTable("subscription", {
+					id: text('id').primaryKey(),
+					plan: text('plan').notNull(),
+ referenceId: text('reference_id').notNull(),
+ stripeCustomerId: text('stripe_customer_id'),
+ stripeSubscriptionId: text('stripe_subscription_id'),
+ status: text('status'),
+ periodStart: timestamp('period_start'),
+ periodEnd: timestamp('period_end'),
+ cancelAtPeriodEnd: boolean('cancel_at_period_end'),
+ seats: integer('seats')
+				});
+
 export const organization = pgTable("organization", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					name: text('name').notNull(),
  slug: text('slug').unique(),
  logo: text('logo'),
@@ -62,7 +76,7 @@ export const organization = pgTable("organization", {
 				});
 
 export const member = pgTable("member", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					organizationId: text('organization_id').notNull().references(()=> organization.id, { onDelete: 'cascade' }),
  userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
  role: text('role').notNull(),
@@ -70,7 +84,7 @@ export const member = pgTable("member", {
 				});
 
 export const invitation = pgTable("invitation", {
-					id: text("id").primaryKey(),
+					id: text('id').primaryKey(),
 					organizationId: text('organization_id').notNull().references(()=> organization.id, { onDelete: 'cascade' }),
  email: text('email').notNull(),
  role: text('role'),

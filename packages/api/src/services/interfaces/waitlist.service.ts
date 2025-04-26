@@ -41,10 +41,20 @@ export type WaitListDefinitionService = {
  */
 export type WaitListEntryService = {
     /**
-     * Create a new waitlist entry
+     * Create a new waitlist entry for BASIC tier waitlists
      */
     create(opts: { ctx: WaitlistPublicContext, input: EntryServiceShape['create']['input'] }): Promise<EntryServiceShape['create']['output']>;
 
+    /**
+     * Create a new waitlist entry specifically for PRO tier waitlists
+     */
+    createProEntry(opts: { ctx: WaitlistPublicContext, input: EntryServiceShape['createProEntry']['input'] }): Promise<EntryServiceShape['createProEntry']['output']>;
+
+    /**
+     * Create a new waitlist entry specifically for STANDARD tier waitlists
+     */
+    createStandardEntry(opts: { ctx: WaitlistPublicContext, input: EntryServiceShape['createStandardEntry']['input'] }): Promise<EntryServiceShape['createStandardEntry']['output']>;
+    
     /**
      * Update status of a waitlist entry
      */

@@ -17,6 +17,8 @@ export type WaitListDefinitionRepository = {
  */
 export type WaitListEntryRepository = {
   create(data: wl.CreateWaitListEntryDto): Promise<wl.WaitListEntryIdDto>;
+  createProEntry(data: wl.CreateProWaitListEntryDto): Promise<wl.WaitListEntryIdDto>;
+  createStandardEntry(data: wl.CreateStandardWaitListEntryDto): Promise<wl.WaitListEntryIdDto>;
   findById(data: wl.WaitListEntryIdDto): Promise<wl.WaitListEntryDto | null>;
   updateStatus(data: wl.UpdateWaitListEntryStatusDto): Promise<wl.WaitListEntryDto>;
   search(data: wl.SearchWaitListEntriesDto): Promise<wl.SearchWaitListEntriesResultDto>;

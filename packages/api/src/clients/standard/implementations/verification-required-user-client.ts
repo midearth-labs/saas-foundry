@@ -12,7 +12,7 @@ export class VerificationRequiredUserClient implements AuthClientInterface {
   private USER_NAME: string;
   private USER_EMAIL: string;
   private USER_PASSWORD: string;
-
+  private TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new VerificationRequiredUserClient
    */
@@ -22,9 +22,9 @@ export class VerificationRequiredUserClient implements AuthClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = process.env.USER_NAME || "James Bond";
-    this.USER_EMAIL = process.env.USER_EMAIL || "james.bond@007.co.uk";
-    this.USER_PASSWORD = process.env.USER_PASSWORD || "Shaken-N0t-St!rred";
+    this.USER_NAME = "John Smith";
+    this.USER_EMAIL = "admin_john_smith_" + this.TIMESTAMP + "@example.com";
+    this.USER_PASSWORD = "Adm!n123Secure";
   }
 
   /**

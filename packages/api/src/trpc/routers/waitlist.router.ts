@@ -1,8 +1,16 @@
 import { WaitlistServiceRouter, EntryServiceRouter, DefinitionServiceRouter } from "../../services/interfaces/waitlist.service";
 import { waitListDefinitionService, waitListEntryService } from "../../services/impl/waitlist.service";
-import { waitlistAdminProcedure, waitlistPublicProcedure, waitlistAnalysisProcedure } from "../base-procedures/waitlist";
 import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
 import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
+import { 
+    waitlistAdminProcedure, 
+    waitlistPublicProcedure, 
+    waitlistAnalysisProcedure, 
+    waitlistProtectedProcedure, 
+    waitlistSubscriptionValidationProcedure 
+} from "../base-procedures/waitlist";
+import { BASIC_PLAN, PRO_PLAN, STANDARD_PLAN } from "../../auth/stripe";
+
 
 const definitionRouter: DefinitionServiceRouter = {
     create: waitlistAdminProcedure
@@ -32,8 +40,19 @@ const definitionRouter: DefinitionServiceRouter = {
 
 const entryRouter: EntryServiceRouter = {
     create: waitlistPublicProcedure
+     // .meta({ subscription: { [BASIC_PLAN]: "active" } })  // Not required: implicitly defined basic tier usage for all public procedures
         .input(EntryRoutesConfiguration.create.input)
         .mutation(waitListEntryService.create),
+
+    createProEntry: waitlistSubscriptionValidationProcedure
+        .meta({ subscription: { [PRO_PLAN]: "active" } })
+        .input(EntryRoutesConfiguration.createProEntry.input)
+        .mutation(waitListEntryService.createProEntry),
+
+    createStandardEntry: waitlistSubscriptionValidationProcedure
+        .meta({ subscription: { [STANDARD_PLAN]: "active" } })
+        .input(EntryRoutesConfiguration.createStandardEntry.input)
+        .mutation(waitListEntryService.createStandardEntry),
 
     updateStatus: waitlistAdminProcedure
         .meta({ permission: { waitlistEntry: ["updateStatus"] } })

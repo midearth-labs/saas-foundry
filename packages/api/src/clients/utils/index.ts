@@ -16,6 +16,7 @@ import type { AppClientRouter } from '../../api/schema/root';
 import path from 'path';
 import * as dotenv from "dotenv";
 import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/client';
+import { stripeClient } from '@better-auth/stripe/client';
 import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
@@ -48,6 +49,9 @@ const authClient = createAuthClient({
             adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
             defaultRole: "member",
         }),
+        stripeClient({
+            subscription: true,
+        }),
     ]
 });
 
@@ -68,6 +72,9 @@ export const getAuthClient = () => {
                 roles: orgRoles,
                 adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
                 defaultRole: "member",
+            }),
+            stripeClient({
+                subscription: true,
             }),
         ]
     })

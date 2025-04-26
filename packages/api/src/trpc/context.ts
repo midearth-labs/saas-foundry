@@ -2,7 +2,7 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { DB } from "../db";
-import { checkAdminPermission, checkOrgPermission, Session } from "../auth";
+import { checkAdminPermission, checkOrgPermission, checkSubscription, Session } from "../auth";
 import { getSession } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
@@ -17,6 +17,7 @@ type InContext = {
   getSessionOrThrow: InFunction<Promise<Session>>;
   checkAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
   checkOrgAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
+  validateSubscriptionOrThrow: (session: Session, subscription: Record<string, string>) => Promise<boolean>;
 }
 
 type OutContext = {
@@ -36,6 +37,14 @@ export const getServerSessionOrThrow = async (req: FastifyRequest): Promise<Sess
   }
   return session;
 };
+
+export const validateSubscriptionOrThrow: InContext["validateSubscriptionOrThrow"] = async (session, subscription) => {
+  const validSubscription = await checkSubscription(session?.session?.token, subscription);
+  if (!validSubscription) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'User does not have valid subscription to the service' });
+  }
+  return validSubscription;
+}
 
 export type BaseContext = {
   in: InContext,
@@ -60,6 +69,7 @@ export const getContextCreator = () => {
         getSessionOrThrow: () => getServerSessionOrThrow(req),
         checkAuthorized,
         checkOrgAuthorized,
+        validateSubscriptionOrThrow,
       },
       out: { },
       extendedRequestId,
@@ -70,7 +80,6 @@ export const getContextCreator = () => {
 
   return createContext;
 }
-
 
 const checkAuthorized: InContext["checkAuthorized"] = async (session, permission) => {
   const hasPermission = await checkAdminPermission(session, permission);

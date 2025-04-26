@@ -1,6 +1,7 @@
 import { WaitListDefinitionService, WaitListEntryService } from '../interfaces/waitlist.service';
 import { WaitListDefinitionRepository, WaitListEntryRepository } from '../../repositories/interfaces/waitlist.repository';
 import { TRPCError } from '@trpc/server';
+import { createNextApiHandler } from '@trpc/server/adapters/next';
 
 export const waitListDefinitionService: WaitListDefinitionService = {
   async create({ input, ctx: { waitlistContext: { definitionRepository } } }) {
@@ -45,7 +46,6 @@ export const waitListDefinitionService: WaitListDefinitionService = {
 export const waitListEntryService: WaitListEntryService = {
   async create({ input, ctx: { waitlistContext: { definitionRepository, entryRepository } } }) {
     const isDefinitionRegistrationOpen = await definitionRepository.isDefinitionRegistrationOpen({id: input.definitionId});
-    
     if (!isDefinitionRegistrationOpen) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
@@ -56,6 +56,37 @@ export const waitListEntryService: WaitListEntryService = {
     const result = await entryRepository.create(input);
     return { id: result.id };
   },
+
+  async createProEntry({ input, ctx: { waitlistContext: { entryRepository } } }) {
+    try {
+      const result = await entryRepository.createProEntry(input);
+      return { id: result.id };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: error.message || 'Failed to create PRO tier waitlist entry'
+        });
+      }
+      throw error;
+    }
+  },
+
+  async createStandardEntry({ input, ctx: { waitlistContext: { entryRepository } } }) {
+    try {
+      const result = await entryRepository.createStandardEntry(input);
+      return { id: result.id };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: error.message || 'Failed to create STANDARD tier waitlist entry'
+        });
+      }
+      throw error;
+    }
+  },
+
   async updateStatus({ input, ctx: { waitlistContext: { entryRepository } } }) {
     const entry = await entryRepository.findById({ id: input.entryId.id });
     if (!entry) {

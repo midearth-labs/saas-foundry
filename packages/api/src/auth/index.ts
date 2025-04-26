@@ -1,4 +1,10 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { 
+  admin, 
+  bearer,
+  openAPI,
+  organization,
+} from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import * as dotenv from "dotenv";
 import { DB } from "../db";  // Global database instance (all caps to distinguish from any other db instance)
@@ -6,16 +12,16 @@ import { FastifyRequest } from "fastify";
 import path from "path";
 import { toNodeHandler } from "better-auth/node";
 import EmailServiceFactory from "./email/factories/email-service-factory";
-import { 
-  admin, 
-  bearer,
-  openAPI,
-  organization,
-} from "better-auth/plugins";
 import { roles as adminRoles } from "./admin/roles";
 import { adminAccessControl } from "./admin/permissions";
 import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
 import { organizationAccessControl } from "./org/permissions";
+import { stripe } from "@better-auth/stripe";
+import { 
+  plans, 
+  stripeClient, 
+  stripeWebhookSecret 
+} from "./stripe";
 
 
 dotenv.config({
@@ -28,16 +34,26 @@ const isAdmin = async (email: string) => {
 }
 
 const requireEmailVerification = process.env.AUTH_PREFERENCE_EMAIL_VERIFICATION === "true";
-// const sendVerificationEmailAdapter = EmailServiceFactory.createVerificationEmailService().sendVerificationEmailAdapter;
-// const sendOrganizationInvitationEmailAdapter = EmailServiceFactory.createOrganizationInvitationEmailService().sendOrganizationInvitationEmailAdapter;
 
-// Type inference issue fixed as of BetterAuth 1.2.6-beta.7
-const auth = betterAuth({
+export const auth = betterAuth({
   trustedOrigins: [process.env.API_ORIGIN || "http://localhost:3005", "/\\"],
   database: drizzleAdapter(DB, {
     provider: "pg",
   }),
   plugins: [
+    stripe({
+      subscription: {
+        enabled: true,
+        plans,
+      },
+      stripeClient,
+      stripeWebhookSecret,
+      createCustomerOnSignUp: true,
+      onCustomerCreate: async ({ customer, stripeCustomer, user }, request) => {
+        // Do something with the newly created customer
+        console.log(`Stripe plug-in: Customer ${customer.id}::${stripeCustomer.id} created for user ${user.name}`);
+      },
+    }),
     openAPI(), // @TODO: disable in production /api/auth/reference
     admin({
       // @TODO: Make this more generic for future access control needs
@@ -110,6 +126,25 @@ const auth = betterAuth({
     },
   },
 } satisfies BetterAuthOptions);
+
+export const listActiveSubscriptions = async (token: string) => {
+  return await auth.api.listActiveSubscriptions({
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export const checkSubscription = async (token: string, subscription: Record<string, string>) => {
+  const plan = Object.keys(subscription)[0] as keyof typeof subscription;
+  const status = subscription[plan];
+  const subscriptions = await listActiveSubscriptions(token);
+  const validSubscription = subscriptions.find(s => s.status === status && s.plan === plan);
+  if (!validSubscription) {
+    throw new Error("Subscription not found");
+  }
+  return validSubscription ? true : false;
+}
 
 export type Session = typeof auth.$Infer.Session;
 export type AuthUserType = Session["user"];

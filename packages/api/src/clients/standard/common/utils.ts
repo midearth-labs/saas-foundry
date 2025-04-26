@@ -28,7 +28,7 @@ export {
 } from '../../../auth';
 
 // Constants for random generation
-export const rand = () => Math.floor(Math.random() * 9000 + 100);
+export const rand = () => Math.floor(Math.random() * 90000 + 10000);
 
 /**
  * Utility to truncate error messages
