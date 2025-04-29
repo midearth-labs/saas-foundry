@@ -6,9 +6,6 @@ export type WaitListStatus = keyof typeof WAITLIST_STATUSES;
 export enum WAITLIST_ENTRY_STATUSES { PENDING = "PENDING", APPROVED = "APPROVED", REJECTED = "REJECTED" };
 export type WaitListEntryStatus = keyof typeof WAITLIST_ENTRY_STATUSES;
 
-export enum WAITLIST_TIERS { BASIC = "BASIC", STANDARD = "STANDARD", PRO = "PRO" };
-export type WaitListTier = keyof typeof WAITLIST_TIERS;
-
 /**
  * Data transfer objects for waitlist definition operations
  */
@@ -16,7 +13,6 @@ export type CreateWaitListDefinitionDto = {
   name: string;
   description: string;
   status: WaitListStatus;
-  tier: WaitListTier;
 }
 
 export type WaitListDefinitionIdDto = StringIdDto
@@ -43,16 +39,6 @@ export type WaitListDefinitionActiveCountDto = {
  * Data transfer objects for waitlist entry operations
  */
 export type CreateWaitListEntryDto = {
-  definitionId: string;
-  email: string;
-}
-
-export type CreateProWaitListEntryDto = {
-  definitionId: string;
-  email: string;
-}
-
-export type CreateStandardWaitListEntryDto = {
   definitionId: string;
   email: string;
 }

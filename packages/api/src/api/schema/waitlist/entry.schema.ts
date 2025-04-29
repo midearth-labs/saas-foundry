@@ -15,16 +15,8 @@ const create = {
     type: 'mutation',
 } satisfies ZodOperation;
 
-const createProEntry = {
-    input: z.object({
-        definitionId: definitionId,
-        email: Email,
-    }),
-    output: UUIDOutputSchema,
-    type: 'mutation',
-} satisfies ZodOperation;
-
-const createStandardEntry = {
+// New dummy endpoint for testing
+const createPaidEntry = {
     input: z.object({
         definitionId: definitionId,
         email: Email,
@@ -86,8 +78,7 @@ const searchEntries = {
 
 export const EntryRoutesConfiguration = {
     create,
-    createProEntry,
-    createStandardEntry,
+    createPaidEntry,
     updateStatus,
     getEntry,
     searchEntries,

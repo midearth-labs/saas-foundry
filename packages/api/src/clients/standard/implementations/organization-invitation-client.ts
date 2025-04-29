@@ -18,6 +18,7 @@ export class OrganizationInvitationClient implements OrganizationClientInterface
   private COMMON_PASSWORD: string;
   private ORG_NAME: string;
   private ORG_SLUG: string;
+  private TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
 
   /**
    * Creates a new OrganizationInvitationClient
@@ -29,12 +30,11 @@ export class OrganizationInvitationClient implements OrganizationClientInterface
     });
 
     // Generate unique credentials for this run
-    const timestamp = Date.now();
-    this.INVITER_EMAIL = `admin_inviter${timestamp}@example.com`;
-    this.INVITEE_EMAIL = `invitee${timestamp}@example.com`;
-    this.COMMON_PASSWORD = `SecurePass!${timestamp}`;
-    this.ORG_NAME = `Test Organization ${timestamp}`;
-    this.ORG_SLUG = `test-org-${timestamp}`;
+    this.INVITER_EMAIL = `admin_inviter${this.TIMESTAMP}@example.com`;
+    this.INVITEE_EMAIL = `invitee${this.TIMESTAMP}@example.com`;
+    this.COMMON_PASSWORD = `SecurePass!${this.TIMESTAMP}`;
+    this.ORG_NAME = `Test Organization ${this.TIMESTAMP}`;
+    this.ORG_SLUG = `test-org-${this.TIMESTAMP}`;
   }
 
   /**

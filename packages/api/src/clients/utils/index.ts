@@ -16,7 +16,6 @@ import type { AppClientRouter } from '../../api/schema/root';
 import path from 'path';
 import * as dotenv from "dotenv";
 import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/client';
-import { stripeClient } from '@better-auth/stripe/client';
 import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
@@ -25,6 +24,7 @@ import { organizationAccessControl } from '../../auth/org/permissions';
 import { roles as adminRoles } from '../../auth/admin/roles';
 import { OrgRoleTypeKeys, roles as orgRoles } from '../../auth/org/roles';
 import { Session } from 'better-auth';
+import { stripeClient } from '@better-auth/stripe/client';
 
 
 // Load environment variables
@@ -50,7 +50,7 @@ const authClient = createAuthClient({
             defaultRole: "member",
         }),
         stripeClient({
-            subscription: true,
+            subscription: true
         }),
     ]
 });

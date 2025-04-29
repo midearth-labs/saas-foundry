@@ -75,8 +75,8 @@ export async function startServer() {
         });
 
         // Base endpoint for testing auth redirects
-        server.get("/", (request, reply) => {
-            reply.send({ 
+        server.get("/", async (request, reply) => {
+            await reply.send({ 
                 message: "Hello SaaS-Foundry!",
                 params: request.params,
                 query: request.query,

@@ -7,9 +7,6 @@ import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configura
 const waitlistDefinitionStatus = z
 .enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']);
 
-const waitlistDefinitionTier = z
-.enum(['BASIC', 'STANDARD', 'PRO']);
-
 const definitionIDInputSchema = UUIDInputSchema;
 
 const create = {
@@ -17,7 +14,6 @@ const create = {
         name: z.string(),  // A sort of title
         description: z.string().min(0),
         status: waitlistDefinitionStatus,
-        tier: waitlistDefinitionTier.default('BASIC'),
         // fields: z.array(waitlistFieldTypeSchema), // Defaults to ['TEXT']
     }),
     output: UUIDOutputSchema,

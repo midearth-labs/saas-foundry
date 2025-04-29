@@ -28,10 +28,10 @@ export class CreateOrganizationClient implements OrganizationClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = "Admin User " + this.TIMESTAMP;
+    this.USER_NAME = "Admin User" + this.TIMESTAMP;
     this.USER_EMAIL = "admin_" + this.TIMESTAMP + "@example.com";
     this.USER_PASSWORD = "Adm!n123Secure";
-    this.ORG_NAME = "My Organization " + this.TIMESTAMP;
+    this.ORG_NAME = "My Organization" + this.TIMESTAMP;
     this.ORG_SLUG = "my-org-" + this.TIMESTAMP;
   }
 

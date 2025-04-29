@@ -9,7 +9,6 @@ import {
   inviteUserToOrgOrThrow, 
   signInUserOrThrow,
   listOrgs,
-  rand,
   truncateError
 } from "../common/utils";
 
@@ -33,7 +32,7 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
     First: { name: string; slug: string };
     Second: { name: string; slug: string };
   };
-
+  private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new GithubStyleOrganizationAuthClient
    */
@@ -43,37 +42,34 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
       path: path.resolve(process.cwd(), '.env')
     });
 
-    // Generate random identifier
-    const randId = rand();
-
     // Initialize user data
     this.Users = {
       A: {
-        name: `John Smith`,
-        email: `admin_ajohn${randId}@example.com`.toLowerCase(),
-        password: `SecureA!${randId}`
+        name: `John Smith ` + this.TIMESTAMP,
+        email: `admin_ajohn${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureA!${this.TIMESTAMP}`
       },
       B: {
-        name: `Jane Doe`,
-        email: `bjane${randId}@example.com`.toLowerCase(),
-        password: `SecureB!${randId}`
+        name: `Jane Doe` + this.TIMESTAMP,
+        email: `bjane${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureB!${this.TIMESTAMP}`
       },
       C: {
-        name: `Bob Wilson`,
-        email: `cbob${randId}@example.com`.toLowerCase(),
-        password: `SecureC!${randId}`
+        name: `Bob Wilson` + this.TIMESTAMP,
+        email: `cbob${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureC!${this.TIMESTAMP}`
       }
     };
 
     // Initialize organizations
     this.Organizations = {
       First: {
-        name: `Tech Team`,
-        slug: `tech-team-${randId}`
+        name: `Tech Team` + this.TIMESTAMP,
+        slug: `tech-team-${this.TIMESTAMP}`
       },
       Second: {
-        name: `Design Team`,
-        slug: `design-team-${randId}`
+        name: `Design Team` + this.TIMESTAMP,
+        slug: `design-team-${this.TIMESTAMP}`
       }
     };
 

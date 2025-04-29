@@ -38,7 +38,8 @@
         "client:standard:github-style-organization-auth": "tsx src/clients/standard/scripts/github-style-organization-auth-script.ts",
         "client:standard:slack-style-organization-auth": "tsx src/clients/standard/scripts/slack-style-organization-auth-script.ts",
         "client:standard:organization-permissions": "tsx src/clients/standard/scripts/organization-permissions-script.ts",
-        "client:standard:link-account": "tsx src/clients/standard/scripts/link-account-script.ts"
+        "client:standard:link-account": "tsx src/clients/standard/scripts/link-account-script.ts",
+        "client:standard:subscription-waitlist": "tsx src/clients/standard/scripts/subscription-waitlist-script.ts"
     },
     "dependencies": {
         "@better-auth/stripe": "^1.2.7",

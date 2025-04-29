@@ -59,7 +59,7 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
     // Organization details
     private readonly ORG_NAME: string;
     private readonly ORG_SLUG: string;
-
+    private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
     /**
      * Creates a new OrganizationPermissionsClient
      */
@@ -69,41 +69,38 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
             path: path.resolve(process.cwd(), '.env')
         });
 
-        // Generate random identifier
-        const randId = this.generateRandomId();
-
         // Initialize user data
         this.Users = {
             Owner: {
                 name: 'Creator Owner',
-                email: `admin_creator_owner_${randId}@example.com`.toLowerCase(),
-                password: `CreatorPass!${randId}`
+                email: `admin_creator_owner_${this.TIMESTAMP}@example.com`.toLowerCase(),
+                password: `CreatorPass!${this.TIMESTAMP}`
             },
             TestOwner: {
                 name: 'Test Owner',
-                email: `admin_test_owner_${randId}@example.com`.toLowerCase(),
-                password: `TestOwnerPass!${randId}`
+                email: `admin_test_owner_${this.TIMESTAMP}@example.com`.toLowerCase(),
+                password: `TestOwnerPass!${this.TIMESTAMP}`
             },
             Admin: {
                 name: 'Admin User',
-                email: `admin_${randId}@example.com`.toLowerCase(),
-                password: `AdminPass!${randId}`
+                email: `admin_${this.TIMESTAMP}@example.com`.toLowerCase(),
+                password: `AdminPass!${this.TIMESTAMP}`
             },
             Analyst: {
                 name: 'Analyst User',
-                email: `analyst_${randId}@example.com`.toLowerCase(),
-                password: `AnalystPass!${randId}`
+                email: `analyst_${this.TIMESTAMP}@example.com`.toLowerCase(),
+                password: `AnalystPass!${this.TIMESTAMP}`
             },
             Member: {
                 name: 'Member User',
-                email: `member_${randId}@example.com`.toLowerCase(),
-                password: `MemberPass!${randId}`
+                email: `member_${this.TIMESTAMP}@example.com`.toLowerCase(),
+                password: `MemberPass!${this.TIMESTAMP}`
             }
         };
 
         // Organization details
-        this.ORG_NAME = `Test Organization ${randId}`;
-        this.ORG_SLUG = `test-org-${randId}`;
+        this.ORG_NAME = `Test Organization ${this.TIMESTAMP}`;
+        this.ORG_SLUG = `test-org-${this.TIMESTAMP}`;
 
         // Initialize state
         this.contextData = {
@@ -118,14 +115,6 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
             waitlistDefinitions: [],
             waitlistEntries: []
         };
-    }
-
-    /**
-     * Generate a random ID (3-digit number)
-     * @returns Random ID
-     */
-    private generateRandomId(): number {
-        return Math.floor(Math.random() * 900) + 100;
     }
 
     /**
@@ -262,8 +251,7 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
         return testOwnerTrpc.waitlist.definition.create.mutate({
             name: 'Test Permissions Waitlist',
             description: 'A waitlist for testing permissions',
-            status: 'ACTIVE',
-            tier: 'BASIC'
+            status: 'ACTIVE'
         })
         .then(definition => {
             this.contextData.waitlistDefinitions = [definition];
@@ -272,7 +260,7 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
             // Test member creating an entry
             return memberTrpc.waitlist.entry.create.mutate({
                 definitionId,
-                email: `entry_${this.generateRandomId()}@example.com`
+                email: `entry_${this.TIMESTAMP}@example.com`
             })
             .then(memberEntry => {
                 console.log("\nMember successfully created entry:", memberEntry);

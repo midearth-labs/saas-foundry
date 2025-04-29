@@ -12,7 +12,6 @@ import {
   signInUserOrThrow,
   getUserInput,
   listOrgs,
-  rand,
   truncateError
 } from "../common/utils";
 
@@ -36,7 +35,7 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
     First: { name: string; slug: string };
     Second: { name: string; slug: string };
   };
-
+  private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new SlackStyleOrganizationAuthClient
    */
@@ -46,25 +45,22 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
       path: path.resolve(process.cwd(), '.env')
     });
 
-    // Generate random identifier
-    const randId = rand();
-
     // Initialize user data
     this.Users = {
       A: {
         name: `John Smith`,
-        email: `admin_asmith${randId}@example.com`.toLowerCase(),
-        password: `SecureA!${randId}`
+        email: `admin_asmith${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureA!${this.TIMESTAMP}`
       },
       B: {
         name: `Jane Doe`,
-        email: `jdoe${randId}@example.com`.toLowerCase(),
-        password: `SecureB!${randId}`
+        email: `jdoe${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureB!${this.TIMESTAMP}`
       },
       C: {
         name: `Bob Wilson`,
-        email: `bwilson${randId}@example.com`.toLowerCase(),
-        password: `SecureC!${randId}`
+        email: `bwilson${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `SecureC!${this.TIMESTAMP}`
       }
     };
 
@@ -72,11 +68,11 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
     this.Organizations = {
       First: {
         name: `Engineering Team`,
-        slug: `eng-team-${randId}`
+        slug: `eng-team-${this.TIMESTAMP}`
       },
       Second: {
         name: `Product Team`,
-        slug: `prod-team-${randId}`
+        slug: `prod-team-${this.TIMESTAMP}`
       }
     };
 

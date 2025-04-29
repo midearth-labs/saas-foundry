@@ -5,7 +5,6 @@ import {
   createUserOrThrow, 
   signInUserOrThrow, 
   getTRPCClient,
-  rand,
   truncateError
 } from "../common/utils";
 
@@ -22,7 +21,7 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
     Admin: { name: string; email: string; password: string };
     Regular: { name: string; email: string; password: string };
   };
-
+  private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new ProtectedProcedureClient
    */
@@ -32,20 +31,17 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
       path: path.resolve(process.cwd(), '.env')
     });
 
-    // Generate random identifiers for unique test users
-    const randId = rand();
-
     // Initialize user data
     this.Users = {
       Admin: {
         name: `Admin User`,
-        email: `admin_${randId}@example.com`.toLowerCase(),
-        password: `AdminPass!${randId}`
+        email: `admin_${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `AdminPass!${this.TIMESTAMP}`
       },
       Regular: {
         name: `Regular User`,
-        email: `user_${randId}@example.com`.toLowerCase(),
-        password: `UserPass!${randId}`
+        email: `user_${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `UserPass!${this.TIMESTAMP}`
       }
     };
 
@@ -102,8 +98,7 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
     return adminTrpc.waitlist.definition.create.mutate({ 
       name: 'Admin Created Waitlist', 
       description: 'Test waitlist definition by admin', 
-      status: 'ACTIVE',
-      tier: 'BASIC'
+      status: 'ACTIVE' 
     })
     .then(definition => {
       this.contextData.waitlistDefinition = definition;
@@ -113,8 +108,7 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
       return regularTrpc.waitlist.definition.create.mutate({ 
         name: 'Regular User Waitlist', 
         description: 'Should fail - authenticated but not admin', 
-        status: 'ACTIVE',
-        tier: 'BASIC'
+        status: 'ACTIVE' 
       })
       .catch(error => {
         console.log("\nRegular user (authenticated, non-admin) failed to create definition (expected):", 
@@ -127,8 +121,7 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
         return unauthenticatedTrpc.waitlist.definition.create.mutate({ 
           name: 'Unauthenticated Waitlist', 
           description: 'Should fail - not even authenticated', 
-          status: 'ACTIVE',
-          tier: 'BASIC'
+          status: 'ACTIVE' 
         })
         .catch(error => {
           console.log("\nUnauthenticated client failed to create definition (expected):", 
@@ -143,15 +136,15 @@ export class ProtectedProcedureClient implements ProtectedProcedureClientInterfa
       return Promise.all([
         adminTrpc.waitlist.entry.create.mutate({
           definitionId: this.contextData.waitlistDefinition.id,
-          email: "test1@example.com"
+          email: `entry1_${this.TIMESTAMP}@example.com`
         }),
         regularTrpc.waitlist.entry.create.mutate({
           definitionId: this.contextData.waitlistDefinition.id,
-          email: "test2@example.com"
+          email: `entry2_${this.TIMESTAMP}@example.com`
         }),
         unauthenticatedTrpc.waitlist.entry.create.mutate({
           definitionId: this.contextData.waitlistDefinition.id,
-          email: "test3@example.com"
+          email: `entry3_${this.TIMESTAMP}@example.com`
         })
       ]);
     })
