@@ -1,9 +1,8 @@
 import { WaitlistServiceRouter, EntryServiceRouter, DefinitionServiceRouter } from "../../services/interfaces/waitlist.service";
 import { waitListDefinitionService, waitListEntryService } from "../../services/impl/waitlist.service";
-import { waitlistAdminProcedure, waitlistPublicProcedure, waitlistAnalysisProcedure } from "../base-procedures/waitlist";
+import { waitlistAdminProcedure, waitlistPublicProcedure, waitlistAnalysisProcedure, waitlistSubscriptionProtectedProcedure } from "../base-procedures/waitlist";
 import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
 import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
-import { subscriptionValidationProcedure } from "../base-procedures/subscription";
 import { PRO_PLAN } from "../../auth/stripe";
 
 const definitionRouter: DefinitionServiceRouter = {
@@ -53,10 +52,10 @@ const entryRouter: EntryServiceRouter = {
         .query(waitListEntryService.searchEntries),
     
     // dummy endpoint for testing Stripe integration
-    createPaidEntry: subscriptionValidationProcedure
+    subscriptionWaitlistDummy: waitlistSubscriptionProtectedProcedure
         .meta({ subscription: { [PRO_PLAN]: "active" } })
-        .input(EntryRoutesConfiguration.createPaidEntry.input)
-        .mutation(waitListEntryService.createPaidEntry),
+        .input(EntryRoutesConfiguration.subscriptionWaitlistDummy.input)
+        .query(waitListEntryService.getSubscriptionDummyData),
 };
 
 export const waitlistRouterConfiguration: WaitlistServiceRouter = {

@@ -56,31 +56,7 @@ export const waitListEntryService: WaitListEntryService = {
     const result = await entryRepository.create(input);
     return { id: result.id };
   },
-  
-  // New dummy endpoint implementation for testing
-  async createPaidEntry({ input, ctx }) {
-    // Modified to work with both context types
-    const repositories = ctx.repositories;
-    const definitionRepository = repositories.waitlist.definition;
-    const entryRepository = repositories.waitlist.entry;
-    
-    // Similar to create but with payment handling
-    const isDefinitionRegistrationOpen = await definitionRepository.isDefinitionRegistrationOpen({id: input.definitionId});
-    if (!isDefinitionRegistrationOpen) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Attached wait list identifier not found. It maybe archived or inactive'
-      });
-    }
-    const basicEntryData = {
-      definitionId: input.definitionId,
-      email: input.email
-    };
 
-    const result = await entryRepository.create(basicEntryData);
-    return { id: result.id };
-  },
-  
   async updateStatus({ input, ctx: { waitlistContext: { entryRepository } } }) {
     const entry = await entryRepository.findById({ id: input.entryId.id });
     if (!entry) {
@@ -128,5 +104,11 @@ export const waitListEntryService: WaitListEntryService = {
         id: { id: entry.id }
       }))
     };
-  }
+  },
+
+  // New dummy endpoint implementation for testing
+  async getSubscriptionDummyData({ input, ctx }) {
+    return { id: 'fake-subscription-id' };
+  },
+  
 };

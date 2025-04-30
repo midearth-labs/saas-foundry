@@ -13,16 +13,13 @@ import { PRO_PLAN } from "../../../auth/stripe";
 
 /**
  * Implementation of the SubscriptionWaitlistClientInterface for testing
- * waitlist functionality with subscribed and non-subscribed users
+ * subscription access control on endpoints
  */
 export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInterface {
   private users: {
     regular: { token: string; id: string } | null;
     subscriber: { token: string; id: string } | null;
   };
-  private waitlistDefinition: any;
-  private regularEntries: any[] = [];
-  private paidEntries: any[] = [];
   private subscription: any;
   private readonly Users: {
     Regular: { name: string; email: string; password: string };
@@ -43,12 +40,12 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
     // Note: Subscriber user has admin_ prefix to get admin permissions
     this.Users = {
       Regular: {
-        name: 'Regular User' + this.TIMESTAMP,
+        name: 'Regular User ' + this.TIMESTAMP,
         email: `regular_user_${this.TIMESTAMP}@example.com`.toLowerCase(),
         password: `RegularPass!${this.TIMESTAMP}`
       },
       Subscriber: {
-        name: 'Admin Subscriber' + this.TIMESTAMP,
+        name: 'Admin Subscriber ' + this.TIMESTAMP,
         email: `admin_subscriber_${this.TIMESTAMP}@example.com`.toLowerCase(), // admin_ prefix grants admin permissions
         password: `SubscriberPass!${this.TIMESTAMP}`
       }
@@ -59,8 +56,6 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
       regular: null,
       subscriber: null
     };
-    this.waitlistDefinition = null;
-    this.subscription = null;
   }
 
   /**
@@ -115,8 +110,8 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
     
     return subscriberAuthClient.subscription.upgrade({
       plan: PRO_PLAN,
-      successUrl: "http://localhost:3005/",
-      cancelUrl: "http://localhost:3005/",
+      successUrl: "http://localhost:3005/test/stripe-success",
+      cancelUrl: "http://localhost:3005/test/stripe-cancel",
       fetchOptions: {
         headers: {
           Authorization: `Bearer ${this.users.subscriber!.token}`
@@ -150,9 +145,9 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
       return getUserInput("\nAfter completing the Stripe checkout in your browser, press Enter to continue...");
     })
     .then(() => {
-      console.log("\nWaiting for subscription webhook processing (3 seconds)...");
+      console.log("\nWaiting for subscription webhook processing (5 seconds)...");
       // Wait for webhook processing
-      return new Promise(resolve => setTimeout(resolve, 3000));
+      return new Promise(resolve => setTimeout(resolve, 5000));
     })
     .then(() => {
       // List active subscriptions to confirm
@@ -171,164 +166,138 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
       }
       console.log("\n======================SUBSCRIPTIONS==================\n", JSON.stringify(response.data, null, 2));
       console.log("\n=====================================================\n");
+      
+      // Log all subscription statuses for debugging
+      if (response.data && response.data.length > 0) {
+        console.log("\nAll subscription statuses:");
+        response.data.forEach((sub, idx) => {
+          console.log(`[${idx}] Plan: ${sub.plan}, Status: ${sub.status}, ID: ${sub.id}`);
+        });
+      }
+      
+      // Look for any subscription with the PRO plan, even if not fully active yet
+      const anySubscription = response.data?.find(sub => sub.plan === PRO_PLAN);
       const activeSubscription = response.data?.find(sub => 
-        (sub.status === "active") && sub.plan === PRO_PLAN
+        (sub.status === "active" || sub.status === "trialing") && sub.plan === PRO_PLAN
       );
       
-      if (!activeSubscription) {
-        console.warn("\nWarning: No active subscription found. The webhook might not have been processed yet.");
+      if (activeSubscription) {
+        console.log("\nActive subscription confirmed:", {
+          plan: activeSubscription.plan,
+          status: activeSubscription.status,
+          periodEnd: activeSubscription.periodEnd
+        });
+        
+        this.subscription = activeSubscription;
+        return activeSubscription;
+      } 
+      else if (anySubscription) {
+        console.log("\nFound subscription but not yet active:", {
+          plan: anySubscription.plan,
+          status: anySubscription.status
+        });
+        this.subscription = anySubscription;
+        return anySubscription;
+      }
+      else {
+        console.warn("\nWarning: No subscription found. The webhook might not have been processed yet.");
         console.warn("Will continue with script, but paid operations might fail.");
         
         // Return a placeholder subscription for the rest of the script
-        return {
+        const placeholderSubscription = {
           plan: PRO_PLAN,
           status: "active",
           userId: this.users.subscriber!.id
         };
+        
+        this.subscription = placeholderSubscription;
+        return placeholderSubscription;
       }
-      
-      console.log("\nActive subscription confirmed:", {
-        plan: activeSubscription.plan,
-        status: activeSubscription.status,
-        periodEnd: activeSubscription.periodEnd
-      });
-      
-      this.subscription = activeSubscription;
-      return activeSubscription;
     });
   }
 
   /**
-   * Create a waitlist definition for testing
-   * @returns Promise with the created waitlist definition
-   */
-  public createWaitlistDefinition(): Promise<any> {
-    console.log("\n4. Creating waitlist definition...");
-    const regularTrpc = getTRPCClient(this.users.regular!.token);
-    const subscriberTrpc = getTRPCClient(this.users.subscriber!.token);
-    
-    // First try with regular user (should fail due to permissions)
-    return regularTrpc.waitlist.definition.create.mutate({ 
-      name: `Test Waitlist ${this.TIMESTAMP}`, 
-      description: 'A test waitlist for subscription testing', 
-      status: 'ACTIVE' 
-    })
-    .catch(error => {
-      console.log("\nRegular user failed to create waitlist definition (expected):", truncateError(error));
-      
-      // Now try with subscriber user (should succeed with admin privileges)
-      return subscriberTrpc.waitlist.definition.create.mutate({ 
-        name: `Test Waitlist ${this.TIMESTAMP}`, 
-        description: 'A test waitlist for subscription testing', 
-        status: 'ACTIVE' 
-      });
-    })
-    .then(definition => {
-      this.waitlistDefinition = definition;
-      console.log("\nWaitlist definition created:", {
-        id: definition.id,
-      });
-      return definition;
-    });
-  }
-
-  /**
-   * Test waitlist entry operations with both users
+   * Test subscription-protected endpoint access with both users
    * @returns Promise with the test results
    */
   public testWaitlistOperations(): Promise<any> {
-    console.log("\n5. Testing waitlist operations...");
+    console.log("\n4. Testing subscription-protected endpoint access...");
     const regularTrpc = getTRPCClient(this.users.regular!.token);
     const subscriberTrpc = getTRPCClient(this.users.subscriber!.token);
     
-    // Step 1: Both users create normal waitlist entries
-    console.log("\nCreating regular waitlist entries with both users...");
+    // Print current subscription status for debugging
+    console.log("\nCurrent subscription status:", {
+      plan: this.subscription?.plan,
+      status: this.subscription?.status,
+      id: this.subscription?.id
+    });
     
+    console.log("\nTesting subscription-protected dummy endpoint access:");
+    
+    // Both users attempt to access the subscription-protected endpoint
     return Promise.all([
-      // Regular user creates entry
-      regularTrpc.waitlist.entry.create.mutate({
-        definitionId: this.waitlistDefinition.id,
-        email: `regular_entry_${this.TIMESTAMP}@example.com`
-      }),
-      // Subscriber user creates entry
-      subscriberTrpc.waitlist.entry.create.mutate({
-        definitionId: this.waitlistDefinition.id,
-        email: `subscriber_entry_${this.TIMESTAMP}@example.com`
-      })
-    ])
-    .then(([regularEntry, subscriberEntry]) => {
-      this.regularEntries = [regularEntry, subscriberEntry];
-      console.log("\nBoth users successfully created regular waitlist entries:", {
-        regularUserEntry: regularEntry.id,
-        subscriberUserEntry: subscriberEntry.id
-      });
-      
-      // Step 2: Test paid waitlist entries (requires subscription)
-      console.log("\nTesting paid waitlist entries (requires PRO subscription)...");
-      
-      return Promise.all([
-        // Regular user tries to create paid entry (should fail)
-        regularTrpc.waitlist.entry.createPaidEntry.mutate({
-          definitionId: String(this.waitlistDefinition.id),
-          email: `regular_paid_entry_${this.TIMESTAMP}@example.com`
-        }).catch(error => {
-          console.log("\nRegular user failed to create paid entry (expected):", truncateError(error));
-          return null;
-        }),
-        // Subscriber user tries to create paid entry (should succeed with subscription)
-        subscriberTrpc.waitlist.entry.createPaidEntry.mutate({
-          definitionId: this.waitlistDefinition.id,
-          email: `subscriber_paid_entry_${this.TIMESTAMP}@example.com`
-        }).catch(error => {
-          // This might fail if the webhook hasn't been fully processed
-          console.log("\nSubscriber user failed to create paid entry:", truncateError(error));
-          console.log("This might happen if the Stripe webhook hasn't been fully processed yet.");
-          return null;
+      // Regular user tries to access subscription-protected endpoint (should fail)
+      regularTrpc.waitlist.entry.subscriptionWaitlistDummy.query()
+        .then(result => {
+          console.log("\n⚠ UNEXPECTED: Regular user successfully accessed subscription-protected endpoint:", result);
+          return { success: true, result };
         })
-      ]);
-    })
-    .then(([regularPaidEntry, subscriberPaidEntry]) => {
-      if (subscriberPaidEntry) {
-        this.paidEntries.push(subscriberPaidEntry);
-        console.log("\n✓ SUCCESS: Subscriber created paid waitlist entry:", {
-          id: subscriberPaidEntry.id,
-        });
-        console.log("This confirms that the subscription is active and the protection is working correctly.");
-      } else {
-        console.log("\n⚠ NOTE: Subscriber couldn't create paid entry. This could be because:");
+        .catch(error => {
+          console.log("\n✓ EXPECTED: Regular user failed to access subscription-protected endpoint (expected):", truncateError(error));
+          return { success: false, error: truncateError(error) };
+        }),
+        
+      // Subscriber user tries to access subscription-protected endpoint (should succeed)
+      subscriberTrpc.waitlist.entry.subscriptionWaitlistDummy.query()
+        .then(result => {
+          console.log("\n✓ SUCCESS: Subscriber successfully accessed subscription-protected endpoint:", result);
+          return { success: true, result };
+        })
+        .catch(error => {
+          console.log("\n⚠ UNEXPECTED: Subscriber failed to access subscription-protected endpoint:", truncateError(error));
+          console.log("This might happen if the Stripe webhook hasn't been fully processed yet.");
+          return { success: false, error: truncateError(error) };
+        })
+    ])
+    .then(([regularResult, subscriberResult]) => {
+      // Summary of test results
+      console.log("\n---------------------------------------------");
+      console.log("SUBSCRIPTION ENDPOINT ACCESS TEST RESULTS");
+      console.log("---------------------------------------------");
+      console.log("Regular user access:", regularResult.success ? "❌ UNEXPECTED SUCCESS" : "✓ EXPECTED FAILURE");
+      console.log("Subscriber access:", subscriberResult.success ? "✓ EXPECTED SUCCESS" : "❌ UNEXPECTED FAILURE");
+      console.log("---------------------------------------------");
+      
+      if (!subscriberResult.success) {
+        console.log("\n⚠ NOTE: Subscriber couldn't access subscription-protected endpoint. This could be because:");
         console.log("  1. The Stripe webhook hasn't been fully processed yet");
         console.log("  2. There might be an issue with the subscription validation");
-        console.log("  3. The paid entry endpoint might be misconfigured");
-        console.log("\nCheck the server logs for more details on the subscription status.");
+        console.log("  3. The endpoint might be misconfigured");
+        
+        // Try to refresh subscriptions one more time for diagnostic purposes
+        console.log("\nRefreshing subscription status for diagnostics...");
+        return getAuthClient().subscription.list({
+          fetchOptions: {
+            headers: {
+              Authorization: `Bearer ${this.users.subscriber!.token}`
+            }
+          }
+        })
+        .then(response => {
+          if (response.data && response.data.length > 0) {
+            console.log("Latest subscription data:", JSON.stringify(response.data, null, 2));
+          } else {
+            console.log("No subscriptions found after refresh.");
+          }
+          return { regularResult, subscriberResult };
+        })
+        .catch(err => {
+          console.error("Error refreshing subscriptions:", err);
+          return { regularResult, subscriberResult };
+        });
       }
       
-      // Get stats from subscriber (admin) user
-      return subscriberTrpc.waitlist.definition.getStats.query({ id: this.waitlistDefinition.id });
-    })
-    .then(stats => {
-      console.log("\nWaitlist stats:", stats);
-      
-      // Use the admin user's permission to list all waitlist definitions instead of searching entries
-      return subscriberTrpc.waitlist.definition.list.query();
-    })
-    .then(definitions => {
-      console.log("\nFound waitlist definitions:", {
-        count: definitions.length,
-        definitions: definitions.map(d => ({ id: d.id, name: d.name, status: d.status }))
-      });
-      
-      // Access the waitlist definition stats to indirectly get information about entries
-      return subscriberTrpc.waitlist.definition.getActiveCount.query({ id: this.waitlistDefinition.id });
-    })
-    .then(activeCount => {
-      console.log("\nActive count for waitlist:", activeCount);
-      
-      return {
-        regularEntries: this.regularEntries,
-        paidEntries: this.paidEntries,
-        waitlistDefinition: this.waitlistDefinition,
-        subscription: this.subscription
-      };
+      return { regularResult, subscriberResult };
     });
   }
 
@@ -341,20 +310,18 @@ export class SubscriptionWaitlistClient implements SubscriptionWaitlistClientInt
     return this.createUsers()
       .then(() => this.signInUsers())
       .then(() => this.setupSubscription())
-      .then(() => this.createWaitlistDefinition())
+      // Skip createWaitlistDefinition per requirements
       .then(() => this.testWaitlistOperations())
       .then(results => {
-        console.log("\nSubscription waitlist client executed successfully!");
+        console.log("\nSubscription validation test executed successfully!");
         return {
           users: this.users,
-          waitlistDefinition: this.waitlistDefinition,
-          regularEntries: this.regularEntries,
-          paidEntries: this.paidEntries,
-          subscription: this.subscription
+          subscription: this.subscription,
+          results
         };
       })
       .catch(error => {
-        console.error("\nError in subscription waitlist client:", truncateError(error));
+        console.error("\nError in subscription validation test:", truncateError(error));
         throw error;
       });
   }

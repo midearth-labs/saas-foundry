@@ -23,12 +23,6 @@ export interface SubscriptionWaitlistClientInterface extends BaseClientInterface
   setupSubscription(): Promise<any>;
   
   /**
-   * Create a waitlist definition for testing
-   * @returns Promise with the created waitlist definition
-   */
-  createWaitlistDefinition(): Promise<any>;
-  
-  /**
    * Test waitlist entry operations with both users
    * @returns Promise with the test results
    */

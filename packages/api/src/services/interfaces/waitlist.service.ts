@@ -1,7 +1,7 @@
 import { ConvertRoutesToType } from "../../api/types/schema.zod.configuration";
 import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
 import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
-import { WaitlistPublicContext, WaitlistAdminContext, WaitlistAnalysisContext } from "../../trpc/base-procedures/waitlist";
+import { WaitlistPublicContext, WaitlistAdminContext, WaitlistAnalysisContext, WaitlistSubscriptionProtectedContext } from "../../trpc/base-procedures/waitlist";
 
 export type DefinitionServiceShape = ConvertRoutesToType<typeof DefinitionRoutesConfiguration>;
 export type EntryServiceShape = ConvertRoutesToType<typeof EntryRoutesConfiguration>;
@@ -46,9 +46,9 @@ export type WaitListEntryService = {
     create(opts: { ctx: WaitlistPublicContext, input: EntryServiceShape['create']['input'] }): Promise<EntryServiceShape['create']['output']>;
 
     /**
-     * Create a new paid waitlist entry (dummy for testing)
+     * Get subscription dummy data (for testing)
      */
-    createPaidEntry(opts: { ctx: { repositories: any }, input: EntryServiceShape['createPaidEntry']['input'] }): Promise<EntryServiceShape['createPaidEntry']['output']>;
+    getSubscriptionDummyData(opts: { ctx: WaitlistSubscriptionProtectedContext, input: EntryServiceShape['subscriptionWaitlistDummy']['input'] }): Promise<EntryServiceShape['subscriptionWaitlistDummy']['output']>;
 
     /**
      * Update status of a waitlist entry

@@ -29,11 +29,12 @@ dotenv.config({
 });
 
 // @TODO: Temp fix; refactor appropriately later
-const isAdmin = async (email: string) => {
+export const isAdmin = async (email: string) => {
   return email.startsWith("admin_");
 }
 
 const requireEmailVerification = process.env.AUTH_PREFERENCE_EMAIL_VERIFICATION === "true";
+const requireStripeUserRegistration = process.env.STRIPE_PREFERENCE_USER_REGISTRATION === "true";
 
 export const auth = betterAuth({
   trustedOrigins: [process.env.API_ORIGIN || "http://localhost:3005", "/\\"],
@@ -48,7 +49,7 @@ export const auth = betterAuth({
       },
       stripeClient,
       stripeWebhookSecret,
-      createCustomerOnSignUp: true,
+      createCustomerOnSignUp: requireStripeUserRegistration ? true : false,
       onCustomerCreate: async ({ customer, stripeCustomer, user }, request) => {
         // Do something with the newly created customer
         console.log(`Stripe plug-in: Customer ${customer.id}::${stripeCustomer.id} created for user ${user.name}`);
@@ -172,7 +173,7 @@ export const listOrgsWithoutAuth = async () => {
 }
 
 /**Checks top-level workspace user permissions via BetterAuth Admin API */
-export const checkAdminPermission = async (session: Session, permission: Record<string, string[]>) => {
+export const checkUserPermission = async (session: Session, permission: Record<string, string[]>) => {
   const token = session.session.token;
   const userId = session.user.id;
 

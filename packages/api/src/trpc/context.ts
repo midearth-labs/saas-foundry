@@ -2,7 +2,7 @@ import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import { Repositories } from "./repositories";
 import { createRepositories } from "./repositories.impl";
 import { DB } from "../db";
-import { checkAdminPermission, checkOrgPermission, checkSubscription, Session } from "../auth";
+import { checkUserPermission, checkOrgPermission, checkSubscription, Session, isAdmin } from "../auth";
 import { getSession } from "../auth";
 import { FastifyRequest } from "fastify";
 import { TRPCError } from "@trpc/server";
@@ -15,7 +15,8 @@ type InContext = {
   getAuthorizationToken: InFunction<string | undefined>;
   getRequestId: InFunction<string | undefined>;
   getSessionOrThrow: InFunction<Promise<Session>>;
-  checkAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
+  getAdminStatus: InFunction<Promise<boolean>>;
+  checkPermission: (session: Session, permission: Record<string, string[]>) => Promise<void>;
   checkOrgAuthorized: (session: Session, permission: Record<string, string[]>) => Promise<void>;
   validateSubscriptionOrThrow: (session: Session, subscription: Record<string, string>) => Promise<boolean>;
 }
@@ -67,7 +68,8 @@ export const getContextCreator = () => {
         getAuthorizationToken: () => req.headers['authorization'],
         getRequestId: () => extractLastHeaderValue(req.headers['x-request-id']),
         getSessionOrThrow: () => getServerSessionOrThrow(req),
-        checkAuthorized,
+        getAdminStatus: () => getAdminStatusFromRequest(req),
+        checkPermission,
         checkOrgAuthorized,
         validateSubscriptionOrThrow,
       },
@@ -81,8 +83,14 @@ export const getContextCreator = () => {
   return createContext;
 }
 
-const checkAuthorized: InContext["checkAuthorized"] = async (session, permission) => {
-  const hasPermission = await checkAdminPermission(session, permission);
+const getAdminStatusFromRequest = async (req: FastifyRequest) => {
+  const session = await getServerSessionOrThrow(req);
+  const result = await isAdmin(String(session?.user.email));
+  return result;
+}
+
+const checkPermission: InContext["checkPermission"] = async (session, permission) => {
+  const hasPermission = await checkUserPermission(session, permission);
   if (!hasPermission) {
     throw new TRPCError({ code: 'FORBIDDEN', message: 'User does not have required permissions' });
   }

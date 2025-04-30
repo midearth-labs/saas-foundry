@@ -1,8 +1,8 @@
-import { publicProcedure } from "../trpc";
 import { inferProcedureBuilderResolverOptions, TRPCError } from "@trpc/server";
+import { protectedProcedure } from "./protected";
 
-// Base procedure that validates subscriptions
-export const subscriptionValidationProcedure = publicProcedure.use(async ({ ctx, next, meta }) => {
+// Protected procedure that validates subscriptions
+export const subscriptionProtectedProcedure = protectedProcedure.use(async ({ ctx, next, meta }) => {
     const session = await ctx.in.getSessionOrThrow();
     const subscription = meta?.subscription;
 
@@ -16,4 +16,4 @@ export const subscriptionValidationProcedure = publicProcedure.use(async ({ ctx,
     return next({ ctx: { ...ctx, session } });
 });
 
-export type SubscriptionValidationContext = inferProcedureBuilderResolverOptions<typeof subscriptionValidationProcedure>['ctx']; 
+export type SubscriptionProtectedContext = inferProcedureBuilderResolverOptions<typeof subscriptionProtectedProcedure>['ctx']; 
