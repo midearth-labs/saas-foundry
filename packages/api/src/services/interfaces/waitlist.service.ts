@@ -65,16 +65,3 @@ export type WaitListEntryService = {
      */
     searchEntries(opts: { ctx: WaitlistAnalysisContext, input: EntryServiceShape['searchEntries']['input'] }): Promise<EntryServiceShape['searchEntries']['output']>;
 }
-
-export type WaitlistServiceRouter = {
-    definition: DefinitionServiceRouter;
-    entry: EntryServiceRouter;
-}
-
-export type DefinitionServiceRouter = {
-    [K in keyof DefinitionServiceShape]: unknown;
-}
-
-export type EntryServiceRouter = {
-    [K in keyof EntryServiceShape]: unknown;
-}

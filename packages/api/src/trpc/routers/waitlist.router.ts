@@ -1,10 +1,10 @@
-import { WaitlistServiceRouter, EntryServiceRouter, DefinitionServiceRouter } from "../../services/interfaces/waitlist.service";
 import { waitListDefinitionService, waitListEntryService } from "../../services/impl/waitlist.service";
 import { waitlistAdminProcedure, waitlistPublicProcedure, waitlistAnalysisProcedure, waitlistSubscriptionProtectedProcedure } from "../base-procedures/waitlist";
-import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
-import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
+import { DefinitionServiceRouter, DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
+import { EntryServiceRouter, EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
 import { PRO_PLAN } from "../../auth/stripe";
-
+import { WaitlistServiceRouter } from "../../api/schema/waitlist";
+ 
 const definitionRouter: DefinitionServiceRouter = {
     create: waitlistAdminProcedure
         .meta({ permission: { waitlistDefinition: ["create"] } })

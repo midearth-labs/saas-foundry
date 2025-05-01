@@ -18,7 +18,7 @@ dotenv.config({
  * Factory for creating email service instances.
  * It automatically assigns an email provider (marshalling service) based on `env` configurations.
  */
-export default class EmailServiceFactory {
+export class EmailServiceFactory {
   /**
    * Create a base email service based on environment configuration
    * @returns A base email **marshalling** service

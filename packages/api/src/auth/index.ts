@@ -11,7 +11,7 @@ import { DB } from "../db";  // Global database instance (all caps to distinguis
 import { FastifyRequest } from "fastify";
 import path from "path";
 import { toNodeHandler } from "better-auth/node";
-import EmailServiceFactory from "./email/factories/email-service-factory";
+import { EmailServiceFactory } from "./email/factories/email-service-factory";
 import { roles as adminRoles } from "./admin/roles";
 import { adminAccessControl } from "./admin/permissions";
 import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
