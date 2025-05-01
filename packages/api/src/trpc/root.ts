@@ -5,7 +5,7 @@ import { AppServiceRouter } from '../api/schema/root';
 export const getAppRouter = () => {
   const routerConfiguration: AppServiceRouter = {
     waitlist: waitlistRouterConfiguration,
-  }
+  };
   
   return router(routerConfiguration);
 }

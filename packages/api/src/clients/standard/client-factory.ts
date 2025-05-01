@@ -8,6 +8,7 @@ import { OrganizationAuthClientInterface } from "./interfaces/organization-auth-
 import { ProtectedProcedureClientInterface } from "./interfaces/protected-procedure-client.interface";
 import { OrganizationPermissionsClientInterface } from "./interfaces/organization-permissions-client.interface";
 import { LinkAccountClientInterface } from "./interfaces/link-account-client.interface";
+import { SubscriptionWaitlistClientInterface } from "./interfaces/subscription-waitlist-client.interface";
 
 import { EmailPasswordClient } from "./implementations/email-password-client";
 import { GoogleSocialClient } from "./implementations/google-social-client";
@@ -20,6 +21,7 @@ import { GithubStyleOrganizationAuthClient } from "./implementations/github-styl
 import { SlackStyleOrganizationAuthClient } from "./implementations/slack-style-organization-auth-client";
 import { OrganizationPermissionsClient } from "./implementations/organization-permissions-client";
 import { LinkAccountClient } from "./implementations/link-account-client";
+import { SubscriptionWaitlistClient } from "./implementations/subscription-waitlist-client";
 
 /**
  * Factory class to create client instances
@@ -71,6 +73,14 @@ export class ClientFactory {
    */
   public static createEnhancedWaitlistClient(): WaitlistEnhancedClientInterface {
     return new EnhancedWaitlistClient();
+  }
+
+  /**
+   * Create a SubscriptionWaitlistClient
+   * @returns SubscriptionWaitlistClient instance
+   */
+  public static createSubscriptionWaitlistClient(): SubscriptionWaitlistClientInterface {
+    return new SubscriptionWaitlistClient();
   }
 
   /**
@@ -132,6 +142,8 @@ export class ClientFactory {
         return this.createVerificationRequiredUserClient();
       case 'enhanced-waitlist':
         return this.createEnhancedWaitlistClient();
+      case 'subscription-waitlist':
+        return this.createSubscriptionWaitlistClient();
       case 'protected-procedure':
         return this.createProtectedProcedureClient();
       case 'github-style-organization-auth':

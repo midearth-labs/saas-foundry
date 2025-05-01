@@ -1,8 +1,9 @@
-import { publicProcedure } from "../trpc";
+import { authenticatedProcedure } from "./authenticated";
 import { inferProcedureBuilderResolverOptions, TRPCError } from "@trpc/server";
+import { authorizedProcedure } from "./authorized";
 
-// Base procedure that only checks organization-level permissions
-export const orgProtectedProcedure = publicProcedure.use(async ({ ctx, next, meta }) => {
+// Authorized procedure that only checks organization-level permissions
+export const organizationAuthorizedProcedure = authorizedProcedure.use(async ({ ctx, next, meta }) => {
     const session = await ctx.in.getSessionOrThrow();
     const permission = meta?.permission;
     
@@ -23,4 +24,4 @@ export const orgProtectedProcedure = publicProcedure.use(async ({ ctx, next, met
     return next({ ctx: { ...ctx, session } });
 });
 
-export type OrgProtectedContext = inferProcedureBuilderResolverOptions<typeof orgProtectedProcedure>['ctx']; 
+export type OrganizationAuthorizedContext = inferProcedureBuilderResolverOptions<typeof organizationAuthorizedProcedure>['ctx']; 

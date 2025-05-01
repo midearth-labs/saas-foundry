@@ -56,6 +56,7 @@ export const waitListEntryService: WaitListEntryService = {
     const result = await entryRepository.create(input);
     return { id: result.id };
   },
+
   async updateStatus({ input, ctx: { waitlistContext: { entryRepository } } }) {
     const entry = await entryRepository.findById({ id: input.entryId.id });
     if (!entry) {
@@ -103,5 +104,11 @@ export const waitListEntryService: WaitListEntryService = {
         id: { id: entry.id }
       }))
     };
-  }
+  },
+
+  // New dummy endpoint implementation for testing
+  async getSubscriptionDummyData({ input, ctx }) {
+    return { id: 'fake-subscription-id' };
+  },
+  
 };

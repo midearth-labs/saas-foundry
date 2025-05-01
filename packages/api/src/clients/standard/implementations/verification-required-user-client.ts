@@ -3,6 +3,8 @@ import path from "path";
 import { AuthClientInterface } from "../interfaces/auth-client.interface";
 import { createUserOrThrow } from "../common/utils";
 
+
+// !!! SET AUTH_PREFERENCE_EMAIL_VERIFICATION TO true IN .env TO ENABLE THIS CLIENT
 /**
  * Implementation of the AuthClientInterface for creating a user that requires verification
  */
@@ -10,7 +12,7 @@ export class VerificationRequiredUserClient implements AuthClientInterface {
   private USER_NAME: string;
   private USER_EMAIL: string;
   private USER_PASSWORD: string;
-
+  private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new VerificationRequiredUserClient
    */
@@ -20,9 +22,9 @@ export class VerificationRequiredUserClient implements AuthClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = process.env.USER_NAME || "James Bond";
-    this.USER_EMAIL = process.env.USER_EMAIL || "james.bond@007.co.uk";
-    this.USER_PASSWORD = process.env.USER_PASSWORD || "Shaken-N0t-St!rred";
+    this.USER_NAME = "John Doe " + this.TIMESTAMP;
+    this.USER_EMAIL = `john_doe_${this.TIMESTAMP}@example.com`;
+    this.USER_PASSWORD = `SecurePass!${this.TIMESTAMP}`;
   }
 
   /**

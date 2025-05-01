@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Email, UUIDInputSchema, UUIDOutputSchema } from '../common';
+import { Email, UUIDInputSchema, UUIDOutputSchema, VoidInputSchema } from '../common';
 import { ZodRoutes, ZodOperation, ConvertRoutesToType } from '../../types/schema.zod.configuration';
 import { definitionId } from './common.schema';
 import { ConvertRoutesToCreateRouterOptions } from '../../types/schema.configuration';
@@ -13,6 +13,15 @@ const create = {
     }),
     output: UUIDOutputSchema,
     type: 'mutation',
+} satisfies ZodOperation;
+
+// New dummy endpoint for testing
+const subscriptionWaitlistDummy = {
+    input: VoidInputSchema,
+    output: z.object({
+        id: z.string().default('fake-paid-endpoint-id'),
+    }),
+    type: 'query',
 } satisfies ZodOperation;
 
 const updateStatus = {
@@ -71,6 +80,7 @@ export const EntryRoutesConfiguration = {
     updateStatus,
     getEntry,
     searchEntries,
+    subscriptionWaitlistDummy, // Testing dummy endpoint for subscriptions & payments
 } satisfies ZodRoutes;
 
 export type EntryServiceShape = ConvertRoutesToType<typeof EntryRoutesConfiguration>

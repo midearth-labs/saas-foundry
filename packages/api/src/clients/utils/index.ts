@@ -24,6 +24,7 @@ import { organizationAccessControl } from '../../auth/org/permissions';
 import { roles as adminRoles } from '../../auth/admin/roles';
 import { OrgRoleTypeKeys, roles as orgRoles } from '../../auth/org/roles';
 import { Session } from 'better-auth';
+import { stripeClient } from '@better-auth/stripe/client';
 
 
 // Load environment variables
@@ -48,6 +49,9 @@ const authClient = createAuthClient({
             adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
             defaultRole: "member",
         }),
+        stripeClient({
+            subscription: true
+        }),
     ]
 });
 
@@ -68,6 +72,9 @@ export const getAuthClient = () => {
                 roles: orgRoles,
                 adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
                 defaultRole: "member",
+            }),
+            stripeClient({
+                subscription: true,
             }),
         ]
     })

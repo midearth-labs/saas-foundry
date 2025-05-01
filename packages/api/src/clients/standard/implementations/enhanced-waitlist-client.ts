@@ -6,7 +6,6 @@ import {
   signInUserOrThrow,
   getTRPCClient,
   setActiveOrganizationOrThrow,
-  rand,
   createOrg,
   addOrgMember,
   truncateError
@@ -31,6 +30,7 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
   };
   private readonly ORG_NAME: string;
   private readonly ORG_SLUG: string;
+  private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
 
   /**
    * Creates a new EnhancedWaitlistClient
@@ -41,31 +41,28 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    // Generate random identifiers for unique test users
-    const randId = rand();
-    
     // Initialize user data
     this.Users = {
       Owner: {
         name: 'Creator Owner',
-        email: `admin_creator_owner_${randId}@example.com`.toLowerCase(),
-        password: `CreatorPass!${randId}`
+        email: `admin_creator_owner_${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `CreatorPass!${this.TIMESTAMP}`
       },
       Admin: {
         name: `Admin User`,
-        email: `admin_${randId}@example.com`.toLowerCase(),
-        password: `AdminPass!${randId}`
+        email: `admin_${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `AdminPass!${this.TIMESTAMP}`
       },
       Regular: {
         name: `Regular User`,
-        email: `user_${randId}@example.com`.toLowerCase(),
-        password: `UserPass!${randId}`
+        email: `user_${this.TIMESTAMP}@example.com`.toLowerCase(),
+        password: `UserPass!${this.TIMESTAMP}`
       }
     };
 
     // Organization details
-    this.ORG_NAME = `Test Organization ${randId}`;
-    this.ORG_SLUG = `test-org-${randId}`;
+    this.ORG_NAME = `Test Organization ${this.TIMESTAMP}`;
+    this.ORG_SLUG = `test-org-${this.TIMESTAMP}`;
 
     // Initialize state
     this.users = {

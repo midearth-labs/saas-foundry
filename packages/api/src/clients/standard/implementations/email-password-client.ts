@@ -16,7 +16,7 @@ export class EmailPasswordClient implements AuthClientInterface {
   private USER_NAME: string;
   private USER_EMAIL: string;
   private USER_PASSWORD: string;
-
+  private TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
   /**
    * Creates a new EmailPasswordClient
    * @param userName User's name (optional, defaults to environment variable or "James Bond")
@@ -33,9 +33,9 @@ export class EmailPasswordClient implements AuthClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = userName || process.env.ADMIN_USER_NAME || "James Bond";
-    this.USER_EMAIL = userEmail || "admin_mi6@007.co.uk";
-    this.USER_PASSWORD = userPassword || process.env.ADMIN_USER_PASSWORD || "Shaken-N0t-St!rred";
+    this.USER_NAME = "John Doe" + this.TIMESTAMP;
+    this.USER_EMAIL = "admin_" + this.TIMESTAMP + "@sample.com";
+    this.USER_PASSWORD = "Shaken-N0t-St!rred";
   }
 
   /**

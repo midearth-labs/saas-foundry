@@ -1,7 +1,7 @@
 import { ConvertRoutesToType } from "../../api/types/schema.zod.configuration";
 import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
 import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
-import { WaitlistPublicContext, WaitlistAdminContext, WaitlistAnalysisContext } from "../../trpc/base-procedures/waitlist";
+import { WaitlistPublicContext, WaitlistAdminContext, WaitlistAnalysisContext, WaitlistSubscriptionProtectedContext } from "../../trpc/base-procedures/waitlist";
 
 export type DefinitionServiceShape = ConvertRoutesToType<typeof DefinitionRoutesConfiguration>;
 export type EntryServiceShape = ConvertRoutesToType<typeof EntryRoutesConfiguration>;
@@ -46,6 +46,11 @@ export type WaitListEntryService = {
     create(opts: { ctx: WaitlistPublicContext, input: EntryServiceShape['create']['input'] }): Promise<EntryServiceShape['create']['output']>;
 
     /**
+     * Get subscription dummy data (for testing)
+     */
+    getSubscriptionDummyData(opts: { ctx: WaitlistSubscriptionProtectedContext, input: EntryServiceShape['subscriptionWaitlistDummy']['input'] }): Promise<EntryServiceShape['subscriptionWaitlistDummy']['output']>;
+
+    /**
      * Update status of a waitlist entry
      */
     updateStatus(opts: { ctx: WaitlistAdminContext, input: EntryServiceShape['updateStatus']['input'] }): Promise<EntryServiceShape['updateStatus']['output']>;
@@ -59,17 +64,4 @@ export type WaitListEntryService = {
      * Search waitlist entries with filters
      */
     searchEntries(opts: { ctx: WaitlistAnalysisContext, input: EntryServiceShape['searchEntries']['input'] }): Promise<EntryServiceShape['searchEntries']['output']>;
-}
-
-export type WaitlistServiceRouter = {
-    definition: DefinitionServiceRouter;
-    entry: EntryServiceRouter;
-}
-
-export type DefinitionServiceRouter = {
-    [K in keyof DefinitionServiceShape]: unknown;
-}
-
-export type EntryServiceRouter = {
-    [K in keyof EntryServiceShape]: unknown;
 }

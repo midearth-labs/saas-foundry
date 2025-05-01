@@ -73,17 +73,17 @@ export async function startServer() {
                 await authhandler(request.raw, reply.raw);
             });
         });
-
-        // Base endpoint for testing auth redirects
-        server.get("/", (request, reply) => {
-            reply.send({ 
-                message: "Hello SaaS-Foundry!",
-                params: request.params,
-                query: request.query,
-                body: request.body,
-                headers: request.headers,
-            });
-        });
+        
+        // Dynamically import test endpoints if we're in a test/development environment
+        const NODE_ENV = process.env.NODE_ENV || 'TEST';
+        if (NODE_ENV === 'TEST' || NODE_ENV === 'PROD') {
+            try {
+                const { registerTestEndpoints } = await import('./test.endpoints');
+                registerTestEndpoints(server);
+            } catch (error) {
+                console.error('Failed to load test endpoints:', error);
+            }
+        }
 
         const address = await server.listen({
             port: parseInt(process.env.API_PORT ?? '3005'), // 3000 for development, 3333 for test,

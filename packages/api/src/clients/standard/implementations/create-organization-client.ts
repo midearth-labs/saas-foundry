@@ -17,6 +17,7 @@ export class CreateOrganizationClient implements OrganizationClientInterface {
   private USER_PASSWORD: string;
   private ORG_NAME: string;
   private ORG_SLUG: string;
+  private TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
 
   /**
    * Creates a new CreateOrganizationClient
@@ -27,11 +28,11 @@ export class CreateOrganizationClient implements OrganizationClientInterface {
       path: path.resolve(process.cwd(), '.env')
     });
 
-    this.USER_NAME = process.env.ADMIN_USER_NAME || "Admin User";
-    this.USER_EMAIL = process.env.ADMIN_USER_EMAIL || "admin_123@example.com";
-    this.USER_PASSWORD = process.env.USER_PASSWORD || "Adm!n123Secure";
-    this.ORG_NAME = process.env.ORG_NAME || "My Organization";
-    this.ORG_SLUG = process.env.ORG_SLUG || "my-org";
+    this.USER_NAME = "Admin User" + this.TIMESTAMP;
+    this.USER_EMAIL = "admin_" + this.TIMESTAMP + "@example.com";
+    this.USER_PASSWORD = "Adm!n123Secure";
+    this.ORG_NAME = "My Organization" + this.TIMESTAMP;
+    this.ORG_SLUG = "my-org-" + this.TIMESTAMP;
   }
 
   /**
