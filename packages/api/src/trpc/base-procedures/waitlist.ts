@@ -1,9 +1,8 @@
 import { inferProcedureBuilderResolverOptions, TRPCError } from "@trpc/server";
 import { publicProcedure } from "../trpc";
-import { protectedProcedure } from "./protected";
+import { authorizedProcedure } from "./authorized-procedure";
 import { organizationAuthorizedProcedure } from "./organization-authorized";
 import { subscriptionProtectedProcedure } from "./subscription-protected";
-import { adminProtectedProcedure } from "./admin-protected";
 
 const waitListBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
     // Extract out the needed repositories from ctx
@@ -17,7 +16,7 @@ const waitListBaseProcedure = publicProcedure.use(async ({ ctx, next }) => {
 });
 
 // Create a separate protected procedure with waitlist context
-export const waitlistProtectedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+export const waitlistProtectedProcedure = authorizedProcedure.use(async ({ ctx, next }) => {
     // Extract out the needed repositories from ctx
     const { repositories, ...rest } = ctx;
     const waitlistContext = {
@@ -64,7 +63,7 @@ export const waitlistSubscriptionProtectedProcedure = subscriptionProtectedProce
 });
 
 // Now chain the admin procedure to the adminProtectedProcedure
-export const waitlistAdminProcedure = adminProtectedProcedure.use(async ({ ctx, next }) => {
+export const waitlistAdminProcedure = authorizedProcedure.use(async ({ ctx, next }) => {
     const { repositories, ...rest } = ctx;
     const waitlistContext = {
         definitionRepository: repositories.waitlist.definition,

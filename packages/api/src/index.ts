@@ -2,17 +2,18 @@ import fastify from 'fastify';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { getAppRouter } from './trpc/root';
 import { getContextCreator } from './trpc/context';
-import { getAuthHandler } from './auth';
 import { HttpHeader } from 'fastify/types/utils';
 import path from 'path';
 import * as dotenv from 'dotenv';
-
+import { createAppContext } from './app-context';
 
 dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
 export async function startServer() {
+
+    const appContext = createAppContext();
 
     // Initialize Fastify server instance with Pino logger
     const server = fastify({
@@ -45,7 +46,7 @@ export async function startServer() {
             prefix: '/api/trpc',    // perhaps /trpc/v1, just like /api/v1/
             trpcOptions: {
                 router: getAppRouter(),
-                createContext: getContextCreator(),  // <- TRPC CONTEXT IS BOUND WITH FASTIFY SERVER HERE
+                createContext: getContextCreator(appContext),  // <- TRPC CONTEXT IS BOUND WITH FASTIFY SERVER HERE
             },
         });
 
@@ -57,7 +58,7 @@ export async function startServer() {
         // https://github.com/better-auth/better-auth/issues/599#issuecomment-2557799177
         // This causes the requests to hang ~indefinitely / time-out
         await server.register(async (server) => {
-            const authhandler = await getAuthHandler();
+            const authhandler = await appContext.authEngine.getAuthHandler();
           
             server.addContentTypeParser(
               "application/json",

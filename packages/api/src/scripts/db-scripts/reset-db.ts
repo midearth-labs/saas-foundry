@@ -16,7 +16,7 @@ import {
 } from "../../db/schema/waitlist.schema";
 
 import { reset } from "drizzle-seed";
-import { DB } from "../../db";
+import { createDBConnection } from "../../db";
 import * as dotenv from "dotenv";
 import path from "path";
 
@@ -39,7 +39,7 @@ const tables = [
 
 async function main() {
   try {
-    await reset(DB, tables);
+    await reset(createDBConnection(), tables);
     console.log("Database reset successfully! All values cleared.");
   } catch (error) {
     console.error(`Error resetting database: ${error}`);

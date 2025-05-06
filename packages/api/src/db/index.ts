@@ -1,13 +1,5 @@
-import 'dotenv/config';
-import * as dotenv from 'dotenv';
-import path from 'path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as authSchema from "./schema/auth.schema";
-
-// Load environment variables from the root of the API package
-dotenv.config({
-  path: path.resolve(process.cwd(), '.env')
-});
 
 /*
 The auth schema needs to be force passed here to address the below error:
@@ -19,9 +11,3 @@ The auth schema needs to be force passed here to address the below error:
 export const createDBConnection = () => {
   return drizzle(process.env.DATABASE_URL!, { schema: authSchema });
 }
-
-/**
- * @description Singleton GLOBAL instance of the database connection.
- * @see {@link createDBConnection}
- */
-export const DB = createDBConnection();
