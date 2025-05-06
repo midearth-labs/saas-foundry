@@ -1,0 +1,49 @@
+{
+    "name": "@saas-foundry/api-tests",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev-client-auth": "tsx watch src/clients/archived/better-auth-integration/email-password-client.ts",
+        "dev-client-google": "tsx watch src/clients/archived/better-auth-integration/google-social-client.ts",
+        "create-verification-user": "tsx src/clients/archived/better-auth-integration/create-verification-required-user.ts",
+        "use-protected-procedure": "tsx src/clients/archived/better-auth-integration/use-protected-procedure.ts",
+        "verify-protected-user": "npm run create-verification-user && npm run use-protected-procedure",
+        "create-organization-user": "tsx src/clients/archived/better-auth-integration/create-organization-client.ts",
+        "send-organization-invitation": "tsx src/clients/archived/better-auth-integration/organization-invitation-client.ts",
+        "github-style-org-auth": "tsx src/clients/archived/better-auth-integration/org-auth-github-style.ts",
+        "slack-style-org-auth": "tsx src/clients/archived/better-auth-integration/org-auth-slack-style.ts",
+        "enhanced-waitlist-client": "tsx src/clients/archived/better-auth-integration/enhanced-waitlist-client.ts",
+        "organization-permissions-client": "tsx src/clients/archived/better-auth-integration/organization-permissions-client.ts",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src/ --max-warnings 0",
+        "client:standard": "tsx src/clients/standard/scripts/run-client.ts",
+        "client:standard:email-password": "tsx src/clients/standard/scripts/email-password-script.ts",
+        "client:standard:google-social": "tsx src/clients/standard/scripts/google-social-script.ts",
+        "client:standard:create-organization": "tsx src/clients/standard/scripts/create-organization-script.ts",
+        "client:standard:organization-invitation": "tsx src/clients/standard/scripts/organization-invitation-script.ts",
+        "client:standard:verification-required-user": "tsx src/clients/standard/scripts/verification-required-user-script.ts",
+        "client:standard:enhanced-waitlist": "tsx src/clients/standard/scripts/enhanced-waitlist-script.ts",
+        "client:standard:protected-procedure": "tsx src/clients/standard/scripts/protected-procedure-script.ts",
+        "client:standard:github-style-organization-auth": "tsx src/clients/standard/scripts/github-style-organization-auth-script.ts",
+        "client:standard:slack-style-organization-auth": "tsx src/clients/standard/scripts/slack-style-organization-auth-script.ts",
+        "client:standard:organization-permissions": "tsx src/clients/standard/scripts/organization-permissions-script.ts",
+        "client:standard:link-account": "tsx src/clients/standard/scripts/link-account-script.ts",
+        "client:standard:subscription-waitlist": "tsx src/clients/standard/scripts/subscription-waitlist-script.ts"
+    },
+    "dependencies": {
+        "@trpc/client": "11.0.0-rc.802",
+        "@saas-foundry/api-model": "workspace:*",
+        "dotenv": "latest"
+    },
+    "devDependencies": {
+        "@saas-foundry/eslint-config": "workspace:*",
+        "@saas-foundry/typescript-config": "workspace:*",
+        "@types/node": "^22.13.4",
+        "eslint": "^9.20.1",
+        "ts-node": "^10.9.2",
+        "tsup": "^8.3.6",
+        "tsx": "^4.19.3",
+        "typescript": "^5.7.3"
+    }
+}

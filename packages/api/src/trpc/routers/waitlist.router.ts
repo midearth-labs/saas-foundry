@@ -1,9 +1,7 @@
 import { waitListDefinitionService, waitListEntryService } from "../../services/impl/waitlist.service";
 import { waitlistAdminProcedure, waitlistPublicProcedure, waitlistAnalysisProcedure, waitlistSubscriptionProtectedProcedure } from "../base-procedures/waitlist";
-import { DefinitionServiceRouter, DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
-import { EntryServiceRouter, EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
+import { DefinitionServiceRouter, DefinitionRoutesConfiguration, EntryServiceRouter, EntryRoutesConfiguration, WaitlistServiceRouter } from "@saas-foundry/api-model/waitlist";
 import { PRO_PLAN } from "../../auth/stripe";
-import { WaitlistServiceRouter } from "../../api/schema/waitlist";
  
 const definitionRouter: DefinitionServiceRouter = {
     create: waitlistAdminProcedure

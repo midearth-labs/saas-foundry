@@ -1,5 +1,3 @@
-import { Email } from '../../../api/schema/common';
-
 // @TODO: Add support for attachments; Add robust typing/schema validation
 
 /**

@@ -1,6 +1,5 @@
-import { ConvertRoutesToType } from "../../api/types/schema.zod.configuration";
-import { DefinitionRoutesConfiguration } from "../../api/schema/waitlist/definition.schema";
-import { EntryRoutesConfiguration } from "../../api/schema/waitlist/entry.schema";
+import { ConvertRoutesToType } from "@saas-foundry/api-model";
+import { DefinitionRoutesConfiguration, EntryRoutesConfiguration } from "@saas-foundry/api-model/waitlist";
 import { WaitlistPublicContext, WaitlistAdminContext, WaitlistAnalysisContext, WaitlistSubscriptionProtectedContext } from "../../trpc/base-procedures/waitlist";
 
 export type DefinitionServiceShape = ConvertRoutesToType<typeof DefinitionRoutesConfiguration>;

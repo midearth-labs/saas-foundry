@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import path from 'path';
-import { Email } from '../../../api/schema/common';
+import { Email } from '@saas-foundry/api-model/common';
 import { BaseEmailServiceInterface } from '../interfaces/base-email-service.interface';
 import { OrganizationInvitationEmailServiceInterface } from '../interfaces/organization-invitation-email-service.interface';
 import { EmailResult, OrganizationInvitationData, OrganizationInvitationEmailOptions } from '../types/email-types';

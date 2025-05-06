@@ -1,0 +1,10 @@
+{
+  "extends": "@saas-foundry/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "noErrorTruncation": true,
+  },
+  "include": ["src", "src/types"],
+  "exclude": ["node_modules", "dist"]
+}

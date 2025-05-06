@@ -2,6 +2,9 @@ import { InferredServiceRoutes, ZodRoutes } from "../../types/schema.zod.configu
 import { DefinitionRoutesConfiguration } from "./definition.schema";
 import { EntryRoutesConfiguration } from "./entry.schema";
 
+export * from './definition.schema';
+export * from './entry.schema';
+
 export const WaitlistRoutesConfiguration = {
     definition: DefinitionRoutesConfiguration,
     entry: EntryRoutesConfiguration,

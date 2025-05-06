@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import path from 'path';
-import { Email } from '../../../api/schema/common';
+import { Email } from '@saas-foundry/api-model/common';
 import { BaseEmailServiceInterface } from '../interfaces/base-email-service.interface';
 import { VerificationEmailServiceInterface } from '../interfaces/verification-email-service.interface';
 import { EmailResult, VerificationEmailOptions, VerificationData } from '../types/email-types';
