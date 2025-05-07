@@ -6,7 +6,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
  */
 
 // Simple HTML generator function so landing page looks nice
-const generateHtml = (title: string, content: string, requestData: any, logo?: string) => {
+const generateHtml = (title: string, content: string, requestData: any, logo?: string, shouldRedirect = false) => {
   const currentYear = new Date().getFullYear();
   const logoHtml = logo ? `<img src="${logo}" alt="${title} logo" style="max-height: 50px; margin-bottom: 20px;">` : '';
   
@@ -16,15 +16,17 @@ const generateHtml = (title: string, content: string, requestData: any, logo?: s
   <head>
       <title>${title} - SaaS-Foundry</title>
       <style>
-          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; }
+          body { font-family: SF Pro Display, Lato, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; }
           .collapsible { background-color: #f1f1f1; cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left; outline: none; font-size: 15px; }
           .active, .collapsible:hover { background-color: #ddd; }
           .content { padding: 0 18px; display: none; overflow: hidden; background-color: #f9f9f9; }
           pre { white-space: pre-wrap; text-align: left; }
           footer { margin-top: 50px; text-align: center; font-size: 14px; color: #666; }
+          .dev-banner { position: fixed; top: 0; left: 0; width: 100%; background-color: #F44336; color: white; text-align: center; padding: 4px; font-size: 12px; z-index: 9999; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
       </style>
   </head>
   <body>
+      <div class="dev-banner">DEV/TEST MODE - NOT FOR PRODUCTION</div>
       ${logoHtml}
       <h1>${title}</h1>
       ${content}
@@ -39,6 +41,12 @@ const generateHtml = (title: string, content: string, requestData: any, logo?: s
       </footer>
       
       <script>
+          ${shouldRedirect ? `
+          // Auto-redirect for Stripe pages
+          setTimeout(() => {
+            window.location.href = "http://localhost:3005";
+          }, 3000);
+          ` : ''}
           const coll = document.getElementsByClassName("collapsible");
           for (let i = 0; i < coll.length; i++) {
             coll[i].addEventListener("click", function() {
@@ -97,9 +105,9 @@ export const registerTestEndpoints = (server: FastifyInstance) => {
       headers: request.headers,
     };
     
-    const content = `<p>Payment successful!</p><p>Thank you for your purchase.</p>`;
+    const content = `<p>Payment successful!</p><p>Thank you for your purchase.</p><p>Redirecting to home page...</p>`;
     const stripeLogo = "https://cdn.worldvectorlogo.com/logos/stripe-2.svg";
-    const html = generateHtml("Stripe Payment Success", content, requestData, stripeLogo);
+    const html = generateHtml("Stripe Payment Success", content, requestData, stripeLogo, true);
     
     reply.type('text/html').send(html);
   });
@@ -115,7 +123,7 @@ export const registerTestEndpoints = (server: FastifyInstance) => {
     
     const content = `<p>Payment cancelled.</p><p>Your payment was not processed.</p>`;
     const stripeLogo = "https://cdn.worldvectorlogo.com/logos/stripe-2.svg";
-    const html = generateHtml("Stripe Payment Cancelled", content, requestData, stripeLogo);
+    const html = generateHtml("Stripe Payment Cancelled", content, requestData, stripeLogo, true);
     
     reply.type('text/html').send(html);
   });

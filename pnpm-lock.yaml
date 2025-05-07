@@ -148,6 +148,9 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.802
         version: 11.0.0-rc.802(typescript@5.7.3)
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       '@saas-foundry/eslint-config':
         specifier: workspace:*
