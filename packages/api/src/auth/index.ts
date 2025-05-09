@@ -9,10 +9,10 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { FastifyRequest } from "fastify";
 import { toNodeHandler } from "better-auth/node";
 import { EmailServiceFactory } from "./email/factories/email-service-factory";
-import { roles as adminRoles } from "./admin/roles";
-import { adminAccessControl } from "./admin/permissions";
-import { roles as orgRoles, OrgRoleTypeKeys } from "./org/roles";
-import { organizationAccessControl } from "./org/permissions";
+import { roles as adminRoles } from "@saas-foundry/api-model/auth/admin/roles";
+import { adminAccessControl } from "@saas-foundry/api-model/auth/admin/permissions";
+import { roles as orgRoles, OrgRoleTypeKeys } from "@saas-foundry/api-model/auth/org/roles";
+import { organizationAccessControl } from "@saas-foundry/api-model/auth/org/permissions";
 import { stripe } from "@better-auth/stripe";
 import { 
   plans, 

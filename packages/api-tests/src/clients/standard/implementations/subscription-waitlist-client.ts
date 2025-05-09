@@ -9,7 +9,7 @@ import {
   getUserInput,
   truncateError
 } from "../common/utils";
-import { PRO_PLAN } from "../../../auth/stripe";
+import { PRO_PLAN } from "@saas-foundry/api-model/auth/stripe/plans";
 
 /**
  * Implementation of the SubscriptionWaitlistClientInterface for testing

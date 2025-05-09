@@ -10,10 +10,16 @@
     "exports": {
         ".": "./src/index.ts",
         "./waitlist": "./src/schema/waitlist/index.ts",
-        "./common": "./src/schema/common/index.ts"
+        "./common": "./src/schema/common/index.ts",
+        "./auth/admin/permissions": "./src/auth/admin/permissions.ts",
+        "./auth/admin/roles": "./src/auth/admin/roles.ts",
+        "./auth/org/permissions": "./src/auth/org/permissions.ts",
+        "./auth/org/roles": "./src/auth/org/roles.ts",
+        "./auth/stripe/plans": "./src/auth/stripe/plans.ts"
     },
     "dependencies": {
         "@trpc/server": "11.0.0-rc.802",
+        "better-auth": "1.2.7",
         "zod": "^3.24.2"
     },
     "devDependencies": {

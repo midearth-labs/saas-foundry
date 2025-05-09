@@ -19,10 +19,10 @@ import { createAuthClient, SuccessContext, ErrorContext } from 'better-auth/clie
 import { adminClient, organizationClient } from 'better-auth/client/plugins';
 import * as readline from 'readline';
 import { Writable } from 'stream';
-import { adminAccessControl } from '../../auth/admin/permissions';
-import { organizationAccessControl } from '../../auth/org/permissions';
-import { roles as adminRoles } from '../../auth/admin/roles';
-import { OrgRoleTypeKeys, roles as orgRoles } from '../../auth/org/roles';
+import { adminAccessControl } from '@saas-foundry/api-model/auth/admin/permissions';
+import { organizationAccessControl } from '@saas-foundry/api-model/auth/org/permissions';
+import { roles as adminRoles } from '@saas-foundry/api-model/auth/admin/roles';
+import { OrgRoleTypeKeys, roles as orgRoles } from '@saas-foundry/api-model/auth/org/roles';
 import { Session } from 'better-auth';
 import { stripeClient } from '@better-auth/stripe/client';
 

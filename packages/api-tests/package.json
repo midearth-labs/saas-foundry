@@ -33,6 +33,7 @@
     },
     "dependencies": {
         "@trpc/client": "11.0.0-rc.802",
+        "better-auth": "1.2.7",
         "@saas-foundry/api-model": "workspace:*",
         "dotenv": "latest"
     },
