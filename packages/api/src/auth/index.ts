@@ -31,6 +31,19 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
   const requireEmailVerification = process.env.AUTH_PREFERENCE_EMAIL_VERIFICATION === "true";
   const requireStripeUserRegistration = process.env.STRIPE_PREFERENCE_USER_REGISTRATION === "true";
 
+
+  const addOrgMember = async (userId: string, organizationId: string, roles: OrgRoleTypeKeys | OrgRoleTypeKeys[], token: string) => {
+    return await auth.api.addMember({
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: {
+        userId,
+        organizationId,
+        role: Array.isArray(roles) ? roles : [roles]
+      }
+    });
+  }
+
+
   const auth = betterAuth({
     trustedOrigins: [process.env.API_ORIGIN || "http://localhost:3005", "/\\"],
     database: drizzleAdapter(db, {
@@ -68,6 +81,27 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
         roles: orgRoles,
         adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
         defaultRole: "member",
+        organizationCreation: {
+          afterCreate: async ({ organization, member, user }, request) => {
+              // Run custom logic after organization is created
+              // e.g., create default resources, send notifications
+              if (user.email.startsWith("admin_creator_owner_")) {
+                const metadata = JSON.parse(request?.headers.get("Metadata") || "{}");
+                
+                const token = (await auth.api.getSession({
+                  headers: request?.headers as unknown as Headers,
+                }))?.session.token;
+
+                if (metadata.addUsers) {
+                  for (const userr of metadata.addUsers) {
+                    await addOrgMember(userr.userId, organization.id, userr.role, token!);
+                  }
+                }
+
+              }
+              
+          }
+        }
       }),
     ],
     account: {
@@ -177,18 +211,6 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
       return validSubscription ? true : false;
     }
 
-    const listOrgs = async () => {
-      return await auth.api.listOrganizations({
-        headers: {
-          Authorization: `Bearer ${await getToken()}`,
-        },
-      });
-    }
-
-    const listOrgsWithoutAuth = async () => {
-      return await auth.api.listOrganizations();
-    }
-
     /**Checks top-level workspace user permissions via BetterAuth Admin API */
     const checkUserPermission = async (permission: Record<string, string[]>) => {
       const token = await getToken();
@@ -233,26 +255,6 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
       return (userHasPermission.success && !userHasPermission.error);
     }
 
-    const createOrg = async (name: string, slug: string) => {
-      const token = await getToken();
-      return await auth.api.createOrganization({
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: { name, slug },
-      });
-    }
-
-    const addOrgMember = async (userId: string, organizationId: string, roles: OrgRoleTypeKeys | OrgRoleTypeKeys[]) => {
-      const token = await getToken();
-      return await auth.api.addMember({
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: {
-          userId,
-          organizationId,
-          role: Array.isArray(roles) ? roles : [roles]
-        }
-      });
-    }
-
     const verifyEmail = async (token: string) => {
       return await auth.api.verifyEmail({
         query: { token },
@@ -263,12 +265,8 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
       listActiveSubscriptions,
       checkSubscription,
       isValidSession,
-      listOrgs,
-      listOrgsWithoutAuth,
       checkUserPermission,
       checkOrgPermission,
-      createOrg,
-      addOrgMember,
       verifyEmail,
     };
   };

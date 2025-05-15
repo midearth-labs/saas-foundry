@@ -17,15 +17,9 @@ export {
   acceptOrgInvitationOrThrow,
   getAllSessionsOrThrow,
   getActiveOrganization,
-  setActiveOrganizationOrThrow
+  setActiveOrganizationOrThrow,
+  listOrgsOrThrow,
 } from '../../utils';
-
-// Re-export additional utils from auth
-export {
-  createOrg,
-  addOrgMember,
-  listOrgs
-} from '../../../auth';
 
 // Constants for random generation
 export const rand = () => Math.floor(Math.random() * 9000 + 100);

@@ -7,8 +7,10 @@ import {
     getTRPCClient,
     getAllSessionsOrThrow,
     setActiveOrganizationOrThrow,
+    createOrgOrThrow,
 } from '../common/utils';
-import { createOrg, addOrgMember } from "../../../auth";
+
+type Userss = Awaited<ReturnType<typeof signInUserOrThrow>>["signedInUser"];
 
 /**
  * Implementation of the OrganizationPermissionsClientInterface
@@ -16,12 +18,12 @@ import { createOrg, addOrgMember } from "../../../auth";
  */
 export class OrganizationPermissionsClient implements OrganizationPermissionsClientInterface {
     private contextData: {
-        users: {
-            owner: { token: string };
-            testOwner: { token: string };
-            admin: { token: string };
-            analyst: { token: string };
-            member: { token: string };
+        users?: {
+            owner: Userss;
+            testOwner: Userss;
+            admin: Userss;
+            analyst: Userss;
+            member: Userss;
         };
         organization: any;
         waitlistDefinitions: any[];
@@ -60,6 +62,7 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
     private readonly ORG_NAME: string;
     private readonly ORG_SLUG: string;
     private readonly TIMESTAMP: string = new Date().toISOString().replace(/[-:Z]/g, '');
+    
     /**
      * Creates a new OrganizationPermissionsClient
      */
@@ -104,13 +107,6 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
 
         // Initialize state
         this.contextData = {
-            users: {
-                owner: { token: '' },
-                testOwner: { token: '' },
-                admin: { token: '' },
-                analyst: { token: '' },
-                member: { token: '' }
-            },
             organization: null,
             waitlistDefinitions: [],
             waitlistEntries: []
@@ -157,11 +153,14 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
             signInUserOrThrow(this.Users.Member.email, this.Users.Member.password)
         ])
         .then(([ownerSession, testOwnerSession, adminSession, analystSession, memberSession]) => {
-            this.contextData.users.owner.token = String(ownerSession?.signedInUser?.data?.token);
-            this.contextData.users.testOwner.token = String(testOwnerSession?.signedInUser?.data?.token);
-            this.contextData.users.admin.token = String(adminSession?.signedInUser?.data?.token);
-            this.contextData.users.analyst.token = String(analystSession?.signedInUser?.data?.token);
-            this.contextData.users.member.token = String(memberSession?.signedInUser?.data?.token);
+            this.contextData.users = {
+                owner: ownerSession?.signedInUser,
+                testOwner: testOwnerSession?.signedInUser,
+                admin: adminSession?.signedInUser,
+                analyst: analystSession?.signedInUser,
+                member: memberSession?.signedInUser
+            }
+            
             console.log("All users signed in successfully");
             return {
                 ownerSession,
@@ -179,17 +178,25 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
      */
     public setupOrganization(): Promise<any> {
         console.log("\n3. Creating organization...");
-        return createOrg(this.contextData.users.owner.token, this.ORG_NAME, this.ORG_SLUG)
-            .then(org => {
+
+        const userDetails = [
+            { userId: this.contextData.users!.testOwner.data!.user.id, role: ["ownerRole"] },
+            { userId: this.contextData.users!.admin.data!.user.id, role: ["adminRole"] },
+            { userId: this.contextData.users!.analyst.data!.user.id, role: ["analystRole"] },
+            { userId: this.contextData.users!.member.data!.user.id, role: ["memberRole"] }
+        ];
+
+        return createOrgOrThrow(this.contextData.users!.owner.data!.token, this.ORG_NAME, this.ORG_SLUG, {addUsers: userDetails})
+            .then((org) => {
                 this.contextData.organization = org;
                 console.log(`Organization created: ${this.ORG_NAME} (${this.ORG_SLUG})`);
                 
                 // Set active organization for all user sessions
-                return this.setActiveOrganizationForAllSessions(this.contextData.users.owner.token, String(org?.id))
+                return this.setActiveOrganizationForAllSessions(this.contextData.users!.owner.data!.token, String(org?.id))
                     .then(() => {
                         // Add members with different roles
                         console.log("\n4. Adding users to organization with different roles...");
-                        return this.addAllUsersToOrganization(org);
+                        return this.setActiveOrganizationForAllUsers(org);
                     });
             });
     }
@@ -199,38 +206,19 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
      * @param org Organization
      * @returns Promise with results
      */
-    private addAllUsersToOrganization(org: any): Promise<any> {
-        type RoleType = "admin" | "adminRole" | "owner" | "ownerRole" | "member" | "memberRole" | "analystRole";
-        
-        const userSessions = [
-            { token: this.contextData.users.testOwner.token, role: ["ownerRole" as RoleType] },
-            { token: this.contextData.users.admin.token, role: ["adminRole" as RoleType] },
-            { token: this.contextData.users.analyst.token, role: ["analystRole" as RoleType] },
-            { token: this.contextData.users.member.token, role: ["memberRole" as RoleType] }
+    private setActiveOrganizationForAllUsers(org: any): Promise<any> {
+        const userDetails = [
+            { token: this.contextData.users!.testOwner.data!.token },
+            { token: this.contextData.users!.admin.data!.token },
+            { token: this.contextData.users!.analyst.data!.token },
+            { token: this.contextData.users!.member.data!.token }
         ];
 
         // Get the user IDs
-        return Promise.all(userSessions.map(session => 
-            getAllSessionsOrThrow(session.token)
-                .then(sessionsResponse => {
-                    const userId = String(!sessionsResponse?.data?.[0]?.userId ? null : sessionsResponse?.data?.[0]?.userId);
-                    return { userId, role: session.role, token: session.token };
-                })
-        ))
-        .then(userDetails => {
-            // Add each user to the organization
-            return userDetails.reduce((promise, user) => 
-                promise.then(() => 
-                    addOrgMember(
-                        this.contextData.users.owner.token,
-                        String(user.userId),
-                        String(org?.id),
-                        user.role
-                    )
-                    .then(() => setActiveOrganizationOrThrow(user.token, String(org?.id)))
-                    .then(() => {})  // Return void to maintain consistent Promise<void> type
-                ), Promise.resolve());
-        });
+        return Promise.all(
+            userDetails.map(user =>
+                 setActiveOrganizationOrThrow(user.token, String(org?.id)))
+            );
     }
 
     /**
@@ -241,11 +229,11 @@ export class OrganizationPermissionsClient implements OrganizationPermissionsCli
         console.log("\n5. Testing role-specific permissions...");
         
         // Create TRPC clients for each user
-        const ownerTrpc = getTRPCClient(this.contextData.users.owner.token);
-        const testOwnerTrpc = getTRPCClient(this.contextData.users.testOwner.token);
-        const adminTrpc = getTRPCClient(this.contextData.users.admin.token);
-        const analystTrpc = getTRPCClient(this.contextData.users.analyst.token);
-        const memberTrpc = getTRPCClient(this.contextData.users.member.token);
+        const ownerTrpc = getTRPCClient(this.contextData.users!.owner.data!.token);
+        const testOwnerTrpc = getTRPCClient(this.contextData.users!.testOwner.data!.token);
+        const adminTrpc = getTRPCClient(this.contextData.users!.admin.data!.token);
+        const analystTrpc = getTRPCClient(this.contextData.users!.analyst.data!.token);
+        const memberTrpc = getTRPCClient(this.contextData.users!.member.data!.token);
         
         // Create test resources
         return testOwnerTrpc.waitlist.definition.create.mutate({

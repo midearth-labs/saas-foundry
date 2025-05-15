@@ -6,19 +6,20 @@ import {
   signInUserOrThrow,
   getTRPCClient,
   setActiveOrganizationOrThrow,
-  createOrg,
-  addOrgMember,
+  createOrgOrThrow,
   truncateError
 } from "../common/utils";
+
+type Userss = Awaited<ReturnType<typeof signInUserOrThrow>>["signedInUser"];
 
 /**
  * Implementation of the WaitlistEnhancedClientInterface for testing waitlist with organization roles
  */
 export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
   private users: {
-    owner: { token: string; id: string } | null;
-    admin: { token: string; id: string } | null;
-    regular: { token: string; id: string } | null;
+    owner?: Userss;
+    admin?: Userss;
+    regular?: Userss;
   };
   private organization: any;
   private waitlistDefinition: any;
@@ -65,11 +66,7 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
     this.ORG_SLUG = `test-org-${this.TIMESTAMP}`;
 
     // Initialize state
-    this.users = {
-      owner: null,
-      admin: null,
-      regular: null
-    };
+    this.users = {};
     this.organization = null;
     this.waitlistDefinition = null;
     this.waitlistEntries = [];
@@ -96,26 +93,17 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
   public signInUsers(): Promise<any> {
     return signInUserOrThrow(this.Users.Owner.email, this.Users.Owner.password)
       .then(({ signedInUser }) => {
-        this.users.owner = { 
-          token: signedInUser.data!.token,
-          id: signedInUser.data!.user.id
-        };
+        this.users.owner = signedInUser;
       })
       // Step 3: Sign in admin user
       .then(() => signInUserOrThrow(this.Users.Admin.email, this.Users.Admin.password))
       .then(({ signedInUser }) => {
-        this.users.admin = { 
-          token: signedInUser.data!.token,
-          id: signedInUser.data!.user.id
-        };
+        this.users.admin = signedInUser;
       })
       // Step 4: Sign in regular user
       .then(() => signInUserOrThrow(this.Users.Regular.email, this.Users.Regular.password))
       .then(({ signedInUser }) => {
-        this.users.regular = { 
-          token: signedInUser.data!.token,
-          id: signedInUser.data!.user.id
-        };
+        this.users.regular = signedInUser;
       });
   }
 
@@ -125,37 +113,26 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
    */
   public setupOrganization(): Promise<any> {
     console.log("\n2. Creating organization...");
-    return createOrg(this.users.owner!.token, this.ORG_NAME, this.ORG_SLUG)
-      .then(org => {
+
+    const userDetails = [
+        { userId: this.users!.admin!.data!.user.id, role: ["adminRole"] },
+        { userId: this.users!.regular!.data!.user.id, role: ["memberRole"] },
+    ];
+
+
+    return createOrgOrThrow(this.users.owner!.data!.token, this.ORG_NAME, this.ORG_SLUG, {addUsers: userDetails})
+      .then((org) => {
         this.organization = org;
         
         // Set active organization for owner
-        return setActiveOrganizationOrThrow(this.users.owner!.token, String(org?.id))
-          .then(() => {
-            // Add admin user to organization with adminRole
-            return addOrgMember(
-              this.users.owner!.token,
-              this.users.admin!.id,
-              String(org?.id),
-              ["adminRole"]
-            );
-          })
+        return setActiveOrganizationOrThrow(this.users.owner!.data!.token, String(org.id))
           .then(() => {
             // Set active organization for admin
-            return setActiveOrganizationOrThrow(this.users.admin!.token, String(org?.id));
-          })
-          .then(() => {
-            // Add regular user to organization with memberRole
-            return addOrgMember(
-              this.users.owner!.token,
-              this.users.regular!.id,
-              String(org?.id),
-              ["memberRole"]
-            );
+            return setActiveOrganizationOrThrow(this.users.admin!.data!.token, String(org?.id));
           })
           .then(() => {
             // Set active organization for regular user
-            return setActiveOrganizationOrThrow(this.users.regular!.token, String(org?.id));
+            return setActiveOrganizationOrThrow(this.users.regular!.data!.token, String(org?.id));
           });
       });
   }
@@ -166,8 +143,8 @@ export class EnhancedWaitlistClient implements WaitlistEnhancedClientInterface {
    */
   public testWaitlistOperations(): Promise<any> {
     console.log("\n3. Creating TRPC clients and testing operations...");
-    const adminTrpc = getTRPCClient(this.users.admin!.token);
-    const regularTrpc = getTRPCClient(this.users.regular!.token);
+    const adminTrpc = getTRPCClient(this.users.admin!.data!.token);
+    const regularTrpc = getTRPCClient(this.users.regular!.data!.token);
 
     console.log("\nTesting waitlist definition creation...");
     

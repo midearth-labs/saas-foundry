@@ -11,20 +11,22 @@ import {
   setActiveOrganizationOrThrow, 
   signInUserOrThrow,
   getUserInput,
-  listOrgs,
+  listOrgsOrThrow,
   truncateError
 } from "../common/utils";
+type Userss = Awaited<ReturnType<typeof signInUserOrThrow>>["signedInUser"];
+type CreateOrgResult = Awaited<ReturnType<typeof createOrgOrThrow>>;
 
 /**
  * Implementation of the OrganizationAuthClientInterface for Slack-style organization auth
  */
 export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientInterface {
   private contextData: {
-    userA: { signedInUser: any; activeOrganizationId: string | null } | null;
-    userB: { signedInUser: any; activeOrganizationId: string | null } | null;
-    userC: { signedInUser: any; activeOrganizationId: string | null } | null;
-    orgs: any | null;
-    invites: any | null;
+    userA?: Userss;
+    userB?: Userss;
+    userC?: Userss;
+    orgs?: { firstOrg: CreateOrgResult, secondOrg: CreateOrgResult };
+    invites?: any;
   };
   private readonly Users: {
     A: { name: string; email: string; password: string };
@@ -77,20 +79,14 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
     };
 
     // Initialize state
-    this.contextData = {
-      userA: null,
-      userB: null,
-      userC: null,
-      orgs: null,
-      invites: null
-    };
+    this.contextData = {};
   }
 
   /**
    * Create multiple users for testing
    * @returns Promise with the created users
    */
-  public createUsers(): Promise<any> {
+  public createUsers() {
     console.log("\n1. Creating users A, B, and C...");
     
     return createUserOrThrow(this.Users.A.name, this.Users.A.email, this.Users.A.password)
@@ -106,11 +102,11 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Sign in users and store their tokens
    * @returns Promise with the signed in users
    */
-  public signInUsers(): Promise<any> {
+  public signInUsers() {
     console.log("\nSigning in User A...");
     return this.signInWithWorkspaceSelection(this.Users.A.email, this.Users.A.password)
       .then(userASession => {
-        this.contextData.userA = userASession;
+        this.contextData.userA = userASession.signedInUser;
         return userASession;
       });
   }
@@ -119,14 +115,14 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Create organizations
    * @returns Promise with the created organizations
    */
-  public createOrganizations(): Promise<any> {
+  public createOrganizations() {
     console.log("\n2. Creating organizations...");
     
-    return createOrgOrThrow(this.contextData.userA!.signedInUser.data.token, 
+    return createOrgOrThrow(this.contextData.userA!.data!.token, 
                            this.Organizations.First.name, 
                            this.Organizations.First.slug)
       .then(firstOrg => {
-        return createOrgOrThrow(this.contextData.userA!.signedInUser.data.token, 
+        return createOrgOrThrow(this.contextData.userA!.data!.token, 
                                this.Organizations.Second.name, 
                                this.Organizations.Second.slug)
           .then(secondOrg => {
@@ -141,21 +137,21 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Invite users to organizations
    * @returns Promise with the invitation results
    */
-  public inviteUsersToOrganizations(): Promise<any> {
+  public inviteUsersToOrganizations() {
     console.log("\n3. Adding User B to both organizations...");
     
     return inviteUserToOrgOrThrow(
-      this.contextData.userA!.signedInUser.data.token, 
+      this.contextData.userA!.data!.token, 
       this.Users.B.email, 
       "member", 
-      this.contextData.orgs!.firstOrg.data.id
+      this.contextData.orgs!.firstOrg.id
     )
     .then(firstOrgInvite => {
       return inviteUserToOrgOrThrow(
-        this.contextData.userA!.signedInUser.data.token, 
+        this.contextData.userA!.data!.token, 
         this.Users.B.email, 
         "member", 
-        this.contextData.orgs!.secondOrg.data.id
+        this.contextData.orgs!.secondOrg.id
       )
       .then(secondOrgInvite => {
         const invites = { firstOrgInvite, secondOrgInvite };
@@ -169,20 +165,20 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Accept organization invitations
    * @returns Promise with the acceptance results
    */
-  public acceptInvitations(): Promise<any> {
+  public acceptInvitations() {
     console.log("\n4. User B accepting invitations...");
     
     return this.signInWithWorkspaceSelection(this.Users.B.email, this.Users.B.password)
       .then(userBSession => {
-        this.contextData.userB = userBSession;
+        this.contextData.userB = userBSession.signedInUser;
         
         return acceptOrgInvitationOrThrow(
-          userBSession.signedInUser.data.token, 
+          this.contextData.userB!.data!.token, 
           this.contextData.invites!.firstOrgInvite.data.id
         )
         .then(firstAccept => {
           return acceptOrgInvitationOrThrow(
-            userBSession.signedInUser.data.token, 
+            this.contextData.userB!.data!.token, 
             this.contextData.invites!.secondOrgInvite.data.id
           )
           .then(secondAccept => {
@@ -196,21 +192,21 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Test organization operations with different users
    * @returns Promise with the test results
    */
-  public testOrganizationOperations(): Promise<any> {
+  public testOrganizationOperations() {
     console.log(`\nTesting workspace operations...`);
     
     // Test User A operations in their workspace context
-    return this.testWorkspaceOperations('A', this.contextData.userA!.signedInUser.data.token)
+    return this.testWorkspaceOperations('A', this.contextData.userA!.data!.token)
       .then(() => {
         // Test User B operations in their workspace context
-        return this.testWorkspaceOperations('B', this.contextData.userB!.signedInUser.data.token);
+        return this.testWorkspaceOperations('B', this.contextData.userB!.data!.token);
       })
       .then(() => {
         // Sign in User C and test (should only see personal workspace)
         return this.signInWithWorkspaceSelection(this.Users.C.email, this.Users.C.password);
       })
       .then(userCSession => {
-        this.contextData.userC = userCSession;
+        this.contextData.userC = userCSession.signedInUser;
         return this.testWorkspaceOperations('C', userCSession.signedInUser.data.token);
       });
   }
@@ -219,12 +215,12 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Create and list multiple user sessions
    * @returns Promise with the session results
    */
-  public createMultipleSessionsAndList(): Promise<any> {
+  public createMultipleSessionsAndList() {
     // Test workspace switching for User B
     console.log("\nTesting workspace switching for User B...");
-    return this.selectWorkspace(this.contextData.userB!.signedInUser.data.token)
+    return this.selectWorkspace(this.contextData.userB!.data!.token)
       .then(newOrgId => 
-        this.setActiveOrganization(this.contextData.userB!.signedInUser.data.token, newOrgId)
+        this.setActiveOrganization(this.contextData.userB!.data!.token, newOrgId)
       );
   }
 
@@ -237,7 +233,7 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
     try {
       // Ensure the request is being made for EXACT intended user by explicit authentication
       return getSessionTokenOrThrow(token)
-        .then(() => listOrgs(token))
+        .then(() => listOrgsOrThrow(token))
         .then(orgs => {
           console.log("organizations found:\n", JSON.stringify(orgs, null, 2));
 
@@ -280,7 +276,7 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * @param organizationId Organization ID
    * @returns Promise with the result
    */
-  public setActiveOrganization(token: string, organizationId: string | null): Promise<any> {
+  public setActiveOrganization(token: string, organizationId: string | null) {
     return this.setActiveOrganizationForAllSessions(token, organizationId);
   }
 
@@ -290,12 +286,12 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * @param token User's token
    * @returns Promise with the test results
    */
-  private testWorkspaceOperations(userType: string, token: string): Promise<any> {
+  private testWorkspaceOperations(userType: string, token: string) {
     console.log(`\nTesting workspace operations for User ${userType}...`);
     
     try {
       // Get current workspace context and available organizations
-      return listOrgs(token)
+      return listOrgsOrThrow(token)
         .then(orgs => {
           console.log(`Available organizations for User ${userType}:`, 
             JSON.stringify(orgs, null, 2));
@@ -317,7 +313,7 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * @param organizationId Organization ID
    * @returns Promise with the result
    */
-  private setActiveOrganizationForAllSessions(token: string, organizationId: string | null): Promise<any> {
+  private setActiveOrganizationForAllSessions(token: string, organizationId: string | null) {
     try {
       // First, list all sessions
       return getAllSessionsOrThrow(token)
@@ -373,7 +369,7 @@ export class SlackStyleOrganizationAuthClient implements OrganizationAuthClientI
    * Maintains the original .then() chain structure
    * @returns Promise that resolves when the flow completes
    */
-  public execute(): Promise<any> {
+  public execute() {
     // Start the chain with user creation and verification
     return this.createUsers()
       .then(() => {

@@ -40,14 +40,10 @@ const authClient = createAuthClient({
         adminClient({
             ac: adminAccessControl,
             roles: adminRoles,
-            adminRoles: ["admin", "adminRole", "owner", "ownerRole"],
-            defaultRole: "user",
           }),
         organizationClient({
             ac: organizationAccessControl,
             roles: orgRoles,
-            adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
-            defaultRole: "member",
         }),
         stripeClient({
             subscription: true
@@ -64,14 +60,10 @@ export const getAuthClient = () => {
             adminClient({
                 ac: adminAccessControl,
                 roles: adminRoles,
-                adminRoles: ["admin", "adminRole", "owner", "ownerRole"],
-                defaultRole: "user",
               }),
             organizationClient({
                 ac: organizationAccessControl,
                 roles: orgRoles,
-                adminRoles: ["owner", "ownerRole", "admin", "adminRole"],
-                defaultRole: "member",
             }),
             stripeClient({
                 subscription: true,
@@ -187,20 +179,41 @@ export const acceptOrgInvitationOrThrow = async (token: string, invitationId: st
 };
 
 /** Create an organization via BetterAuth Client or throw an error */
-export const createOrgOrThrow = async (token: string, name: string, slug: string) => {
+export const createOrgOrThrow = async (token: string, name: string, slug: string, metadata?: Record<string, any>) => {
     const response = await authClient.organization.create({ 
         name,
         slug,
-        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+        fetchOptions: { 
+            headers: {
+                Metadata: JSON.stringify(metadata),
+           },
+           auth: {
+            type: "Bearer",
+            token: token
+           }
+        },
     });
     if (response.data) {
         console.info("Organization created successfully")
     } else {
         throw new Error("Failed to create organization.")
     }
-    return response;
+    return response.data;
+}; 
+
+/** List organizations via BetterAuth Client or throw an error */
+export const listOrgsOrThrow = async (token: string) => {
+    const response = await authClient.organization.list({ 
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    if (response.data) {
+        console.info("Organizations listed successfully")
+    } else {
+        throw new Error("Failed to list organizations.")
+    }
+    return response.data;
 };
-  
+
 /** TRPC Client for interacting with the API */
 export const getTRPCClient = (token: string) => {
     return createTRPCClient<AppClientRouter>({

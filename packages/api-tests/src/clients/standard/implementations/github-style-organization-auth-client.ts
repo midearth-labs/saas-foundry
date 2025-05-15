@@ -8,20 +8,22 @@ import {
   getAllSessionsOrThrow, 
   inviteUserToOrgOrThrow, 
   signInUserOrThrow,
-  listOrgs,
+  listOrgsOrThrow,
   truncateError
 } from "../common/utils";
+type Userss = Awaited<ReturnType<typeof signInUserOrThrow>>["signedInUser"];
+type CreateOrgResult = Awaited<ReturnType<typeof createOrgOrThrow>>;
 
 /**
  * Implementation of the OrganizationAuthClientInterface for GitHub-style organization auth
  */
 export class GithubStyleOrganizationAuthClient implements OrganizationAuthClientInterface {
   private contextData: {
-    userA: { signedInUser: any } | null;
-    userB: { signedInUser: any } | null;
-    userC: { signedInUser: any } | null;
-    orgs: any | null;
-    invites: any | null;
+    userA?: Userss;
+    userB?: Userss;
+    userC?: Userss;
+    orgs?: { firstOrg: CreateOrgResult, secondOrg: CreateOrgResult };
+    invites?: any | null;
   };
   private readonly Users: {
     A: { name: string; email: string; password: string };
@@ -74,20 +76,14 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
     };
 
     // Initialize state
-    this.contextData = {
-      userA: null,
-      userB: null,
-      userC: null,
-      orgs: null,
-      invites: null
-    };
+    this.contextData = {};
   }
 
   /**
    * Create multiple users for testing
    * @returns Promise with the created users
    */
-  public createUsers(): Promise<any> {
+  public createUsers() {
     console.log("\n1. Creating users A, B, and C...");
     
     // Handle User A first - create, verify, and promote to admin
@@ -111,13 +107,13 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Sign in users and store their tokens
    * @returns Promise with the signed in users
    */
-  public signInUsers(): Promise<any> {
+  public signInUsers() {
     return signInUserOrThrow(this.Users.A.email, this.Users.A.password)
       .then(userASession => {
         if (!userASession?.signedInUser?.data?.token) {
           throw new Error('Failed to get valid session token for User A');
         }
-        this.contextData.userA = userASession;
+        this.contextData.userA = userASession.signedInUser;
         return userASession;
       });
   }
@@ -126,16 +122,16 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Create organizations
    * @returns Promise with the created organizations
    */
-  public createOrganizations(): Promise<any> {
+  public createOrganizations() {
     console.log("\n2. Creating organizations...");
     return createOrgOrThrow(
-      this.contextData.userA!.signedInUser.data.token, 
+      this.contextData.userA!.data!.token, 
       this.Organizations.First.name, 
       this.Organizations.First.slug
     )
     .then(firstOrg => {
       return createOrgOrThrow(
-        this.contextData.userA!.signedInUser.data.token, 
+        this.contextData.userA!.data!.token, 
         this.Organizations.Second.name, 
         this.Organizations.Second.slug
       )
@@ -153,21 +149,21 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Invite users to organizations
    * @returns Promise with the invitation results
    */
-  public inviteUsersToOrganizations(): Promise<any> {
+  public inviteUsersToOrganizations() {
     console.log("\n3. Adding User B to both organizations...");
     
     return inviteUserToOrgOrThrow(
-      this.contextData.userA!.signedInUser.data.token, 
+      this.contextData.userA!.data!.token, 
       this.Users.B.email.toLowerCase(), 
       "member", 
-      this.contextData.orgs!.firstOrg.data.id
+      this.contextData.orgs!.firstOrg.id
     )
     .then(firstOrgInvite => {
       return inviteUserToOrgOrThrow(
-        this.contextData.userA!.signedInUser.data.token, 
+        this.contextData.userA!.data!.token, 
         this.Users.B.email.toLowerCase(), 
         "member", 
-        this.contextData.orgs!.secondOrg.data.id
+        this.contextData.orgs!.secondOrg.id
       )
       .then(secondOrgInvite => {
         const invites = { firstOrgInvite, secondOrgInvite };
@@ -181,7 +177,7 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Accept organization invitations
    * @returns Promise with the acceptance results
    */
-  public acceptInvitations(): Promise<any> {
+  public acceptInvitations() {
     console.log("\n4. User B accepting invitations...");
     
     return signInUserOrThrow(this.Users.B.email, this.Users.B.password)
@@ -189,10 +185,10 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
         if (!userBSession?.signedInUser?.data?.token) {
           throw new Error('Failed to get valid session token for User B');
         }
-        this.contextData.userB = userBSession;
+        this.contextData.userB = userBSession.signedInUser;
         
         return acceptOrgInvitationOrThrow(
-          userBSession.signedInUser.data.token, 
+          this.contextData.userB.data!.token, 
           this.contextData.invites!.firstOrgInvite.data.id
         )
         .then(firstAccept => {
@@ -211,14 +207,14 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Test organization operations with different users
    * @returns Promise with the test results
    */
-  public testOrganizationOperations(): Promise<any> {
+  public testOrganizationOperations() {
     console.log(`\n5-6. Testing organizational operations...`);
     
     // Test operations for User A
-    return this.testOperationsForUser('A', this.contextData.userA!.signedInUser.data.token)
+    return this.testOperationsForUser('A', this.contextData.userA!.data!.token)
       .then(() => {
         // Test operations for User B
-        return this.testOperationsForUser('B', this.contextData.userB!.signedInUser.data.token);
+        return this.testOperationsForUser('B', this.contextData.userB!.data!.token);
       })
       .then(() => {
         // Sign in as User C
@@ -228,9 +224,9 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
         if (!userCSession?.signedInUser?.data?.token) {
           throw new Error('Failed to get valid session token for User C');
         }
-        this.contextData.userC = userCSession;
+        this.contextData.userC = userCSession.signedInUser;
         // Test operations for User C
-        return this.testOperationsForUser('C', userCSession.signedInUser.data.token);
+        return this.testOperationsForUser('C', this.contextData.userC!.data!.token);
       });
   }
 
@@ -240,11 +236,11 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * @param token User's token
    * @returns Promise with the test results
    */
-  private testOperationsForUser(userType: string, token: string): Promise<any> {
+  private testOperationsForUser(userType: string, token: string) {
     console.log(`\nTesting organizational operations for User ${userType}...`);
     
     try {
-      return listOrgs(token)
+      return listOrgsOrThrow(token)
         .then(organizations => {
           console.log(`User ${userType}'s organizations: `, JSON.stringify(organizations, null, 2));
           return organizations;
@@ -263,7 +259,7 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Create and list multiple user sessions
    * @returns Promise with the session results
    */
-  public createMultipleSessionsAndList(): Promise<any> {
+  public createMultipleSessionsAndList() {
     // Create multiple sessions for User A
     return this.createMultipleSessionsForUser('A', this.Users.A.email, this.Users.A.password)
       .then(() => {
@@ -279,7 +275,7 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * @param password User's password
    * @returns Promise with the session results
    */
-  private createMultipleSessionsForUser(userType: string, email: string, password: string): Promise<any> {
+  private createMultipleSessionsForUser(userType: string, email: string, password: string) {
     console.log(`\n7-8. Creating multiple sessions for User ${userType}...`);
     
     // Create three sessions
@@ -303,7 +299,7 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
    * Maintains the original .then() chain structure
    * @returns Promise that resolves when the flow completes
    */
-  public execute(): Promise<any> {
+  public execute() {
     // Start the chain with user creation and verification
     return this.createUsers()
       .then(() => {
@@ -334,13 +330,13 @@ export class GithubStyleOrganizationAuthClient implements OrganizationAuthClient
         console.log("\nGitHub-style organization auth test completed successfully!");
         return {
           users: {
-            userA: this.contextData.userA?.signedInUser.data,
-            userB: this.contextData.userB?.signedInUser.data,
-            userC: this.contextData.userC?.signedInUser.data
+            userA: this.contextData.userA?.data!,
+            userB: this.contextData.userB?.data!,
+            userC: this.contextData.userC?.data!
           },
           organizations: {
-            first: this.contextData.orgs?.firstOrg.data,
-            second: this.contextData.orgs?.secondOrg.data
+            first: this.contextData.orgs?.firstOrg.id,
+            second: this.contextData.orgs?.secondOrg.id
           }
         };
       })
