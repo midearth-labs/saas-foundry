@@ -9,7 +9,7 @@
  * - {@link signInGoogleUserOrThrow}: Sign in a user via Google
  * - {@link signInUserOrThrow}: Sign in a user via email and password
  * - {@link signInUnsuccessfully}: Sign in a user with wrong password
- * - {@link createUserOrThrow}: Create a user
+ * - {@link createEmailUserOrThrow}: Create a user
  */
 import { createTRPCClient, httpLink } from '@trpc/client';
 import type { AppClientRouter } from '@saas-foundry/api-model';
@@ -32,6 +32,20 @@ dotenv.config({
     path: path.resolve(process.cwd(), '.env')
 });
 
+
+/**
+ * Utility to truncate error messages
+ * @param error Error to truncate
+ * @param maxLength Maximum length of the error message
+ * @returns Truncated error message
+ */
+export const truncateError = (error: any, maxLength: number = 200): string => {
+    const errorMessage = error?.message || String(error);
+    return errorMessage.length > maxLength 
+      ? `${errorMessage.substring(0, maxLength)}...` 
+      : errorMessage;
+}; 
+
 // Should not be a problem if this is used in-file only
 /** BetterAuth Auth Client */
 const authClient = createAuthClient({
@@ -50,6 +64,7 @@ const authClient = createAuthClient({
         }),
     ]
 });
+export type AuthClientType = typeof authClient;
 
 // Experimental exported usage in wake of BetterAuth 1.2.6-beta.7 (probably won't work as expected)
 /** Get a BetterAuth Authentication Client */
@@ -71,7 +86,22 @@ export const getAuthClient = () => {
         ]
     })
 }
-  
+
+export const listSubscriptions = async (token: string, client: AuthClientType) => {
+    return await client.subscription.list({
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+}
+export type ListSubscriptionsResult = Awaited<ReturnType<typeof listSubscriptions>>;
+
+export const getActiveSubscription = async (token: string, client: AuthClientType) => {
+    const subs = await client.subscription.list({
+        fetchOptions: { headers: { Authorization: `Bearer ${token}` } }
+    });
+    return subs.data?.pop()
+}
+export type ActiveSubscriptionShape = Awaited<ReturnType<typeof getActiveSubscription>>;
+
 /** Create a custom muted stdout to hide the input */
 class MutedStdout extends Writable {
     _write(chunk: any, encoding: string, callback: (error?: Error | null) => void): void {
@@ -139,6 +169,7 @@ export const setActiveOrganizationOrThrow = async (token: string, orgId: string)
     }
     return response;
 };
+export type SetActiveOrganizationResult = Awaited<ReturnType<typeof setActiveOrganizationOrThrow>>;
 
 /** Get all sessions for a user via BetterAuth Client or throw an error */
 export const getAllSessionsOrThrow = async (token: string) => {
@@ -177,6 +208,7 @@ export const acceptOrgInvitationOrThrow = async (token: string, invitationId: st
     }
     return response;
 };
+export type AcceptOrgInvitationResult = Awaited<ReturnType<typeof acceptOrgInvitationOrThrow>>;
 
 /** Create an organization via BetterAuth Client or throw an error */
 export const createOrgOrThrow = async (token: string, name: string, slug: string, metadata?: Record<string, any>) => {
@@ -200,6 +232,7 @@ export const createOrgOrThrow = async (token: string, name: string, slug: string
     }
     return response.data;
 }; 
+export type CreateOrgResult = Awaited<ReturnType<typeof createOrgOrThrow>>;
 
 /** List organizations via BetterAuth Client or throw an error */
 export const listOrgsOrThrow = async (token: string) => {
@@ -265,6 +298,11 @@ export const getUserInput = async (prompt: string): Promise<string> => {
     });
 };
 
+export const signOutUser = async (client: AuthClientType) => {
+    return await client.signOut();
+}
+export type SignOutUserResult = Awaited<ReturnType<typeof signOutUser>>;
+
 /** Sign in a user via Google Social Provider */
 export const signInGoogleUserOrThrow = async () => {
     let googleUser = await authClient.signIn.social({
@@ -291,7 +329,7 @@ export const signInGoogleUserOrThrow = async () => {
 
     return { googleUser };
 }
-
+export type SignInGoogleUserResult = Awaited<ReturnType<typeof signInGoogleUserOrThrow>>['googleUser'];
 /** Sign in a user via BetterAuth Client or throw an error */
 export const signInUserOrThrow = async (email: string, password: string) => {
     let signedInUser = await authClient.signIn.email({
@@ -319,6 +357,7 @@ export const signInUserOrThrow = async (email: string, password: string) => {
 
     return { signedInUser };
 }
+export type SignInUserResult = Awaited<ReturnType<typeof signInUserOrThrow>>['signedInUser'];
 
 /** Infer the signed-in user type from the signInUserOrThrow function */
 export type SignedInUser = Awaited<ReturnType<typeof signInUserOrThrow>>['signedInUser'];
@@ -340,9 +379,10 @@ export const signInUnsuccessfully = async (email: string, password: string) => {
     }
     return { unsuccessfulUser };
 }
+export type SignInUnsuccessfullyResult = Awaited<ReturnType<typeof signInUnsuccessfully>>['unsuccessfulUser'];
 
 /** Create a user via BetterAuth Client or throw an error */
-export const createUserOrThrow = async (name: string, email: string, password: string) => {
+export const createEmailUserOrThrow = async (name: string, email: string, password: string) => {
     let createdUser = await authClient.signUp.email({
       name,
       email,
@@ -366,3 +406,12 @@ export const createUserOrThrow = async (name: string, email: string, password: s
 
     return { createdUser };
 }
+export type CreateEmailUserResult = Awaited<ReturnType<typeof createEmailUserOrThrow>>;
+
+export const updateUserProfile = async (client: AuthClientType, title?: string) => {
+    return await client.updateUser({
+        name: title ? `${title} ${name}` : "Mr." + name,
+    });
+}
+export type UpdateUserProfileResult = Awaited<ReturnType<typeof updateUserProfile>>;
+

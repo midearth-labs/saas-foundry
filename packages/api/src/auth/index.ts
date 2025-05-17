@@ -43,7 +43,6 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
     });
   }
 
-
   const auth = betterAuth({
     trustedOrigins: [process.env.API_ORIGIN || "http://localhost:3005", "/\\"],
     database: drizzleAdapter(db, {
@@ -94,6 +93,7 @@ export const createAuthEngine = (db: AppContext["coreDB"]) => {
 
                 if (metadata.addUsers) {
                   for (const userr of metadata.addUsers) {
+                    console.log("Adding user to organization:", userr.userId, "with role:", userr.role);
                     await addOrgMember(userr.userId, organization.id, userr.role, token!);
                   }
                 }

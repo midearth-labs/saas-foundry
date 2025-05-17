@@ -1,12 +1,19 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
+type RequestData = {
+  params: FastifyRequest['params'];
+  query: FastifyRequest['query'];
+  body: FastifyRequest['body'];
+  headers: FastifyRequest['headers'];
+};
+
 /**
  * Register test-only endpoints.
  * These endpoints are only available when NODE_ENV is set to 'TEST' or 'DEV'.
  */
 
 // Simple HTML generator function so landing page looks nice
-const generateHtml = (title: string, content: string, requestData: any, logo?: string, shouldRedirect = false) => {
+const generateHtml = (title: string, content: string, requestData: RequestData, logo?: string, shouldRedirect = false) => {
   const currentYear = new Date().getFullYear();
   const logoHtml = logo ? `<img src="${logo}" alt="${title} logo" style="max-height: 50px; margin-bottom: 20px;">` : '';
   

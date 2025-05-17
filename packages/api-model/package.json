@@ -18,8 +18,10 @@
         "./auth/stripe/plans": "./src/auth/stripe/plans.ts"
     },
     "dependencies": {
+        "@better-auth/stripe": "^1.2.7",
         "@trpc/server": "11.0.0-rc.802",
         "better-auth": "1.2.7",
+        "dotenv": "^16.5.0",
         "zod": "^3.24.2"
     },
     "devDependencies": {

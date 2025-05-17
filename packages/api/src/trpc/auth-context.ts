@@ -32,6 +32,7 @@ export const createRequestAuthProxy = (req: FastifyRequest, appContext: AppConte
 
   const checkOrgAuthorized = async (permission: Permission) => {
     const hasPermission = await requestAuth.checkOrgPermission(permission);
+    console.log("Permission check result:", JSON.stringify(hasPermission, null, 2));
     if (!hasPermission) {
       throw new TRPCError({ code: 'FORBIDDEN', message: 'User does not have required permissions' });
     }
